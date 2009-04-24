@@ -1,0 +1,39 @@
+<null>
+<doctype type="trans" />
+<html>
+<head>
+	<title> {{settings.site_name}}{{page_title}} </title>
+	<link href="template/{{settings.site_template}}/screen.css" rel="stylesheet" type="text/css"/>
+	<script type="text/javascript" src="xedlib/js/jquery.js"></script>
+	<script type="text/javascript" src="xedlib/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="xedlib/js/shadowbox-jquery.js" />
+	<script type="text/javascript" src="xedlib/js/shadowbox.js" />
+	<script type="text/javascript">
+	$(document).ready(function () {
+		Shadowbox.init({
+			handleLgImages: 'drag',
+			animate: false
+		});
+	});
+	</script>
+	<link href="xedlib/css/shadowbox.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<a href="index.php"><img src="images/logo.png" border="0" alt="Logo"/></a>
+
+<table border="0" width="100%">
+	<tr><td valign="top" width="200">
+		<block name="left" />
+	</td>
+	<td valign="top">
+		<block name="middle">MIDDLE BLOCK</block>
+	</td><td valign="top">
+		<block name="right">RIGHT BLOCK</block>
+	</td></tr>
+</table>
+<br/><br/><center><font size="-1">
+	Copyright 2003 {{settings.site_name}} - New Template<br/>
+</font></center>
+</body>
+</html>
+</null>
