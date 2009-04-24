@@ -1,0 +1,6 @@
+<null>
+<script type="text/javascript" src="{{tempath}}cart/cart.js"></script>
+<div id="divCart">
+<cart />
+</div>
+</null>
