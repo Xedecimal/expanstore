@@ -3,7 +3,7 @@
 require_once('h_main.php');
 
 Module::Initialize();
-echo Module::Run($_d['template_path'].'/index.xml');
+echo Module::Run(t('catalog/index.xml'));
 
 function TagInstallForm($t)
 {

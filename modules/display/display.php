@@ -3,8 +3,19 @@
 global $_d;
 
 if (!isset($_d['settings']['site_template'])) $_d['settings']['site_template'] = 'new';
-$_d['template_path'] = 'template/'.$_d['settings']['site_template'];
+$_d['template_path'] = $_d['settings']['site_template'];
 $_d['template_url'] = $_d['app_abs'].'/template/'.$_d['settings']['site_template'];
+
+function t($path)
+{
+	global $_d;
+
+	// Overloaded Path
+	$opath = $_d['settings']['site_template'].'/'.$path;
+	// Default Path
+	$dpath = 'modules/'.$path;
+	return file_exists($opath) ? $opath : $dpath;
+}
 
 function TemplateCheck()
 {

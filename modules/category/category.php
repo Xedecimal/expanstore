@@ -261,7 +261,7 @@ EOF;
 		$t->ReWrite('admin', array(&$this, 'TagAdmin'));
 		$t->ReWrite('category', array(&$this, 'TagCategory'));
 
-		return $t->ParseFile($_d['template_path'].'/category/fromCatalog.xml');
+		return $t->ParseFile(t('category/fromCatalog.xml'));
 
 		if (!empty($_d['category.current']))
 			$_d['page.title'] .= ' - '.$_d['category.current']['name'];
