@@ -158,7 +158,7 @@ EOF;
 		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
 			$_d['page.links']["Control Panel"]["Attributes"] =
-				'{{me}}?cs=attribute&amp;ca=view_atrgs';
+				'{{app_abs}}/attribute/view';
 		}
 
 		// Internal Joins
