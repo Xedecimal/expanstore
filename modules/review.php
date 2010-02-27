@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModReview');
+Module::RegisterModule('ModReview');
 
 function QueryReviews($_d, $id)
 {
@@ -16,13 +16,38 @@ function QueryReviews($_d, $id)
 
 class ModReview extends Module
 {
-	function __construct()
+	function __construct($inst)
 	{
 		global $_d;
 
-		$dsReviews = new DataSet($_d['db'], "ype_review");
+		if (!$inst) return;
+
+		$dsReviews = new DataSet($_d['db'], 'review');
 		$dsReviews->Shortcut = 'r';
 		$_d['review.ds'] = $dsReviews;
+	}
+
+	function Install()
+	{
+		$data = <<<EOF
+CREATE TABLE IF NOT EXISTS `review` (
+  `rev_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `rev_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `rev_prod` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `rev_user` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `rev_rating` tinyint(4) NOT NULL DEFAULT '5',
+  `rev_subject` varchar(100) NOT NULL,
+  `rev_review` mediumtext NOT NULL,
+  PRIMARY KEY (`rev_id`) USING BTREE,
+  KEY `idxUser` (`rev_user`) USING BTREE,
+  KEY `idxProduct` (`rev_prod`) USING BTREE,
+  CONSTRAINT `fkRev_Prod` FOREIGN KEY (`rev_prod`) REFERENCES `product` (`prod_id`),
+  CONSTRAINT `fkRev_User` FOREIGN KEY (`rev_user`) REFERENCES `user` (`usr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+EOF;
+
+		global $_d;
+		$_d['db']->Queries($data);
 	}
 
 	function Link()
@@ -34,8 +59,8 @@ class ModReview extends Module
 		$_d['product.ds.columns']['rating'] = SqlUnquote('AVG(rev_rating)');
 		$_d['product.ds.joins']['review'] =
 			new Join($_d['review.ds'], "rev_prod = prod_id", 'LEFT JOIN');
-		$_d['product.callbacks.details']['review'] = array(&$this, 'Details');
-		$_d['product.callbacks.props']['review'] = array(&$this, 'Props');
+		$_d['product.callbacks.details']['review'] = array(&$this, 'cb_product_details');
+		$_d['product.callbacks.props']['review'] = array(&$this, 'cb_product_props');
 	}
 
 	function Prepare()
@@ -44,7 +69,9 @@ class ModReview extends Module
 
 		global $_d;
 
-		if ($_d['ca'] == 'add_review')
+		if (@$_d['q'][0] != 'review') return;
+
+		if (@$_d['q'][1] == 'add_review')
 		{
 			$rating = GetVar("formReview_rating");
 			if ($rating < 0 || $rating > 5)
@@ -77,7 +104,7 @@ class ModReview extends Module
 		}
 	}
 
-	function Details(&$_d, $prod)
+	function cb_product_details($_d, $prod)
 	{
 		$cl = $_d['cl'];
 
@@ -118,7 +145,7 @@ class ModReview extends Module
 			);
 			$formReview = new Form('formReview');
 			$formReview->AddHidden('ca', 'add_review');
-			$formReview->AddHidden('ci', $_d['ci']);
+			$formReview->AddHidden('ci', $_d['q'][2]);
 			$formReview->AddInput('From '.$cl['usr_user']);
 			$formReview->AddInput(new FormInput('Rating', 'select', 'rating',
 				$ratings));
@@ -135,7 +162,7 @@ class ModReview extends Module
 		return $ret;
 	}
 
-	function Props(&$_d, $prod)
+	function cb_product_props($_d, $prod)
 	{
 		$t = new Template($_d);
 		if (!empty($prod['rating']))

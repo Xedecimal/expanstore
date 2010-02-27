@@ -1,19 +1,27 @@
-<?
+<?php
 
-RegisterModule('ModCategory');
+Module::RegisterModule('ModCategory');
+Module::RegisterModule('ModCategoryAdmin');
 
 function QueryCat(&$_d, $id)
 {
 	$ds = $_d['category.ds'];
-	return $ds->GetOne(array('cat_id' => $id), $_d['category.ds.joins']);
+	$q = array(
+		'match' => array('cat_id' => $id),
+		'joins' => $_d['category.ds.joins']
+	);
+	return $ds->GetOne($q);
 }
 
-function QueryCats($_d, $parent)
+function QueryCats($_d, $parent, $include_hidden = true)
 {
 	global $_d;
 
-	return $_d['category.ds']->Get(array('cat_parent' => $parent), null, null,
-		$_d['category.ds.joins']);
+	$m = array('cat_parent' => $parent);
+	if (!$include_hidden) $m['cat_hidden'] = 0;
+
+	return $_d['category.ds']->Get($m, 'cat_name', null,
+		@$_d['category.ds.joins']);
 }
 
 function QueryCatsAll(&$_d)
@@ -23,33 +31,70 @@ function QueryCatsAll(&$_d)
 
 function GetBreadcrumb($_d, $cat)
 {
-	if ($cat == 0) return "<a href=\"{{me}}?cc=0\">Home</a>";
+	if ($cat == 0) return "<a href=\"{{app_abs}}?cc=0\">Home</a>";
 	$c = QueryCat($_d, $cat);
 	$ret = "";
 	while ($c != null && $c['cat_id'] != 0)
 	{
-		$ret = ' / <a href="{{me}}?cc='.$c['cat_id'].'">'.$c['cat_name'].'</a>'
+		$ret = ' / <a href="{{app_abs}}?cc='.$c['cat_id'].'">'.$c['cat_name'].'</a>'
 			.$ret;
 		$c = QueryCat($_d, $c['cat_parent']);
 	}
-	$ret = "<a href=\"{{me}}\">Home</a>" . $ret;
+	$ret = "<a href=\"{{app_abs}}\">Home</a>" . $ret;
 	return $ret;
 }
 
 class ModCategory extends Module
 {
-	function __construct()
+	function __construct($inst)
 	{
 		global $_d;
 
-		$dsCat = new DataSet($_d['db'], "ype_category");
-		$dsCat->Shortcut = 'cat';
-		$_d['category.ds'] = $dsCat;
-		$_d['category.ds']->ErrorHandler = array($this, 'DataError');
+		if (!$inst) return;
 
-		$dsCP = new DataSet($_d['db'], 'ype_cat_prod');
-		$dsCP->Shortcut = 'cp';
+		$dsCat = new DataSet($_d['db'], "category");
+		$_d['category.ds'] = $dsCat;
+
+		$dsCP = new DataSet($_d['db'], 'cat_prod');
 		$_d['cat_prod.ds'] = $dsCP;
+	}
+
+	function Install()
+	{
+		$data = <<<EOF
+CREATE TABLE IF NOT EXISTS `category` (
+  `cat_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `cat_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `cat_parent` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `cat_name` varchar(100) NOT NULL,
+  `cat_desc` mediumtext NOT NULL,
+  PRIMARY KEY (`cat_id`) USING BTREE,
+  KEY `idxParent` (`cat_parent`) USING BTREE,
+  CONSTRAINT `fk_cat_cat` FOREIGN KEY (`cat_parent`) REFERENCES `category` (`cat_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `cat_prod` (
+  `catprod_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `catprod_prod` bigint(20) unsigned NOT NULL,
+  `catprod_cat` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`catprod_id`) USING BTREE,
+  UNIQUE KEY `idxUnique` (`catprod_prod`,`catprod_cat`),
+  KEY `fk_catprod_cat` (`catprod_cat`) USING BTREE,
+  KEY `fk_catprod_prod` (`catprod_prod`) USING BTREE,
+  CONSTRAINT `fk_catprod_cat` FOREIGN KEY (`catprod_cat`) REFERENCES `category` (`cat_id`),
+  CONSTRAINT `fk_catprod_prod` FOREIGN KEY (`catprod_prod`) REFERENCES `product` (`prod_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+INSERT IGNORE INTO `category` (`cat_id`, `cat_name`, `cat_desc`, `cat_parent`)
+VALUES(0, 'Home', 'Home Category', 0);
+
+SET FOREIGN_KEY_CHECKS = 1;
+EOF;
+
+		global $_d;
+		$_d['db']->Queries($data);
 	}
 
 	function Link()
@@ -61,14 +106,12 @@ class ModCategory extends Module
 		$_d['product.ds.columns'][] = 'cat_id';
 		$_d['product.ds.columns'][] = 'catprod_cat';
 
-		$_d['product.callbacks.props']['category'] =
-			array(&$this, 'ProductProps');
-		$_d['product.callbacks.addfields']['category'] =
-			array(&$this, 'ProductAddFields');
-		$_d['product.callbacks.editfields']['category'] =
-			array(&$this, 'ProductEditFields');
-		$_d['product.callbacks.update']['category'] =
-			array(&$this, 'ProductUpdate');
+		$_d['product.callbacks.props']['category'] = array(&$this, 'cb_product_props');
+		$_d['product.callbacks.addfields']['category'] = array(&$this, 'cb_product_addfields');
+		$_d['product.callbacks.editfields']['category'] = array(&$this, 'cb_product_editfields');
+		$_d['product.callbacks.update']['category'] = array(&$this, 'cb_product_update');
+		$_d['product.callbacks.add']['category'] = array(&$this, 'cb_product_add');
+		$_d['product.callbacks.delete']['category'] = array(&$this, 'cb_product_delete');
 
 		$_d['product.ds.match']['cat_id'] = GetVar('cc', 0);
 
@@ -79,6 +122,9 @@ class ModCategory extends Module
 
 		$_d['product.latest.match']['catprod_cat'] = SqlNot(0);
 		$_d['product.latest.hide'] = GetVar('cc', 0) != 0;
+
+		// Globally available tags for templating
+		$_d['template.rewrites']['showcat'] = array(&$this, 'TagShowCat');
 	}
 
 	function Prepare($require = false)
@@ -99,12 +145,12 @@ class ModCategory extends Module
 				$cats = QueryCats($_d, $ci);
 
 				$dsProducts = $_d['product.ds'];
-				$prods = $dsProducts->Get(array("cat" => $ci));
+				$prods = QueryProductList(array('cat_id' => $ci));
 				if (!empty($cats)) $res = array('res' => 0, 'msg' => 'Category not empty.');
 				else if (!empty($prods)) $res = array('res' => 0, 'msg' => 'Category not empty.');
 				else
 				{
-					$_d['category.ds']->Remove(array('id' => $ci));
+					$_d['category.ds']->Remove(array('cat_id' => $ci));
 					#xslog($_d, "Removed category {$ci}");
 					$res['res'] = 1;
 					$res['msg'] = 'Successfully deleted.';
@@ -116,44 +162,23 @@ class ModCategory extends Module
 		$_d['category.current'] = QueryCat($_d, GetVar('cc'));
 	}
 
-	function DataError($errno)
-	{
-		global $_d;
-
-		//No such table
-		if ($errno == ER_NO_SUCH_TABLE)
-		{
-			$_d['db']->Query("CREATE TABLE `category` (
-  `id` bigint(20) unsigned NOT NULL auto_increment,
-  `date` datetime NOT NULL default '0000-00-00 00:00:00',
-  `parent` bigint(20) unsigned NOT NULL default '0',
-  `spec` bigint(20) unsigned NOT NULL default '0',
-  `name` varchar(100) NOT NULL default '',
-  `desc` text NOT NULL,
-  PRIMARY KEY  (`id`),
-  KEY `idxParent` (`parent`),
-  KEY `idxSpec` (`spec`)
-) ENGINE=MyISAM");
-		}
-	}
-
-	function ProductProps($_d, $prod)
+	function cb_product_props($_d, $prod)
 	{
 		return array('Category' => GetBreadcrumb($_d, $prod['cat_id']));
 	}
 
-	function ProductAddFields($_d, $form)
+	function cb_product_addfields($_d, $form)
 	{
 		$cats = QueryCatsAll($_d);
 
 		$cc = GetVar('cc');
 
 		$form->AddInput(new FormInput('Category', 'select', 'category',
-			DataToSel($cats, 'name', 'id', $cc, 'Home'),
+			DataToSel($cats, 'cat_name', 'cat_id', $cc, 'Home'),
 			'onchange="catChange();" style="width: 100%"'));
 	}
 
-	function ProductEditFields($_d, $prod, $form)
+	function cb_product_editfields($_d, $prod, $form)
 	{
 		$cats = QueryCatsAll($_d);
 		$sels = DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat'], 'Home');
@@ -161,12 +186,27 @@ class ModCategory extends Module
 			'select', 'category', $sels, array('STYLE' => "width: 100%")));
 	}
 
-	function ProductUpdate($_d, $prod)
+	function cb_product_add($_d, $prod, $id)
 	{
 		$_d['cat_prod.ds']->Add(array(
-			'catprod_cat' => GetVar('formProdProps_category'),
+			'catprod_cat' => GetVar('formProduct_category'),
+			'catprod_prod' => $id
+		));
+	}
+
+	function cb_product_update($_d, $prod)
+	{
+		$_d['cat_prod.ds']->Add(array(
+			'catprod_cat' => GetVar('category'),
 			'catprod_prod' => GetVar('ci')
 		), true);
+	}
+
+	function cb_product_delete()
+	{
+		global $_d;
+
+		$_d['cat_prod.ds']->Remove(array('catprod_prod' => $_d['q'][2]));
 	}
 
 	function TagAdmin($t, $g)
@@ -185,10 +225,22 @@ class ModCategory extends Module
 		foreach ($this->cats as $ix => $cat)
 		{
 			$this->cat = array_merge($cat, $gen);
+			if (empty($this->cat['cat_name'])) { $this->cat['cat_name'] = '[BLANK]'; }
 			$tt->Set($this->cat);
 			$ret .= $tt->GetString($g);
 		}
 		return $ret;
+	}
+
+	// Globally Available Tags
+	function TagShowCat($t, $g, $a)
+	{
+		$id = $a['ID'];
+		$imgs = glob('catimages/'.$id.'.*');
+		if (!empty($imgs))
+			return "<a href=\"{{app_abs}}?cc=$id\"><img src=\"{{app_abs}}/$imgs[0]\" alt=\"category\" /></a>";
+		else
+			return $id;
 	}
 
 	function Get()
@@ -203,13 +255,12 @@ class ModCategory extends Module
 		$cl = $_d['cl'];
 
 		$t = new Template();
-		$t->Set('tempath', $_d['tempath']);
-		$t->Set('cats', $this->cats = QueryCats($this->data, number_format($cc)));
+		$t->Set('cats', $this->cats = QueryCats($this->data, number_format($cc), false));
 		$t->ReWrite('notempty', 'TagNotEmpty');
 		$t->ReWrite('admin', array(&$this, 'TagAdmin'));
 		$t->ReWrite('category', array(&$this, 'TagCategory'));
 
-		return $t->ParseFile($_d['tempath'].'category/fromCatalog.xml');
+		return $t->ParseFile($_d['template_path'].'/category/fromCatalog.xml');
 
 		if (!empty($_d['category.current']))
 			$_d['page.title'] .= ' - '.$_d['category.current']['name'];
@@ -219,7 +270,7 @@ class ModCategory extends Module
 		$butdir = "<img src=\"images/folder.png\" border=\"0\" alt=\"category\" />";
 
 		//Display sub-categories.
-		$cats = QueryCats($_d, number_format($cc));
+		$cats = QueryCats($_d, number_format($cc), false);
 
 		if (!empty($cats) || $cc != 0)
 		{
@@ -259,34 +310,76 @@ class ModCategory extends Module
 
 class ModCategoryAdmin extends Module
 {
+	function Link()
+	{
+		global $_d;
+
+		#if (ModUser::RequestAccess(500))
+		#{
+		#	$_d['page.links']['Admin']['Categories'] = '{{me}}?cs=category';
+		#}
+	}
+
 	function Prepare($required = false)
 	{
 		parent::Prepare();
 		global $_d;
 
+		if (@$_d['q'][0] != 'category') return;
+
 		$ca = GetVar('ca');
 
-		if ($ca == "add")
+		if ($ca == 'add')
 		{
 			$dsCats = $_d['category.ds'];
 			$ci = $dsCats->Add(array(
-				'date' => DeString('NOW()'),
-				'parent' => GetVar('cc'),
-				'spec' => GetVar('formAddCat_spec'),
-				'name' => GetVar('formAddCat_name'),
-				'desc' => GetVar('formAddCat_desc')));
+				'cat_date' => SqlUnquote('NOW()'),
+				'cat_parent' => GetVar('cc'),
+				'cat_name' => GetVar('formAddCat_name'),
+				'cat_desc' => GetVar('formAddCat_desc'),
+				'cat_hidden' => GetVar('formAddCat_hidden')));
+
+			$f = GetVar('formAddCat_image');
+			if (!empty($f))
+			{
+				// Get rid of the existing images.
+				$existing = glob('catimages/'.$ci.'.*');
+				if (!empty($existing))
+					foreach($existing as $ef)
+						unlink($ef);
+
+				if (!file_exists('catimages')) mkdir('catimages');
+
+				$ext = fileext($f['name']);
+				move_uploaded_file($f['tmp_name'],'catimages/'.$ci.'.'.$ext);
+			}
 
 			$_d['cs'] = 'catalog';
 			$_d['cc'] = $ci;
 		}
 
-		else if ($ca == "update")
+		else if ($ca == 'update')
 		{
-			$_d['category.ds']->Update(array('id' => $_d['ci']), array(
-				'parent' => GetVar('parent'),
-				'spec' => GetVar('spec'),
-				'name' => GetVar('name'),
-				'desc' => GetVar('desc')
+			$f = GetVar('formViewCat_image');
+			if (!empty($f))
+			{
+				// Get rid of the existing images.
+				$existing = glob('catimages/'.$_d['ci'].'.*');
+				if (!empty($existing))
+					foreach($existing as $ef)
+						unlink($ef);
+
+				if (!file_exists('catimages')) mkdir('catimages');
+
+				$ext = fileext($f['name']);
+				move_uploaded_file($f['tmp_name'],'catimages/'.$_d['ci'].'.'.$ext);
+			}
+
+			$_d['category.ds']->Update(array('cat_id' => $_d['ci']), array(
+				'cat_parent' => GetVar('formViewCat_parent'),
+				'cat_name' => GetVar('formViewCat_name'),
+				'cat_desc' => GetVar('formViewCat_desc'),
+				'cat_hidden' => GetVar('formViewCat_hidden')
 			));
 		}
 	}
@@ -297,6 +390,8 @@ class ModCategoryAdmin extends Module
 
 		$ca = GetVar('ca');
 
+		if ($_d['q'][0] != 'category') return;
+
 		if ($ca == 'prepare')
 		{
 			$GLOBALS['page_section'] = 'Create Category';
@@ -306,53 +401,68 @@ class ModCategoryAdmin extends Module
 			$formAddCat->AddHidden("cc", GetVar('cc'));
 			$formAddCat->AddInput(new FormInput('Name', 'text', 'name', null,
 				'style="width: 100%"'));
-			$formAddCat->AddInput(new FormInput('Desc:', 'area', 'desc', null,
+			$formAddCat->AddInput(new FormInput('Description', 'area', 'desc', null,
 				'style="width: 100%; height: 100px;"'));
-			RunCallbacks($_d['category.callbacks.fields'], &$_d,
-				$formAddCat);
+			$formAddCat->AddInput(new FormInput('Hide','checkbox','hidden'));
+			$formAddCat->AddInput(new FormInput('Image','file','image'));
+			RunCallbacks($_d['category.callbacks.fields'], $_d, $formAddCat);
 			$formAddCat->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Add'));
 
 			return GetBox('box_create',
 				'Create Category',
-				$formAddCat->Get('action="{{me}}" method="post"',
+				$formAddCat->Get('action="{{me}}" method="post" enctype="multipart/form-data"',
 				'style="width: 100%"'));
 		}
 
-		if ($ca == 'edit')
+		else if ($ca == 'edit')
 		{
-			$_d['page.title'] .= " - Category Properties";
+			$_d['page_title'] .= " - Category Properties";
 			$dsCats = $_d['category.ds'];
-			$cat = $dsCats->GetOne(array("id" => $_d['ci']));
+			$cat = $dsCats->GetOne(array("cat_id" => $_d['ci']));
 			$cats = $dsCats->Get();
 			$frmViewCat = new Form("formViewCat");
 			$frmViewCat->AddHidden("cs", $_d['cs']);
 			$frmViewCat->AddHidden("ca", "update");
 			$frmViewCat->AddHidden("ci", $_d['ci']);
 			$frmViewCat->AddInput(new FormInput('Parent', 'select', 'parent',
-				DataToSel($cats, 'name', 'id', $cat['parent'], "Home")));
+				DataToSel($cats, 'cat_name', 'cat_id', $cat['cat_parent'], "Home")));
 			$frmViewCat->AddInput(new FormInput('Name', 'text', 'name',
-				$cat['name'], 'size="50"'));
+				$cat['cat_name'], 'size="50"'));
 			$frmViewCat->AddInput(new FormInput('Description', 'area', 'desc',
-				$cat['desc'], 'style="width: 100%; height: 100px;"'));
+				$cat['cat_desc'], 'style="width: 100%; height: 100px;"'));
+			$frmViewCat->AddInput(new FormInput('Hide', 'checkbox', 'hidden',
+				$cat['cat_hidden']));
+			$frmViewCat->AddInput(new FormInput('Image','file','image'));
 
-			RunCallbacks($_d['category.callbacks.fields'], &$_d,
-				$frmViewCat, $cat);
+			RunCallbacks($_d['category.callbacks.fields'], $_d, $frmViewCat, $cat);
 
 			$frmViewCat->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Save'));
 
 			return GetBox("box_category", "Category Properties",
-				$frmViewCat->Get());
+				$frmViewCat->Get('action="{{me}}" method="post" enctype="multipart/form-data"'));
 		}
 
-		if ($ca == 'update' || $ca == 'add' || $ca == 'remove')
+		else if ($ca == 'update' || $ca == 'add' || $ca == 'remove')
 		{
 			#$_d['cs'] = 'catalog';
 			#$_d['cc'] = $ca == 'update' ? GetVar('parent') : GetVar('cc');
 			#$mod = RequireModule($_d, 'modules/content.php', 'ModContent');
 			#$mod->Prepare($_d);
 			#return $mod->Get($_d);
+		}
+
+		else // Category listing.
+		{
+			$ret = null;
+
+			$items = QueryCatsAll($_d);
+			foreach ($items as $i)
+			{
+				$ret .= "<p><a href=\"{{me}}?cs=category&ca=edit&ci={$i['cat_id']}\">{$i['cat_name']}</a></p>";
+			}
+			return $ret;
 		}
 	}
 }

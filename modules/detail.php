@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModDetail');
+Module::RegisterModule('ModDetail');
 
 global $prop_types;
 
@@ -56,12 +56,12 @@ function QuerySpecProp(&$_d, $id)
 
 function QuerySpec(&$_d, $id)
 {
-	return $_d['spec.ds']->GetOne(array("id" => $id));
+	return $_d['spec.ds']->GetOne(array('spec_id' => $id));
 }
 
 function QueryProps(&$_d, $spec)
 {
-	return $_d['specprop.ds']->Get(array("spec" => $spec));
+	return $_d['specprop.ds']->Get(array('sprop_spec' => $spec));
 }
 
 function QueryPropsByCat(&$_d, $cat)
@@ -70,22 +70,25 @@ function QueryPropsByCat(&$_d, $cat)
 	$dsProp = $_d['specprop.ds'];
 	$dsProd = $_d['specprod.ds'];
 	$dsCat = $_d['category.ds'];
+	$dsSpecCat = $_d['spec_cat.ds'];
 
-	$joins = array(
-		new Join($dsSpec, 'sprop.spec = s.id'),
-		new Join($dsCat, 'cat.spec = s.id'),
+	$q['match'] = array('cat_id' => $cat);
+
+	$q['joins'] = array(
+		new Join($dsSpec, 'sprop_spec = spec_id'),
+		new Join($dsSpecCat, 'sc_spec = spec_id'),
+		new Join($dsCat, 'cat_id = sc_cat'),
 		new Join($dsProd, 'sprod_prop = sprop_id', 'LEFT JOIN')
 	);
 
-	$cols = array(
+	$q['columns'] = array(
 		'sprop_id',
-		'name' => 'sprop.name',
+		'sprop_name',
 		'sprod_id',
-		'value' => 'sprod.value'
+		'sprod_value'
 	);
 
-	return $dsProp->Get(array('cat_id' => $cat),
-		null, null, $joins, $cols);
+	return $dsProp->Get($q);
 }
 
 function QuerySPP(&$_d)
@@ -118,17 +121,17 @@ function QuerySPP(&$_d)
 
 function QueryUnusedSPP(&$_d, $spec)
 {
-	$match = array('sprop.spec' => $spec, 'spp.id IS NULL');
+	$match = array('sprop_spec' => $spec, 'sprod_id IS NULL');
 
 	$joins = array(
-		new Join($_d['specprop.ds'], 'sprod.prop = sprop.id'),
-		new Join($_d['specpropprod.ds'], 'spp.prod = sprod.id', 'LEFT JOIN')
+		new Join($_d['specprop.ds'], 'sprod_prop = sprop_id'),
+		new Join($_d['specpropprod.ds'], 'sprod_prop = sprop_id', 'LEFT JOIN')
 	);
 
 	$cols = array(
-		'did' => 'sprod.id',
-		'name' => 'sprop.name',
-		'value' => 'sprod.value'
+		'sprod_id',
+		'sprop_name',
+		'sprod_value'
 	);
 
 	return $_d['specprod.ds']->Get($match, null, null, $joins, $cols);
@@ -136,30 +139,95 @@ function QueryUnusedSPP(&$_d, $spec)
 
 class ModDetail extends Module
 {
-	function __construct()
+	function __construct($inst)
 	{
 		global $_d;
 
-		$dsSpecs = new DataSet($_d['db'], "ype_spec");
+		if (!$inst) return;
+
+		$dsSpecs = new DataSet($_d['db'], "spec");
 		$dsSpecs->Shortcut = 's';
 		$_d['spec.ds'] = $dsSpecs;
 
-		$dsSpecProd = new DataSet($_d['db'], 'ype_spec_prod');
+		$dsSpecProd = new DataSet($_d['db'], 'spec_prod');
 		$dsSpecProd->Shortcut = 'sprod';
 		$_d['specprod.ds'] = $dsSpecProd;
 
-		$dsSpecProp = new DataSet($_d['db'], "ype_spec_prop");
+		$dsSpecProp = new DataSet($_d['db'], "spec_prop");
 		$dsSpecProp->Shortcut = 'sprop';
-		$dsSpecProp->AddChild(new Relation($dsSpecProd, 'id', 'prop'));
 		$_d['specprop.ds'] = $dsSpecProp;
 
-		$dsSPP = new DataSet($_d['db'], 'ype_spec_prop_prod');
+		$dsSPP = new DataSet($_d['db'], 'spec_prop_prod');
 		$dsSPP->Shortcut = 'spp';
 		$_d['specpropprod.ds'] = $dsSPP;
 
-		$dsSC = new DataSet($_d['db'], 'ype_spec_cat');
+		$dsSC = new DataSet($_d['db'], 'spec_cat');
 		$dsSC->Shortcut = 'sc';
 		$_d['spec_cat.ds'] = $dsSC;
+	}
+
+	function Install()
+	{
+		$data = <<<EOF
+CREATE TABLE IF NOT EXISTS `spec` (
+  `spec_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `spec_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `spec_company` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `spec_name` varchar(255) NOT NULL,
+  `spec_text` varchar(255) NOT NULL,
+  PRIMARY KEY (`spec_id`) USING BTREE,
+  KEY `idxCompany` (`spec_company`) USING BTREE,
+  CONSTRAINT `fkSpec_Comp` FOREIGN KEY (`spec_company`) REFERENCES `company` (`comp_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `spec_prop` (
+  `sprop_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `sprop_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `sprop_spec` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `sprop_type` int(11) NOT NULL DEFAULT '0',
+  `sprop_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`sprop_id`) USING BTREE,
+  KEY `idxSpec` (`sprop_spec`) USING BTREE,
+  CONSTRAINT `fkSProp_Spec` FOREIGN KEY (`sprop_spec`) REFERENCES `spec` (`spec_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `spec_prod` (
+  `sprod_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `sprod_prop` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `sprod_value` varchar(255) NOT NULL,
+  PRIMARY KEY (`sprod_id`) USING BTREE,
+  UNIQUE KEY `idxValue` (`sprod_prop`,`sprod_value`) USING BTREE,
+  CONSTRAINT `fkSProd_SProp` FOREIGN KEY (`sprod_prop`) REFERENCES `spec_prop` (`sprop_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `spec_cat` (
+  `sc_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `sc_spec` bigint(20) unsigned NOT NULL,
+  `sc_cat` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`sc_id`),
+  KEY `fk_sc_cat` (`sc_cat`),
+  KEY `fk_sc_spec` (`sc_spec`),
+  CONSTRAINT `fk_sc_cat` FOREIGN KEY (`sc_cat`) REFERENCES `category` (`cat_id`),
+  CONSTRAINT `fk_sc_spec` FOREIGN KEY (`sc_spec`) REFERENCES `spec` (`spec_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `spec_prop_prod` (
+  `spp_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `spp_sprop` bigint(20) unsigned NOT NULL,
+  `spp_sprod` bigint(20) unsigned NOT NULL,
+  `spp_prod` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`spp_id`) USING BTREE,
+  KEY `idxProp` (`spp_sprop`) USING BTREE,
+  KEY `idxProd` (`spp_sprod`) USING BTREE,
+  KEY `idxProduct` (`spp_prod`) USING BTREE,
+  CONSTRAINT `fkSpp_Prod` FOREIGN KEY (`spp_prod`) REFERENCES `product` (`prod_id`),
+  CONSTRAINT `fkSpp_SProd` FOREIGN KEY (`spp_sprod`) REFERENCES `spec_prod` (`sprod_id`),
+  CONSTRAINT `fkSpp_SProp` FOREIGN KEY (`spp_sprop`) REFERENCES `spec_prop` (`sprop_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED;
+EOF;
+
+		global $_d;
+		$_d['db']->Queries($data);
 	}
 
 	function Link()
@@ -178,18 +246,12 @@ class ModDetail extends Module
 
 		// Attach to Product.
 
-		$_d['product.callbacks.props'][] =
-			array(&$this, 'ProductProps');
-		$_d['product.callbacks.addfields'][] =
-			array(&$this, 'ProductAddFields');
-		$_d['product.callbacks.editfields'][] =
-			array(&$this, 'ProductEditFields');
-		$_d['product.callbacks.update'][] =
-			array(&$this, 'ProductAddUpdate');
-		$_d['product.callbacks.add'][] =
-			array(&$this, 'ProductAddUpdate');
-		$_d['product.callbacks.delete'][] =
-			array(&$this, 'ProductDelete');
+		$_d['product.callbacks.props'][] = array(&$this, 'ProductProps');
+		$_d['product.callbacks.addfields'][] = array(&$this, 'ProductAddFields');
+		$_d['product.callbacks.editfields'][] = array(&$this, 'ProductEditFields');
+		$_d['product.callbacks.update'][] = array(&$this, 'ProductAddUpdate');
+		$_d['product.callbacks.add'][] = array(&$this, 'ProductAddUpdate');
+		$_d['product.callbacks.delete'][] = array(&$this, 'ProductDelete');
 
 		// Attach to Category.
 
@@ -207,7 +269,7 @@ class ModDetail extends Module
 
 		global $_d;
 
-		$ca = $_d['ca'];
+		$ca = $_d['q'][0];
 
 		if ($ca == 'update_spec')
 		{
@@ -237,10 +299,10 @@ class ModDetail extends Module
 
 		else if ($ca == 'create_spec')
 		{
-			$dsSpecs->Add(array(
-				'date' => Destring('NOW()'),
-				'company' => $_d['cl']['company'],
-				'name' => GetVar('name')
+			$_d['spec.ds']->Add(array(
+				'spec_date' => SqlUnquote('NOW()'),
+				'spec_company' => $_d['cl']['c2u_company'],
+				'spec_name' => GetVar('name')
 			));
 			$ca = 'view_specs';
 		}
@@ -248,7 +310,7 @@ class ModDetail extends Module
 		else if ($ca == 'create_spec_prop')
 		{
 			$dsSpecProp->Add(array(
-				'date' => DeString('NOW()'),
+				'date' => SqlUnquote('NOW()'),
 				'spec' => GetVar('ci'),
 				'type' => GetVar('type'),
 				'name' => GetVar('name')
@@ -274,7 +336,7 @@ class ModDetail extends Module
 		$specs = $_d['spec.ds']->Get();
 		$default = isset($cat['spec']) ? $cat['spec'] : 0;
 		$form->AddInput(new FormInput("Details", "select", "spec",
-			DataToSel($specs, 'name', 'id', $default, "None")));
+			DataToSel($specs, 'spec_name', 'spec_id', $default, "None")));
 	}
 
 	function ProductProps($_d, $prod)
@@ -295,9 +357,9 @@ class ModDetail extends Module
 		return $ret;
 	}
 
-	function ProductAddFields(&$_d, $form)
+	function ProductAddFields($_d, $form)
 	{
-		$sprops = QueryPropsByCat($_d, $_d['cc']);
+		$sprops = QueryPropsByCat($_d, @$_SESSION['category']);
 
 		$props = GetVar('props');
 		if (!empty($sprops))
@@ -325,7 +387,7 @@ class ModDetail extends Module
 		}
 	}
 
-	function ProductAddUpdate(&$_d, &$prod, $newid = null)
+	function ProductAddUpdate($_d, $prod, $newid = null)
 	{
 		$props = GetVar('props');
 		$newprops = GetVar('props_new');
@@ -359,9 +421,10 @@ class ModDetail extends Module
 		}
 	}
 
-	function ProductDelete(&$_d)
+	function ProductDelete()
 	{
-		$_d['specpropprod.ds']->Remove(array('product' => GetVar('ci')));
+		global $_d;
+		$_d['specpropprod.ds']->Remove(array('spp_prod' => $_d['q'][2]));
 	}
 
 	function Get()
@@ -380,7 +443,7 @@ class ModDetail extends Module
 			$formProps->AddHidden('ca', 'update_spec');
 			$formProps->AddHidden('ci', GetVar('ci'));
 			$formProps->AddInput(new FormInput('Name', 'text', 'sname',
-				$spec['name']));
+				$spec['spec_name']));
 			$formProps->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Update'));
 			$body = GetBox('box_props', 'View Specification',
@@ -472,7 +535,7 @@ class ModDetail extends Module
 		}
 		else
 		{
-			if ($_d['cs'] != 'detail') return;
+			if ($_d['q'][0] != 'detail') return;
 
 			$GLOBALS['page_section'] = "Specifications";
 			$dsSpecs = $_d['spec.ds'];

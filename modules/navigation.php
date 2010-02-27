@@ -1,25 +1,29 @@
 <?php
 
-RegisterModule('ModNav');
+Module::RegisterModule('ModNav');
 
 function GetLinks($title, $link, $depth = -1)
 {
+	// We have children to process.
+
 	if (is_array($link))
 	{
 		$ret = null;
 
-		if (strlen($title) > 0)
-			$ret = str_repeat('&nbsp;&nbsp;&nbsp;', $depth)."$title<br/>\n";
-		foreach ($link as $t => $l)
-		{
-			$ret .= GetLinks($t, $l, $depth+1);
-		}
+		if (!empty($title))
+			$ret .= "<li><span class=\"nav_header\">{$title}</span><ul>\n";
+		else $ret .= '<ul>';
+		foreach ($link as $t => $l) $ret .= GetLinks($t, $l, $depth+1);
+		if (!empty($title)) $ret .= "</ul></li>\n";
+		else $ret .= '</ul>';
 		return $ret;
 	}
+
+	// No children under this link.
+
 	else
 	{
-		return str_repeat('&nbsp;&nbsp;&nbsp;', $depth).
-		"<a href=\"{$link}\">$title</a><br />\n";
+		return "<li><a href=\"{$link}\">$title</a></li>\n";
 	}
 }
 
@@ -36,11 +40,8 @@ class ModNav extends Module
 
 		$out = null;
 		if (isset($_d['page.links']))
-		{
-			$links = $_d['page.links'];
-			$out .= GetLinks(null, $links);
-		}
-		if (strlen($out) > 0) return GetBox('box_nav', 'Navigation', $out);
+			$out .= GetLinks(null, $_d['page.links']);
+		if (strlen($out) > 0) return $out;
 	}
 }
 

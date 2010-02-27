@@ -1,16 +1,34 @@
 <?php
 
-RegisterModule('ModWishlist');
-
 class ModWishlist extends Module
 {
-	function __construct()
+	function __construct($inst)
 	{
 		global $_d;
 
-		$dsWL = $_d['wishlist.ds'] = new DataSet($_d['db'], 'ype_wishlist');
+		if (!$inst) return;
+
+		$dsWL = $_d['wishlist.ds'] = new DataSet($_d['db'], 'wishlist');
 		$dsWL->ErrorHandler = array(&$this, 'error_db');
 		$dsWL->Shortcut = 'wl';
+	}
+
+	function Install()
+	{
+		$data = <<<EOF
+		CREATE TABLE IF NOT EXISTS `wishlist` (
+  `wl_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `wl_prod` bigint(20) unsigned DEFAULT NULL,
+  `wl_user` bigint(20) unsigned DEFAULT NULL,
+  PRIMARY KEY (`wl_id`),
+  KEY `fk_wl_prod` (`wl_prod`),
+  KEY `fk_wl_user` (`wl_user`),
+  CONSTRAINT `fk_wl_prod` FOREIGN KEY (`wl_prod`) REFERENCES `product` (`prod_id`),
+  CONSTRAINT `fk_wl_user` FOREIGN KEY (`wl_user`) REFERENCES `user` (`usr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED;
+EOF;
+		global $_d;
+		$_d['db']->Queries($data);
 	}
 
 	function Link()
@@ -36,7 +54,7 @@ class ModWishlist extends Module
 
 		global $_d;
 
-		if ($_d['ca'] == 'wishlist_add')
+		if (@$_d['q'][1] == 'wishlist_add')
 		{
 			$dsWL->Add(array(
 				'wl_prod' => $_d['ci'],
@@ -46,11 +64,11 @@ class ModWishlist extends Module
 		}
 	}
 
-	function ProductFooter(&$_d, $prod)
+	function ProductFooter()
 	{
-		return '<a href="{{me}}?ca=wishlist_add&amp;ci='.$prod['prod_id'].'">
+		/*return '<a href="{{me}}?ca=wishlist_add&amp;ci='.$prod['prod_id'].'">
 			<img src="'.$_d['tempath'].'wishlist/star.png"
-			alt="Add to Wishlist" title="Add to Wishlist" /></a>';
+			alt="Add to Wishlist" title="Add to Wishlist" /></a>';*/
 	}
 
 	function error_db($err)
@@ -85,5 +103,7 @@ class ModWishlist extends Module
 		return GetBox('box_wishlist', 'Wishlist', $out);
 	}
 }
+
+Module::RegisterModule('ModWishlist');
 
 ?>

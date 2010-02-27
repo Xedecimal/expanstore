@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("h_main.php");
 

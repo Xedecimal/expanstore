@@ -1,5 +1,5 @@
 <null>
-<script type="text/javascript" src="{{tempath}}cart/cart.js"></script>
+<script type="text/javascript" src="{{tempurl}}cart/cart.js"></script>
 <div id="divCart">
 <cart />
 </div>

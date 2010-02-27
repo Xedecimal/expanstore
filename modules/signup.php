@@ -1,14 +1,23 @@
 <?php
 
-RegisterModule('ModSignup');
+Module::RegisterModule('ModSignup');
 
 class ModSignup extends Module
 {
+	function Link()
+	{
+		global $_d;
+
+		// Attach to User
+
+		$_d['user.callbacks.knee']['signup'] = array(&$this, 'cb_user_knee');
+	}
+
 	function Get()
 	{
 		global $_d;
 
-		if ($_d['cs'] != 'signup') return;
+		if ($_d['q'][0] != 'signup') return;
 
 		$GLOBALS['page_name'] = "Sign Up";
 
@@ -99,6 +108,11 @@ class ModSignup extends Module
 		$formSignup->AddInput('Your password will E-Mailed upon completion.');
 		$formSignup->AddInput(new FormInput(null, 'submit', 'butSubmit', 'Sign Up'));
 		return GetBox("box_signup", "Sign up", $formSignup->Get('action="{{me}}" method="post"'));
+	}
+
+	function cb_user_knee()
+	{
+		return "Not a user? <a href=\"signup\">Sign Up</a><br />\n";
 	}
 }
 

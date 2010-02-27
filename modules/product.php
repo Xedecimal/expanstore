@@ -1,9 +1,5 @@
 <?php
 
-RegisterModule('ModProduct');
-RegisterModule('ModProductList');
-RegisterModule('ModProdsLatest');
-
 function QueryProductList($match = null, $sort = null)
 {
 	global $_d;
@@ -16,17 +12,20 @@ function QueryProductList($match = null, $sort = null)
 	);
 
 	if (!empty($_d['product.ds.columns']))
-		$columns = array_merge($_d['product.ds.columns'], $columns);
+		$q['columns'] = array_merge($_d['product.ds.columns'], $columns);
 
 	if (!empty($_d['product.ds.order']) && !empty($sort))
-		$sort = array_merge($sort, $_d['product.ds.order']);
+		$q['sort'] = array_merge($sort, $_d['product.ds.order']);
 
 	else if (!empty($_d['product.ds.order']))
-		$order = $_d['product.ds.order'];
+		$q['order'] = $_d['product.ds.order'];
 
-	return $_d['product.ds']->Get($match, $sort,
-		$_d['product.ds.count'], $_d['product.ds.joins'], $columns,
-		'prod_id');
+	$q['match'] = $match;
+	$q['limit'] = $_d['product.ds.count'];
+	$q['joins'] = @$_d['product.ds.joins'];
+	$q['group'] = 'prod_id';
+
+	return $_d['product.ds']->Get($q);
 }
 
 function QueryProductDetails($_d, $ci)
@@ -66,12 +65,16 @@ function GetProductImages($id)
 
 class ModProduct extends Module
 {
-	function __construct()
+	function __construct($inst)
 	{
 		global $_d;
 
-		$ds = new DataSet($_d['db'], "ype_product");
+		if (!$inst) return;
+
+		$ds = new DataSet($_d['db'], 'product');
 		$ds->Shortcut = 'p';
+		$ds->ErrorHandler = array(&$this, 'DataError');
+		$this->sql = 'product.sql';
 
 		$_d['product.ds'] = $ds;
 		$_d['product.ds.match'] = array();
@@ -82,6 +85,25 @@ class ModProduct extends Module
 		$_d['product.title'] = 'Products';
 	}
 
+	function Install()
+	{
+		$data = <<<EOF
+CREATE TABLE IF NOT EXISTS `product` (
+  `prod_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `prod_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `prod_name` varchar(100) NOT NULL,
+  `prod_desc` text NOT NULL,
+  `prod_price` float(6,2) NOT NULL DEFAULT '0.00',
+  `prod_modified` datetime NOT NULL,
+  `prod_available` datetime NOT NULL,
+  PRIMARY KEY (`prod_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED;
+EOF;
+
+		global $_d;
+		$_d['db']->Queries($data);
+	}
+
 	function Link()
 	{
 		global $_d;
@@ -90,7 +112,7 @@ class ModProduct extends Module
 
 		if (isset($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
-			$_d['page.links']['Admin']['Products'] = '{{me}}?cs=product';
+			$_d['page.links']['Admin']['Products'] = '{{app_abs}}/product';
 		}
 	}
 
@@ -100,13 +122,14 @@ class ModProduct extends Module
 
 		global $_d;
 
-		if ($_d['cs'] != 'product') return;
+		if ($_d['q'][0] != 'product') return;
 
-		$ca = GetVar('ca');
+		$ca = @$_d['q'][1];
 
 		if ($ca == 'add')
 		{
-			if (!preg_match("/([\d]+\.*[\d]{0,2})*/", GetVar('price', 0), $m))
+			if (!preg_match("/([\d]+\.*[\d]{0,2})*/",
+				GetVar('formProduct_price', 0), $m))
 			{
 				$ca = 'prepare';
 				$error['price'] = "You must specify a numeric price (eg. 52.32)";
@@ -114,30 +137,28 @@ class ModProduct extends Module
 			else
 			{
 				$prod = array(
-					'date' => DeString('NOW()'),
+					'prod_date' => SqlUnquote('NOW()'),
 					'prod_name' => GetVar('formProduct_name'),
-					'description' => GetVar('formProduct_desc'),
-					'model' => GetVar('formProduct_model'),
-					'price' => number_format($m[1], 2),
-					'cat' => GetVar('formProduct_category'),
-					'atrgroup' => GetVar('formProduct_atrg'),
-					'company' => $_d['cl']['company']);
+					'prod_desc' => GetVar('formProduct_desc'),
+					'prod_price' => number_format($m[1], 2));
 
 				$prod['prod_id'] = $_d['product.ds']->Add($prod);
 
-				RunCallbacks($_d['product.callbacks.add'], $_d, $prod, $prod['prod_id']);
+				if (!empty($_d['product.callbacks.add']))
+					RunCallbacks($_d['product.callbacks.add'], $_d, $prod,
+						$prod['prod_id']);
 
 				#xslog($_d, "Added product {$prod['prod_name']} ({$prod['model']})");
 			}
 
 			if (empty($error)) $_d['ca'] = 'view';
 		}
+
 		else if ($ca == 'add_image')
 		{
 			$file = GetVar("frmImages_file");
-			if ($file["size"] > 1048576) die("Image size too large, must be less than 1mb");
+			if ($file["size"] > 1024*1024*5) die("Image size too large, must be less than 5mb");
 
-			#$prod = QueryProduct($_d, $_d['ci']);
 			$images = GetProductImages($_d['ci']);
 
 			$num = count($images);
@@ -147,8 +168,11 @@ class ModProduct extends Module
 
 			CreateProductThumbnails($_d['ci'], $num, $file);
 
-			$_d['ca'] = 'edit';
+			$GLOBALS['_POST']['ci'] = $_d['ci'];
+			$GLOBALS['_POST']['ca'] = 'edit';
+			$GLOBALS['_POST']['cs'] = 'product';
 		}
+
 		else if ($ca == 'remove_image')
 		{
 			$prod = QueryProduct($_d, $_d['ci']);
@@ -169,14 +193,15 @@ class ModProduct extends Module
 			if ($x == 1) DelTree("prodimages/{$prod['prod_id']}/");
 			$_d['ca'] = 'edit';
 		}
-		if ($ca == 'update')
+
+		else if ($ca == 'update')
 		{
-			$ci = GetVar('ci');
+			$ci = $_d['q'][2];
 
 			$cols = array(
-				'prod_name'  => GetVar('formProdProps_name'),
-				'prod_desc'  => GetVar('formProdProps_desc'),
-				'prod_price' => GetVar('formProdProps_price'),
+				'prod_name'  => GetVar('name'),
+				'prod_desc'  => GetVar('desc'),
+				'prod_price' => GetVar('price'),
 			);
 
 			RunCallbacks($_d['product.callbacks.update'], $_d, $cols,
@@ -184,11 +209,12 @@ class ModProduct extends Module
 
 			$_d['product.ds']->Update(array('prod_id' => $ci), $cols);
 
-			#$_d['ca'] = 'view';
+			$_d['q'][1] = 'view';
 		}
+
 		else if ($ca == 'delete')
 		{
-			$ci = GetVar('ci');
+			$ci = $_d['q'][2];
 
 			//Images
 			if (file_exists("prodimages/{$ci}"))
@@ -202,7 +228,8 @@ class ModProduct extends Module
 				rmdir("prodimages/{$ci}");
 			}
 
-			RunCallbacks($_d['product.callbacks.delete'], $_d);
+			if (!empty($_d['product.callbacks.delete']))
+				RunCallbacks($_d['product.callbacks.delete'], $_d);
 
 			//Product
 			$_d['product.ds']->Remove(array('prod_id' => $ci));
@@ -216,15 +243,13 @@ class ModProduct extends Module
 	{
 		global $_d;
 
-		if ($_d['cs'] != 'product') return;
+		if (@$_d['q'][0] != 'product') return;
 
-		$ca = GetVar('ca');
+		$ca = @$_d['q'][1];
 
 		if ($ca == 'view')
 		{
-			$ci = GetVar('ci');
-
-			$_d["page_title"] .= " - View Product";
+			$ci = @$_d['q'][2];
 
 			$ret = '';
 
@@ -235,27 +260,18 @@ class ModProduct extends Module
 			$ret .= RunCallbacks($_d['product.callbacks.details'], $_d,
 				$pt->prods[0]);
 
-			$ret .= $pt->ParseFile($_d['tempath'].'product/details.xml');
+			$ret .= $pt->ParseFile($_d['template_path'].'/product/details.xml');
 
 			return $ret;
 		}
 
 		if ($ca == 'prepare')
 		{
-			$_d['page_title'] .= " - Add Product";
-
-			$cc = GetVar('cc');
-
 			$frmAdd = new Form("formProduct");
-			$frmAdd->AddHidden("cs", "product");
-			$frmAdd->AddHidden("ca", "add");
-			$frmAdd->AddHidden("cc", $cc);
 			$frmAdd->AddInput(new FormInput('Name', 'text', 'name',
 				GetVar('name'), 'style="width: 100%"'));
 			$frmAdd->AddInput(new FormInput('Description', 'area', 'desc',
 				GetVar('desc'), 'cols="30" rows="10"'));
-			$frmAdd->AddInput(new FormInput('Model', 'text', 'model',
-				GetVar('model'), 'style="width: 100%"'));
 			$frmAdd->AddInput(new FormInput('Price', 'text', 'price',
 				GetVar('price'), 'style="width: 100%"',
 				isset($error['price']) ? $error['price'] : null));
@@ -265,29 +281,34 @@ class ModProduct extends Module
 			$frmAdd->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Create Product'));
 			$ret = GetBox('box_create', 'Create Product',
-				$frmAdd->Get('action="{{me}}" method="post" id="formProduct"',
+				$frmAdd->Get('action="{{app_abs}}/product/add" method="post" id="formProduct"',
 				'width="100%"'));
 			return $ret;
 		}
 
 		if ($ca == 'edit')
 		{
-			$_d['page_title'] .= ' - View Product';
-
 			$ret = GetVar("ret");
+			$ci = $_d['q'][2];
 
-			$prod = $_d['product.ds']->Get(array('prod_id' => GetVar('ci')),
-				isset($_d['product.ds.sort'])?$_d['product_ds_sort']:null,
-				isset($_d['product.ds.limit'])?$_d['product_ds_limit']:null,
-				$_d['product.ds.joins']);
+			$query = array(
+				'match' => array('prod_id' => $ci),
+				'sort' => @$_d['product.ds.sort'],
+				'limit' => @$_d['product.ds.limit'],
+				'joins' => @$_d['product.ds.joins']
+			);
+			$prod = $_d['product.ds']->GetOne($query);
 
-			$prod = $prod[0];
+			if (!ModUser::RequestAccess(500))
+			{
+				if (!RequestCompany($prod['comp_id'])) return;
+			}
 
 			$frmViewProd = new Form('formProdProps',
 				array(null, 'width="100%"'));
-			$frmViewProd->AddHidden('cs', GetVar('cs'));
 			$frmViewProd->AddHidden('ca', 'update');
-			$frmViewProd->AddHidden('ci', GetVar('ci'));
+			$frmViewProd->AddHidden('ci', $ci);
+			$frmViewProd->AddHidden('cs', 'product');
 			if ($ret) $frmViewProd->AddHidden('ret', $ret);
 			$frmViewProd->AddInput(new FormInput('Name', 'text', 'name',
 				$prod['prod_name'], 'style="width: 100%"'));
@@ -304,7 +325,7 @@ class ModProduct extends Module
 
 			$body = GetBox('box_props', 'Product Properties for '.
 				$prod['prod_name'],
-				$frmViewProd->Get('action="{{me}}" method="post"',
+				$frmViewProd->Get('action="{{app_abs}}/product/update/'.$ci.'" method="post"',
 				'width="100%"'));
 
 			$images = GetProductImages($prod['prod_id']);
@@ -317,7 +338,8 @@ class ModProduct extends Module
 					$str .= '<td align="center">';
 					$str .= "<a href=\"$set[0]\" target=\"_blank\">
 						<img src=\"$set[1]\" border=\"0\"
-						alt=\"Click to enlarge\" /></a><br/>";
+						alt=\"Click to enlarge\" title=\"Click to enlarge\"
+						/></a><br/>";
 					$str .= "<a href=\"{{me}}?cs={$_d['cs']}&amp;".
 						"ca=remove_image&amp;ci={$prod['prod_id']}&amp;".
 						"image=$x&amp;cc={$_d['cc']}\"".
@@ -333,7 +355,6 @@ class ModProduct extends Module
 			if (count($images) < 5)
 			{
 				$frmImages = new Form('frmImages');
-				$frmImages->AddHidden('cs', GetVar('cs'));
 				$frmImages->AddHidden('ca', 'add_image');
 				$frmImages->AddHidden('ci', GetVar('ci'));
 				$frmImages->AddInput(new FormInput('File', 'file', 'file',
@@ -356,53 +377,7 @@ class ModProduct extends Module
 
 		$pt->prods = $this->GetAdminProducts();
 
-		return $pt->ParseFile($_d['tempath'].'product/listing.xml');
-
-		$cl = $_d['cl'];
-		$GLOBALS['page.title'] = ' - View Products';
-
-		$sort = GetVar('sort');
-		$order = GetVar('order');
-
-		$tblProds = new SortTable('tblProds', array('prod_name' => 'Name',
-			'model' => 'Model', 'cost' => 'Price'));
-
-		$dsProducts = $_d['product.ds'];
-
-		$filter = null;
-		if ($cl['usr_access'] < 500) $filter = array(
-			'company' => $cl['company']);
-
-		if ($sort) $prods = $dsProducts->Get($filter);
-		else $prods = $dsProducts->Get($filter);
-
-		if (is_array($prods))
-		{
-			foreach ($prods as $prod)
-			{
-				$tblProds->AddRow(array(GetLinkProductEdit($prod),
-					$prod['model'], $prod['price'],
-					/*GetLinkProductDelete($prod)*/));
-			}
-		}
-
-		$tblProds->AddRow(array('Total Products: '.
-			$dsProducts->GetCount(array('company' => $cl['company']))));
-		$ret = GetBox("box_products", "Products", $tblProds->Get());
-
-		if (isset($cl->access))
-		{
-			$ret .= "<center>\n";
-			if (isset($cl['company']) && $cl['company'] != 0)
-			{
-				$ret .= "<a href=\""
-				.htmlspecialchars("{{me}}?cs=product&ca=prepare&cc={{cc}}")
-				."\">Add Product</a>\n";
-			}
-			$ret .= "</center>\n";
-		}
-
-		return $ret;
+		return $pt->ParseFile($_d['template_path'].'/product/listing.xml');
 	}
 
 	/**
@@ -418,6 +393,8 @@ class ModProduct extends Module
 			$_d['product.ds.joins']);
 	}
 }
+
+Module::RegisterModule('ModProduct');
 
 class ModProductList extends Module
 {
@@ -441,9 +418,7 @@ class ModProductList extends Module
 
 		$pt->prods = QueryProductList($_d['product.ds.match']);
 
-		$retProds .= $pt->ParseFile($_d['tempath'].'product/fromCatalog.xml');
-
-		$ret .= GetBox("box_prods", $_d['product.title'], $retProds);
+		$ret .= $pt->ParseFile($_d['template_path'].'/product/fromCatalog.xml');
 
 		if (!empty($_d['products.callbacks.footer']))
 			$ret .= RunCallbacks($_d['products.callbacks.footer'], $_d);
@@ -451,6 +426,8 @@ class ModProductList extends Module
 		return $ret;
 	}
 }
+
+Module::RegisterModule('ModProductList');
 
 class ModProdsLatest extends Module
 {
@@ -478,10 +455,11 @@ class ModProdsLatest extends Module
 		$pt->prods = QueryProductList($_d['product.latest.match'], $sort);
 
 		if (empty($pt->prods)) return;
-		return GetBox("box_latest_prods", "Latest Products",
-			$pt->ParseFile($_d['tempath'].'product/fromCatalog.xml'));
+		return $pt->ParseFile($_d['template_path'].'/product/fromCatalog.xml');
 	}
 }
+
+Module::RegisterModule('ModProdsLatest');
 
 class ProductTemplate
 {
@@ -499,7 +477,7 @@ class ProductTemplate
 		$tt->ReWrite('prodneck', array(&$this, 'TagNeck'));
 		$tt->ReWrite('prodprops', array(&$this, 'TagProps'));
 		$tt->ReWrite('prodprop', array(&$this, 'TagProp'));
-		$tt->ReWrite('prodimages', array(&$this, 'TagImages'));
+		$tt->ReWrite('prodimage', array(&$this, 'TagImage'));
 		$tt->ReWrite('proddesc', array(&$this, 'TagDesc'));
 		$tt->ReWrite('prodknee', array(&$this, 'TagKnee'));
 		$tt->ReWrite('prodfoot', array(&$this, 'TagFoot'));
@@ -510,6 +488,7 @@ class ProductTemplate
 		if (!empty($this->prods))
 		foreach ($this->prods as $p)
 		{
+			if (empty($p['prod_name'])) $p['prod_name'] = 'Blank Title';
 			$this->prod = $p;
 			$tt->Set($p);
 			$ret .= $tt->GetString($g);
@@ -542,8 +521,10 @@ class ProductTemplate
 	{
 		global $_d;
 
-		$this->props['Price'] = "\$".$this->prod['prod_price'];
-		if (!empty($this->prod['model'])) $this->props['Model'] = $this->prod['model'];
+		if (!@$_d['settings']['hideanonprice'] || !empty($_d['cl']))
+			$this->props['Price'] = "\$".$this->prod['prod_price'];
+		if (!empty($this->prod['model']))
+			$this->props['Model'] = $this->prod['model'];
 
 		$ret = '';
 
@@ -563,17 +544,21 @@ class ProductTemplate
 		return $ret;
 	}
 
-	function TagImages($t, $guts)
+	function TagImage($t, $g)
 	{
 		$arimages = GetProductImages($this->prod['prod_id']);
 
+		$vp = new VarParser();
 		$imgout = null;
 		if (!empty($arimages))
 		{
 			foreach ($arimages as $image)
 			{
-				$imgout .= "<a href=\"{$image[0]}\" rel=\"shadowbox[{$this->prod['prod_id']}]\">\n";
-				$imgout .= "<img src=\"{$image[1]}\" border=\"0\" alt=\"Click to enlarge\" /></a>\n";
+				$d = $this->prod;
+				$d['large'] = $image[0];
+				$d['medium'] = $image[1];
+				$d['small'] = $image[2];
+				$imgout .= $vp->ParseVars($g, $d);
 			}
 		}
 		return $imgout;
@@ -591,20 +576,6 @@ class ProductTemplate
 		}
 	}
 
-	function TagKnee($t, $guts)
-	{
-		global $_d;
-
-		$knee = null;
-
-		//if ($this->admin) { }
-
-		if (!empty($_d['product.callbacks.knee']))
-			$knee .= RunCallbacks($_d['product.callbacks.knee'], $_d, $this->prod);
-
-		return $knee;
-	}
-
 	function TagFoot($t)
 	{
 		global $_d;
@@ -617,18 +588,18 @@ class ProductTemplate
 	{
 		global $_d;
 
+		if (!$this->admin) return;
+
 		if (!empty($_d['product.callbacks.admin']))
 			if (!RunCallbacks($_d['product.callbacks.admin'], $this->prod))
 				return;
 
-		$this->admin = true;
 		return $g;
 	}
 
 	function TagAdminAnyProduct($t, $g)
 	{
 		if ($this->admin) return $g;
-		return $g;
 	}
 
 	function ParseFile($temp)
@@ -639,7 +610,6 @@ class ProductTemplate
 		$t = new Template();
 		//Properties
 		$t->Set('name', $this->Name);
-		$t->Set('tempath', $_d['tempath']);
 		$t->ReWrite('product', array(&$this, 'TagProduct'));
 		$t->ReWrite('admin_anyproduct', array(&$this, 'TagAdminAnyProduct'));
 		return $t->ParseFile($temp);

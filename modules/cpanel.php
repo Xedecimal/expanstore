@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModCPanel');
+Module::RegisterModule('ModCPanel');
 
 class ModCPanel extends Module
 {
@@ -175,7 +175,7 @@ class ModCPanel extends Module
 		}
 		else
 		{
-			if ($_d['cs'] != 'cpanel') return;
+			if ($_d['q'][0] != 'cpanel') return;
 			$cl = $_d['cl'];
 
 			$frmProfile = new Form("frmProfile");

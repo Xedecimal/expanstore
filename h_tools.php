@@ -1,19 +1,4 @@
-<?
-
-function GetLinkProductEdit($prod)
-{
-	return "<a href=\"{{me}}?cs=product&ca=edit&ci={$prod['prod_id']}\"> {$prod['name']} </a>";
-}
-
-function GetLinkCompanyEdit($company)
-{
-	return "<a href=\"{{me}}?cs=admin&ca=view_company&ci={$company['id']}\"> {$company['name']} </a>";
-}
-
-function GetLinkUserEdit($user)
-{
-	return "<a href=\"{{me}}?cs=admin&ca=view_user&ci={$user['id']}\"> {$user['name']} </a>";
-}
+<?php
 
 function GetData($data, $name, $default)
 {

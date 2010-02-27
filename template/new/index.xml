@@ -3,30 +3,19 @@
 <html>
 <head>
 	<title> {{settings.site_name}}{{page_title}} </title>
-	<link href="template/{{settings.site_template}}/screen.css" rel="stylesheet" type="text/css"/>
-	<script type="text/javascript" src="xedlib/js/jquery.js"></script>
-	<script type="text/javascript" src="xedlib/js/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="xedlib/js/shadowbox-jquery.js" />
-	<script type="text/javascript" src="xedlib/js/shadowbox.js" />
-	<script type="text/javascript">
-	$(document).ready(function () {
-		Shadowbox.init({
-			handleLgImages: 'drag',
-			animate: false
-		});
-	});
-	</script>
-	<link href="xedlib/css/shadowbox.css" rel="stylesheet" type="text/css" />
+	<link href="{{tempurl}}screen.css" rel="stylesheet" type="text/css"/>
+	<script type="text/javascript" src="{{root}}/xedlib/js/jquery.js"></script>
+	<script type="text/javascript" src="{{root}}/xedlib/js/jquery-ui.min.js"></script>
 </head>
 <body>
-<a href="index.php"><img src="images/logo.png" border="0" alt="Logo"/></a>
+<a href="index.php"><img src="{{root}}/images/logo.png" border="0" alt="Logo"/></a>
 
 <table border="0" width="100%">
 	<tr><td valign="top" width="200">
 		<block name="left" />
 	</td>
 	<td valign="top">
-		<block name="middle">MIDDLE BLOCK</block>
+		<block name="default" />
 	</td><td valign="top">
 		<block name="right">RIGHT BLOCK</block>
 	</td></tr>

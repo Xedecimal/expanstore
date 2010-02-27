@@ -1,31 +1,57 @@
 <?php
 
-RegisterModule('ModTemplate');
-
 global $_d;
 
-$_d['tempath'] =
-	'template/'.$_d['settings']['site_template'].'/';
+if (!isset($_d['settings']['site_template'])) $_d['settings']['site_template'] = 'new';
+$_d['template_path'] = 'template/'.$_d['settings']['site_template'];
+$_d['template_url'] = $_d['app_abs'].'/template/'.$_d['settings']['site_template'];
 
 function TemplateCheck()
 {
 	global $_d;
-	if (!isset($_d['settings']['site_template']))
-		$_d['settings']['site_template'] = 'new';
+	if (!isset($_d['settings']['site_template'])) $_d['settings']['site_template'] = 'new';
 }
 
 class ModTemplate extends Module
 {
+	function __construct($inst)
+	{
+		global $_d;
+
+		$_d['index.cb.prelink']['template'] = array(&$this, 'cb_index_prelink');
+		$_d['index.cb.get']['template'] = array(&$this, 'cb_index_get');
+	}
+
+	function cb_index_prelink()
+	{
+		global $_d, $mods;
+
+		foreach ($mods as $mod)
+		{
+			$modname = get_class($mod);
+			if (isset($_d['settings']['blocks'][$modname]))
+				$mod->Block = $_d['settings']['blocks'][$modname];
+		}
+	}
+
+	function cb_index_get($mod)
+	{
+		@$GLOBALS['_d']['blocks'][$mod->Block] .= $mod->Get();
+	}
+
 	function Link()
 	{
 		global $_d;
 
 		// Attach to Navigation
 
-		$_d['page.links']['Admin']['Template'] = '{{me}}?cs=template';
+		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
+			$_d['page.links']['Admin']['Template'] = '{{me}}?cs=template';
 
-		#$_d['admin.callbacks.settings'][] = array(&$this, 'AdminSettings');
-		#$_d['admin.callbacks.setup'][] = array(&$this, 'AdminSetup');
+		// Attach to Administration
+
+		$_d['admin.callbacks.settings'][] = array(&$this, 'AdminSettings');
+		$_d['admin.callbacks.setup'][] = array(&$this, 'AdminSetup');
 	}
 
 	function Prepare()
@@ -34,13 +60,14 @@ class ModTemplate extends Module
 
 		global $_d;
 
-		if ($_d['cs'] != 'template') return;
+		if (@$_d['q'][0] != 'template') return;
 
 		$ca = $_d['ca'];
 
 		if ($ca == 'blocks')
 		{
 			$_d['settings']['blocks'] = GetVar('blocks');
+			$_d['settings']['priority'] = GetVar('priority');
 			file_put_contents('settings.txt', serialize($_d['settings']));
 		}
 	}
@@ -49,7 +76,7 @@ class ModTemplate extends Module
 	{
 		global $_d, $mods;
 
-		if ($_d['cs'] != 'template') return;
+		if (@$_d['q'][0] != 'template') return;
 
 		$bnames = ArrayToSelOptions(array_keys($_d['blocks']), null, false);
 
@@ -57,17 +84,20 @@ class ModTemplate extends Module
 		$ret .= '<input type="hidden" name="cs" value="template" />';
 		$ret .= '<input type="hidden" name="ca" value="blocks" />';
 		$ret .= '<table>';
-		$ret .= '<tr><th>Module</th><th>Location</th></tr>';
+		$ret .= '<tr><th>Module</th><th>Location</th><th>Priority</th></tr>';
 		foreach ($mods as $mod)
 		{
 			$name = get_class($mod);
 
 			if (isset($_d['settings']['blocks'][$name]))
 				$sel = $_d['settings']['blocks'][$name];
+			else $sel = 'default';
 
 			$sel = MakeSelect(array('name' => "blocks[{$name}]"), $bnames, $sel);
+			$pri = @$_d['settings']['priority'][$name];
 			$ret .= "<tr><td>{$name}</td>";
 			$ret .= "<td>{$sel}</td>";
+			$ret .= "<td><input type=\"text\" name=\"priority[$name]\" value=\"{$pri}\" /></td>";
 			$ret .= '</tr>';
 		}
 		$ret .= '</table>';
@@ -84,7 +114,8 @@ class ModTemplate extends Module
 
 	function AdminSetup()
 	{
-		$settings['template'] = GetVar('template');
+		global $_d;
+		$_d['settings']['site_template'] = GetVar('settings_template');
 	}
 
 	function GetTemps()
@@ -103,5 +134,7 @@ class ModTemplate extends Module
 		return $temps;
 	}
 }
+
+Module::RegisterModule('ModTemplate');
 
 ?>

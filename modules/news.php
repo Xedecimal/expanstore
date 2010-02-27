@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModNews');
+Module::RegisterModule('ModNews');
 
 function QueryNewsLatest(&$_d, $start = 0, $amount = 5)
 {
@@ -14,9 +14,11 @@ function QueryNewsLatest(&$_d, $start = 0, $amount = 5)
 
 class ModNews extends Module
 {
-	function __construct()
+	function __construct($inst)
 	{
 		global $_d;
+
+		if (!$inst) return;
 
 		$ds = new DataSet($_d['db'], 'ype_news');
 		$ds->ErrorHandler = array($this, 'DataError');
@@ -49,7 +51,7 @@ class ModNews extends Module
 		{
 			$_d['news.ds']->Add(array(
 				'news_company' => $_d['cl']['company'],
-				'news_date' => DeString('NOW()'),
+				'news_date' => SqlUnquote('NOW()'),
 				'news_subject' => GetVar("subject"),
 				'news_message' => GetVar("body")
 			));

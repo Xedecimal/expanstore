@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModShip');
+Module::RegisterModule('ModShip');
 
 class ModShip extends Module
 {

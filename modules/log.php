@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModLog');
+Module::RegisterModule('ModLog');
 
 $GLOBALS['log_types'] = array('Information');
 
@@ -20,6 +20,25 @@ function xslog(&$_d, $msg, $level = 0)
 
 class ModLog extends Module
 {
+	function Install()
+	{
+		$queries = <<<EOF
+CREATE IF NOT EXISTS TABLE `log` (
+  `log_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `log_date` datetime DEFAULT NULL,
+  `log_level` int(10) unsigned NOT NULL DEFAULT '0',
+  `log_company` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `log_user` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `log_message` mediumtext NOT NULL,
+  PRIMARY KEY (`log_id`) USING BTREE,
+  KEY `idxCompany` (`log_company`) USING BTREE,
+  KEY `idxUser` (`log_user`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+EOF;
+
+		$GLOBALS['_d']['db']->Queries($queries);
+	}
+
 	function Prepare()
 	{
 		parent::Prepare();
@@ -40,7 +59,7 @@ class ModLog extends Module
 	{
 		global $log_types, $me, $_d;
 
-		if ($_d['cs'] != 'log') return;
+		if ($_d['q'][0] != 'log') return;
 
 		$sort = GetVar("sort", "log_date");
 		$order = GetVar("order", "DESC");
