@@ -5,12 +5,13 @@ Module::RegisterModule('ModCategoryAdmin');
 
 function QueryCat(&$_d, $id)
 {
-	$ds = $_d['category.ds'];
+	global $_d;
+
 	$q = array(
 		'match' => array('cat_id' => $id),
 		'joins' => $_d['category.ds.joins']
 	);
-	return $ds->GetOne($q);
+	return $_d['category.ds']->GetOne($q);
 }
 
 function QueryCats($_d, $parent, $include_hidden = true)
