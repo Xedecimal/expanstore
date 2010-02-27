@@ -23,6 +23,9 @@ $_d['app_rel'] = '';
 
 if (file_exists('settings.ini')) $_d['settings'] = parse_ini_file('settings.ini');
 
+foreach (explode(',', $_d['settings']['module.disable']) as $m)
+	$_d['module.disable'][$m] = true;
+
 $_d['db'] = new Database();
 $_d['db']->Open($_d['settings']['data_location']);
 
