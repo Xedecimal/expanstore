@@ -1,0 +1,9 @@
+<html doctype="trans">
+<head>
+<title>XStore Installation</title>
+<link rel="stylesheet" type="text/css" href="install.css" />
+</head>
+<body>
+<installform />
+</body>
+</html>
