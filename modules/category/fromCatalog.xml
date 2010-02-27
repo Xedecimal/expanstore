@@ -1,0 +1,29 @@
+<null>
+<notempty var="cats">
+
+<ul class="ulCats">
+<category>
+<li class="liCat" id="liCategory.{{cat_id}}">
+<div class="divCat" id="divCat_{{cat_id}}">
+<a class="aCat" id="aCat_{{cat_id}}" href="{{app_abs}}?cc={{cat_id}}">{{cat_name}}</a>
+<admin>
+<a class="aCatEdit" id="aCatEdit_{{cat_id}}"
+	href="{{app_abs}}?cs=category&amp;ca=edit&amp;ci={{cat_id}}"
+	title="Edit">Edit</a>
+<a href="#" class="aCatDelete" id="aCatDelete_{{cat_id}}"
+	title="Delete">Delete</a>
+</admin>
+</div>
+</li>
+</category>
+</ul>
+
+</notempty>
+
+<admin>
+<a href="{{me}}?cs=category&amp;ca=prepare&amp;cc={{cc}}">Create Category</a>
+</admin>
+
+<script type="text/javascript" src="{{template_url}}/category/js.js"></script>
+
+</null>
