@@ -241,7 +241,7 @@ EOF;
 		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
 			$_d['page.links']['Admin']['Product Details'] =
-				htmlspecialchars("{{me}}?cs=detail");
+				"{{app_abs}}/detail";
 		}
 
 		// Attach to Product.
@@ -431,9 +431,9 @@ EOF;
 	{
 		global $me, $_d;
 
-		$ca = GetVar('ca');
+		if ($_d['q'][0] != 'detail') return;
 
-		if ($ca == "view_spec")
+		if (@$_d['q'][1] == "view_spec")
 		{
 			$spec = QuerySpec($_d, GetVar('ci'));
 
@@ -514,7 +514,7 @@ EOF;
 			}
 			return $body;
 		}
-		else if ($ca == "view_spec_prop")
+		else if (@$_d['q'][1] == "view_spec_prop")
 		{
 			global $prop_types;
 			$prop = QuerySpecProp($_d, GetVar('ci'));
@@ -535,12 +535,15 @@ EOF;
 		}
 		else
 		{
-			if ($_d['q'][0] != 'detail') return;
-
-			$GLOBALS['page_section'] = "Specifications";
 			$dsSpecs = $_d['spec.ds'];
 
-			$specs = $dsSpecs->Get('spec_company', $_d['cl']['c2u_company']);
+			$q = array(
+				'match' => array(
+					'spec_company' => $_d['cl']['c2u_company']
+				)
+			);
+
+			$specs = $dsSpecs->Get($q);
 			$out = "";
 
 			//Attribute Groups

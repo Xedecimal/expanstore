@@ -46,7 +46,7 @@ class ModTemplate extends Module
 		// Attach to Navigation
 
 		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
-			$_d['page.links']['Admin']['Template'] = '{{me}}?cs=template';
+			$_d['page.links']['Admin']['Display'] = '{{app_abs}}/display';
 
 		// Attach to Administration
 
@@ -60,11 +60,9 @@ class ModTemplate extends Module
 
 		global $_d;
 
-		if (@$_d['q'][0] != 'template') return;
+		if (@$_d['q'][0] != 'display') return;
 
-		$ca = $_d['ca'];
-
-		if ($ca == 'blocks')
+		if (@$_d['q'][1] == 'update')
 		{
 			$_d['settings']['blocks'] = GetVar('blocks');
 			$_d['settings']['priority'] = GetVar('priority');
@@ -76,13 +74,11 @@ class ModTemplate extends Module
 	{
 		global $_d, $mods;
 
-		if (@$_d['q'][0] != 'template') return;
+		if (@$_d['q'][0] != 'display') return;
 
 		$bnames = ArrayToSelOptions(array_keys($_d['blocks']), null, false);
 
-		$ret = '<form action="{{me}}" method="post">';
-		$ret .= '<input type="hidden" name="cs" value="template" />';
-		$ret .= '<input type="hidden" name="ca" value="blocks" />';
+		$ret = '<form action="{{app_abs}}/display/update" method="post">';
 		$ret .= '<table>';
 		$ret .= '<tr><th>Module</th><th>Location</th><th>Priority</th></tr>';
 		foreach ($mods as $mod)

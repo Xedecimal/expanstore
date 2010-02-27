@@ -133,8 +133,7 @@ class ModUserAdmin extends Module
 
 		if ($_d['cl']['usr_access'] > 500)
 		{
-			$_d['page.links']['Admin']['Users'] =
-				'{{me}}?cs=user&amp;class=userdisplay&amp;ca=admin';
+			$_d['page.links']['Admin']['Users'] = '{{app_abs}}/user';
 
 			$dsUser = $_d['user.ds'];
 			$dsUser->Description = 'User';
@@ -160,13 +159,13 @@ class ModUserAdmin extends Module
 		global $_d;
 		if ($_d['q'][0] != 'user') return;
 
-		$_d['page_title'] .= 'User Administration';
-
 		$dsUser = $_d['user.ds'];
 
 		$dsUser->joins = array_merge($dsUser->joins, $_d['user.ds.joins']);
 		$edUsers = new EditorData('user', $dsUser);
-		foreach ($_d['user.ds.handlers'] as $h) $edUsers->AddHandler($h);
+		if (!empty($_d['user.ds.handlers']))
+			foreach ($_d['user.ds.handlers'] as $h)
+				$edUsers->AddHandler($h);
 		$edUsers->Prepare();
 		return $edUsers->GetUI('cs');
 	}

@@ -126,7 +126,7 @@ EOF;
 		if (isset($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
 			$_d['page.links']['Admin']['Companies'] =
-				'{{me}}?cs=company';
+				'{{app_abs}}/company';
 		}
 
 		if (isset($_d['cl']['company']))
@@ -186,8 +186,6 @@ EOF;
 
 		if ($_d['q'][0] != 'company') return;
 
-		$_d['page_title'] .= ' - Company';
-
 		$ca = GetVar('ca');
 
 		if ($ca == 'view')
@@ -231,9 +229,6 @@ EOF;
 
 			return $ret;
 		}
-
-		$_d['page_title'] .= ' - Company Administration';
-		$GLOBALS['page_section'] = 'Companies';
 
 		$edCompany = new EditorData('company', $_d['company.ds']);
 		$edCompany->Prepare();

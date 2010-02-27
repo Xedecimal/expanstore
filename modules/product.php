@@ -245,9 +245,7 @@ EOF;
 
 		if (@$_d['q'][0] != 'product') return;
 
-		$ca = @$_d['q'][1];
-
-		if ($ca == 'view')
+		if (@$_d['q'][1] == 'view')
 		{
 			$ci = @$_d['q'][2];
 
@@ -264,8 +262,7 @@ EOF;
 
 			return $ret;
 		}
-
-		if ($ca == 'prepare')
+		else if (@$_d['q'][1] == 'prepare')
 		{
 			$frmAdd = new Form("formProduct");
 			$frmAdd->AddInput(new FormInput('Name', 'text', 'name',
@@ -285,8 +282,7 @@ EOF;
 				'width="100%"'));
 			return $ret;
 		}
-
-		if ($ca == 'edit')
+		else if (@$_d['q'][1] == 'edit')
 		{
 			$ret = GetVar("ret");
 			$ci = $_d['q'][2];
@@ -355,28 +351,25 @@ EOF;
 			if (count($images) < 5)
 			{
 				$frmImages = new Form('frmImages');
-				$frmImages->AddHidden('ca', 'add_image');
 				$frmImages->AddHidden('ci', GetVar('ci'));
 				$frmImages->AddInput(new FormInput('File', 'file', 'file',
 					null, 'size="50"'));
 				$frmImages->AddInput(new FormInput(null, 'submit', 'butSubmit',
 					'Upload'));
 				$body .= GetBox('box_upload', 'Upload Product Image',
-					$frmImages->Get('action="{{me}}" method="post"'));
+					$frmImages->Get('action="{{app_abs}}/product/image/add/'.
+						$_d['q'][2].'" method="post"'));
 			}
 
 			return $body;
 		}
-
-		else if ($ca == 'check')
+		else if (@$_d['q'][1] == 'check')
 		{
 			$dsp = $_d['product.ds'];
 		}
 
 		$pt = new ProductTemplate('admin');
-
 		$pt->prods = $this->GetAdminProducts();
-
 		return $pt->ParseFile($_d['template_path'].'/product/listing.xml');
 	}
 
