@@ -1,6 +1,13 @@
-<?
+<?php
 
-RegisterModule('ModCompany');
+function RequestCompany($comp)
+{
+	global $_d;
+
+	if (empty($_d['cl']['comp_id'])) return false;
+	if ($_d['cl']['comp_id'] == $comp) return true;
+	return false;
+}
 
 function eCompany_Email_Callback($ds, $item, $column)
 {
@@ -25,13 +32,16 @@ function QueryCompany($id)
 */
 class ModCompany extends Module
 {
-	function __construct()
+	function __construct($inst)
 	{
 		global $_d;
 
-		$dsCompany = new DataSet($_d['db'], 'ype_company', 'comp_id');
+		if (!$inst) return;
+
+		$dsCompany = new DataSet($_d['db'], 'company', 'comp_id');
 		$dsCompany->Shortcut = 'c';
 		$dsCompany->Description = 'Company';
+		$dsCompany->ErrorHandler = array(&$this, 'DataError');
 
 		$dsCompany->DisplayColumns = array(
 			'comp_name' => new DisplayColumn('Name'),
@@ -54,13 +64,57 @@ class ModCompany extends Module
 
 		// dsCompProd
 
-		$dsCompProd = new DataSet($_d['db'], 'ype_comp_prod');
+		$dsCompProd = new DataSet($_d['db'], 'comp_prod');
 		$_d['compprod.ds'] = $dsCompProd;
 
 		// dsC2U
 
-		$dsCompUser = new DataSet($_d['db'], 'ype_comp_user');
+		$dsCompUser = new DataSet($_d['db'], 'comp_user');
 		$_d['compuser.ds'] = $dsCompUser;
+	}
+
+	function Install()
+	{
+		$data = <<<EOF
+CREATE TABLE IF NOT EXISTS `company` (
+  `comp_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `comp_name` varchar(100) NOT NULL,
+  `comp_email` varchar(100) NOT NULL,
+  `comp_contact` varchar(100) NOT NULL,
+  `comp_address` varchar(100) NOT NULL,
+  `comp_city` varchar(100) NOT NULL,
+  `comp_state` varchar(100) NOT NULL,
+  `comp_zip` varchar(100) NOT NULL,
+  `comp_phone` varchar(100) NOT NULL,
+  `comp_about` mediumtext NOT NULL,
+  PRIMARY KEY (`comp_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `comp_prod` (
+  `cp_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `cp_comp` bigint(20) unsigned NOT NULL,
+  `cp_prod` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`cp_id`),
+  KEY `fk_cp_comp` (`cp_comp`),
+  KEY `fk_cp_prod` (`cp_prod`),
+  CONSTRAINT `fk_cp_comp` FOREIGN KEY (`cp_comp`) REFERENCES `company` (`comp_id`),
+  CONSTRAINT `fk_cp_prod` FOREIGN KEY (`cp_prod`) REFERENCES `product` (`prod_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `comp_user` (
+  `c2u_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `c2u_company` bigint(20) unsigned NOT NULL,
+  `c2u_user` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`c2u_id`),
+  UNIQUE KEY `idxUnique` (`c2u_company`,`c2u_user`),
+  KEY `idxCompany` (`c2u_company`),
+  KEY `idxUser` (`c2u_user`),
+  CONSTRAINT `fk_c2u_company` FOREIGN KEY (`c2u_company`) REFERENCES `company` (`comp_id`),
+  CONSTRAINT `fk_c2u_user` FOREIGN KEY (`c2u_user`) REFERENCES `user` (`usr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+EOF;
+		global $_d;
+		$_d['db']->Queries($data);
 	}
 
 	function Link()
@@ -86,13 +140,13 @@ class ModCompany extends Module
 		$_d['user.ds.joins']['compuser'] =
 			new Join($_d['compuser.ds'], 'c2u_user = usr_id', 'LEFT JOIN');
 
-		if ($_d['cl']['usr_access'] > 500)
+		/*if ($_d['cl']['usr_access'] > 500)
 		{
 			$_d['user.ds.handlers']['company'] = new CompanyUserHandler();
 			$sels = DataToSel(QueryCompanies(), 'comp_name', 'comp_id', 0, 'None');
 			$_d['user.ds']->FieldInputs['c2u_company'] =
 				new FormInput('Company', 'select', null, $sels);
-		}
+		}*/
 
 		// Connect to Product.
 
@@ -130,7 +184,7 @@ class ModCompany extends Module
 	{
 		global $_d;
 
-		if ($_d['cs'] != 'company') return;
+		if ($_d['q'][0] != 'company') return;
 
 		$_d['page_title'] .= ' - Company';
 
@@ -198,6 +252,8 @@ class ModCompany extends Module
 		}
 	}
 }
+
+Module::RegisterModule('ModCompany');
 
 class CompanyUserHandler extends EditorHandler
 {

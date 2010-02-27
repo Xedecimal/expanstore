@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModSale');
+Module::RegisterModule('ModSale');
 
 define('SALE_STATE_ORDERED', 0);
 define('SALE_STATE_FAILED', 1);
@@ -19,17 +19,24 @@ function GetStateName($id)
 
 class ModSale extends Module
 {
-	function Prepare()
+	function Link()
 	{
-		parent::Prepare();
-
-		global $_d;
+		// Attach to Navigation
 
 		if (isset($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
 			$_d['page.links']['Admin']['Sales']
 				= htmlspecialchars("{{me}}?cs=sale");
 		}
+	}
+
+	function Prepare()
+	{
+		parent::Prepare();
+
+		global $_d;
+		if (@$_d['q'][0] != 'sale') return;
+
 		if ($_d['ca'] == 'update')
 		{
 			$dsPackage = $_d['package.ds'];
@@ -47,7 +54,7 @@ class ModSale extends Module
 	{
 		global $_d;
 
-		if ($_d['cs'] != 'sale') return;
+		if ($_d['q'][0] != 'sale') return;
 
 		$GLOBALS["page_section"] = 'Sales';
 

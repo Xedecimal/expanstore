@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModPayment');
+Module::RegisterModule('ModPayment');
 
 class ModPayment extends Module
 {
@@ -73,7 +73,8 @@ class ModPayment extends Module
 			$cname = "Pay{$pt}";
 			$mod = new $cname;
 
-			return GetBox("box_check", "Checking payment module: " . $mod->GetName(), $mod->GetCheck());
+			return GetBox("box_check", "Checking payment module: ".
+				$mod->GetName(), $mod->GetCheck());
 		}
 
 		if ($ca == "pay_repair")

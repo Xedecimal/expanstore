@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModImportOsc');
+Module::RegisterModule('ModImportOsc');
 
 class ModImportOsc extends Module
 {
@@ -15,16 +15,16 @@ class ModImportOsc extends Module
 
 	function Link()
 	{
-		if (AccessRequire(500))
-			$_d['page.links']['Admin']['osCommerce Import'] =
-				'{{me}}?cs=oscimport&amp;class=oscimport&amp;ca=admin';
+		#if (AccessRequire(500))
+		#	$_d['page.links']['Admin']['osCommerce Import'] =
+		#		'{{me}}?cs=oscimport&amp;class=oscimport&amp;ca=admin';
 	}
 
 	function Get()
 	{
 		global $_d;
 
-		if ($_d['cs'] != 'importosc') return;
+		if ($_d['q'][0] != 'importosc') return;
 
 		$ca = $_d['ca'];
 

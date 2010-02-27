@@ -1,7 +1,6 @@
 <?php
 
-RegisterModule('ModAttribute');
-RegisterModule('ModAtrAssign');
+Module::RegisterModule('ModAttribute');
 
 function QueryAtrgs($match = null)
 {
@@ -10,7 +9,7 @@ function QueryAtrgs($match = null)
 	/** @var DataSet */
 	$ds = $_d['atrg.ds'];
 
-	return $ds->Get($match, null, null, $_d['atrg.ds.joins']);
+	return $ds->Get(array('match' => $match, 'joins' => $_d['atrg.ds.joins']));
 }
 
 function QueryAttributes(&$_d, $atrg)
@@ -39,42 +38,115 @@ function QueryAttributes(&$_d, $atrg)
 	if (!empty($_d['attribute.joins']))
 		$joins = array_merge($joins, $_d['attribute.joins']);
 
-	return $_d['atrg.ds']->Get(array('atrg_id' => $atrg), array('atr_id' => 'ASC'), null,
-		$joins, $columns);
+	$q = array(
+		'match' => array('atrg_id' => $atrg),
+		'order' => array('atr_id' => 'ASC'),
+		'joins' => $joins,
+		'columns' => $columns
+	);
+	return $_d['atrg.ds']->Get($q);
 }
 
 class ModAttribute extends Module
 {
-	function __construct()
+	function __construct($installed)
 	{
+		if (!$installed) return;
+
 		global $_d;
 
 		// dsAtrg
 
-		$dsAtrg = new DataSet($_d['db'], 'ype_atrgroup', 'atrg_id');
+		$dsAtrg = new DataSet($_d['db'], 'atrgroup', 'atrg_id');
 		$dsAtrg->Shortcut = 'atrg';
 		$_d['atrg.ds'] = $dsAtrg;
 
-		$dsAg2p = new DataSet($_d['db'], 'ype_atrg_prod', 'ag2p_id');
+		$dsAg2p = new DataSet($_d['db'], 'atrg_prod', 'ag2p_id');
 		$_d['ag2p.ds'] = $dsAg2p;
 
 		// dsAttrib
 
-		$dsAttrib = new DataSet($_d['db'], "ype_attribute");
+		$dsAttrib = new DataSet($_d['db'], "attribute");
 		$dsAttrib->Shortcut = 'attrib';
 		$_d['attribute.ds'] = $dsAttrib;
 
 		// dsOption
 
-		$dsOption = new DataSet($_d['db'], "ype_option");
+		$dsOption = new DataSet($_d['db'], "option");
 		$dsOption->Shortcut = 'o';
 		$_d['option.ds'] = $dsOption;
 
 		// dsCartOption
 
-		$dsCartOption = new DataSet($_d['db'], "ype_cart_option");
+		$dsCartOption = new DataSet($_d['db'], "cart_option");
 		$dsCartOption->Shortcut = 'co';
 		$_d['cartoption.ds'] = $dsCartOption;
+	}
+
+	function Install()
+	{
+		global $_d;
+
+		$data = <<<EOF
+CREATE TABLE IF NOT EXISTS `atrgroup` (
+  `atrg_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `atrg_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `atrg_name` varchar(60) NOT NULL,
+  PRIMARY KEY (`atrg_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `atrg_prod` (
+  `ag2p_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `ag2p_atrg` bigint(20) unsigned NOT NULL,
+  `ag2p_prod` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`ag2p_id`),
+  KEY `idxAtrg` (`ag2p_atrg`),
+  KEY `idxProd` (`ag2p_prod`),
+  CONSTRAINT `fk_ag2p_atrg` FOREIGN KEY (`ag2p_atrg`) REFERENCES `atrgroup` (`atrg_id`),
+  CONSTRAINT `fk_ag2p_prod` FOREIGN KEY (`ag2p_prod`) REFERENCES `product` (`prod_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `attribute` (
+  `atr_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `atr_date` datetime DEFAULT NULL,
+  `atr_atrg` bigint(20) unsigned NOT NULL,
+  `atr_name` varchar(60) NOT NULL,
+  `atr_type` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`atr_id`) USING BTREE,
+  KEY `idxAtrg` (`atr_atrg`) USING BTREE,
+  CONSTRAINT `fkAttribGroup` FOREIGN KEY (`atr_atrg`) REFERENCES `atrgroup` (`atrg_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `option` (
+  `opt_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `opt_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `opt_attrib` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `opt_name` varchar(60) NOT NULL,
+  `opt_formula` varchar(255) NOT NULL,
+  PRIMARY KEY (`opt_id`) USING BTREE,
+  KEY `idxAttrib` (`opt_attrib`) USING BTREE,
+  CONSTRAINT `fkOptionAttrib` FOREIGN KEY (`opt_attrib`) REFERENCES `attribute` (`atr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `cart_option` (
+  `carto_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `carto_cart` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `carto_item` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `carto_attribute` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `carto_option` bigint(20) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`carto_id`) USING BTREE,
+  KEY `idxCart` (`carto_cart`) USING BTREE,
+  KEY `idxCartItem` (`carto_item`) USING BTREE,
+  KEY `idxAttribute` (`carto_attribute`) USING BTREE,
+  KEY `idxOption` (`carto_option`) USING BTREE,
+  CONSTRAINT `fkCartoAttr` FOREIGN KEY (`carto_attribute`) REFERENCES `attribute` (`atr_id`),
+  CONSTRAINT `fkCartoCart` FOREIGN KEY (`carto_cart`) REFERENCES `cart` (`cart_id`),
+  CONSTRAINT `fkCartoItem` FOREIGN KEY (`carto_item`) REFERENCES `cart_item` (`ci_id`),
+  CONSTRAINT `fkCartoOption` FOREIGN KEY (`carto_option`) REFERENCES `option` (`opt_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+EOF;
+
+		$_d['db']->Queries($data);
 	}
 
 	function Link()
@@ -142,7 +214,7 @@ class ModAttribute extends Module
 
 		global $_d;
 
-		if ($_d['cs'] != 'attribute') return;
+		if (@$_d['q'][0] != 'attribute') return;
 
 		if ($ca == 'update' || $ca == 'create' || $ca == 'delete')
 		{
@@ -160,8 +232,7 @@ class ModAttribute extends Module
 				$insert['atr_name'] = GetVar('atr_name');
 				$insert['atr_type'] = GetVar('atr_type');
 				$res['name'] = $insert['atr_name'];
-				if ($ca == 'create')
-					$insert['atr_atrg'] = GetVar('parent');
+				if ($ca == 'create') $insert['atr_atrg'] = GetVar('parent');
 				$matchcol = 'atr_id';
 				$dsname = 'attribute.ds';
 			}
@@ -199,7 +270,7 @@ class ModAttribute extends Module
 		if ($ca == "atrg_create")
 		{
 			$dsAtrgs->Add(array(
-				'date' => Destring("NOW()"),
+				'date' => SqlUnquote("NOW()"),
 				'company' => $_d['cl']['company'],
 				'name' => GetVar("name")
 			));
@@ -212,7 +283,7 @@ class ModAttribute extends Module
 			if ($sel[0] == "atrg")
 			{
 				$dsAttribs->Add(array(
-					'date' => Destring('NOW()'),
+					'date' => SqlUnquote('NOW()'),
 					'atrg' => $sel[1],
 					'name' => GetVar("name")));
 				xslog($_d, "Added attribute " . GetVar("name") . " to {$sel[1]}");
@@ -221,7 +292,7 @@ class ModAttribute extends Module
 			else if ($sel[0] == "attrib")
 			{
 				$dsOptions->Add(array(
-					'date' => Destring('NOW()'),
+					'date' => SqlUnquote('NOW()'),
 					'attrib' => $sel[1],
 					'name' => GetVar("name"),
 					'formula' => GetVar("formula")));
@@ -230,7 +301,7 @@ class ModAttribute extends Module
 			else
 			{
 				$name = GetVar("name");
-				$dsAtrgs->Add(array(Destring("NULL"), $name, $cl->company->id));
+				$dsAtrgs->Add(array(SqlUnquote("NULL"), $name, $cl->company->id));
 				xslog($_d, "Added attribute group $name");
 			}
 			$_d['ca'] = 'view_atrgs';
@@ -313,7 +384,7 @@ class ModAttribute extends Module
 		global $_d;
 
 		global $me;
-		$ca = $_d['ca'];
+		$ca = @$_d['q'][1];
 
 		if ($ca == "view_atrgs")
 		{
@@ -328,7 +399,7 @@ class ModAttribute extends Module
 
 		if ($ca == 'getatrg')
 		{
-			$atrs = $_d['attribute.ds']->Get(array('atr_atrg' => GetVar('ci')));
+			$atrs = $_d['attribute.ds']->Get(array('match' => array('atr_atrg' => GetVar('ci'))));
 			$xml = simplexml_load_file($_d['tempath'].'attribute/index.xml');
 			$e = $xml->xpath('//attribs');
 			$tt = new Template();
@@ -346,6 +417,7 @@ class ModAttribute extends Module
 		global $_d;
 		$atrgs = $_d['atrg.ds']->Get();
 
+		if (!empty($atrgs))
 		foreach ($atrgs as $a)
 		{
 			$tt->Set($a);
@@ -367,7 +439,6 @@ class ModAttribute extends Module
 		{
 			$tt->Set($atr);
 			$this->atr = $atr;
-			varinfo($g);
 			$ret .= $tt->GetString($g);
 		}
 		return $ret;
@@ -394,15 +465,15 @@ class ModAttribute extends Module
 		return $g;
 	}
 
-	function ProductAddFields(&$_d, &$form)
+	function ProductAddFields($_d, $form)
 	{
-		$atrgs = QueryAtrgs($_d);
+		$atrgs = QueryAtrgs();
 		$form->AddInput('Attribute Related');
 		$form->AddInput(new FormInput('Attribute Group', 'select',
 			'atrg', DataToSel($atrgs, 'name', 'id', GetVar('atrg'), 'None')));
 	}
 
-	function ProductEditFields(&$_d, &$prod, $form)
+	function ProductEditFields($_d, $prod, $form)
 	{
 		$atrgs = QueryAtrgs();
 		$form->AddInput('Attribute Related');
@@ -412,7 +483,7 @@ class ModAttribute extends Module
 			'style="width: 100%"'));
 	}
 
-	function ProductUpdate(&$_d, &$prod, $id)
+	function ProductUpdate($_d, $prod, $id)
 	{
 		$atrg = GetVar('formProdProps_atrg');
 		if ($atrg == 0) $_d['ag2p.ds']->Remove(array('ag2p_prod' => $id));
@@ -423,7 +494,7 @@ class ModAttribute extends Module
 		), true);
 	}
 
-	function ProductProps(&$_d, &$prod)
+	function ProductProps(&$_d, $prod)
 	{
 		$t = new Template($_d);
 
@@ -435,7 +506,7 @@ class ModAttribute extends Module
 		{
 			$fp = new CFormulaParser();
 
-			if ($_d['cs'] == 'cart')
+			if ($_d['q'][0] == 'cart')
 			{
 				$dsCart = $_d['cart.ds'];
 				$dsCartItem = $_d['cartitem.ds'];
@@ -506,7 +577,7 @@ class ModAttribute extends Module
 				$_d['product.totalprice'] = $prod['prod_price']+$price_offset;
 			else $_d['product.totalprice'] += $price_offset;
 
-			if ($_d['cs'] == 'cart')
+			if ($_d['q'][0] == 'cart')
 			{
 				$t->Set(array('prop' => 'Total price', 'value' => '<b>$'.($prod['price']+$price_offset).'</b>'));
 				$outprops .= $t->ParseFile($_d['tempath'].'catalog/product_property.html');
@@ -516,7 +587,7 @@ class ModAttribute extends Module
 		return $outprops;
 	}
 
-	function CartAdd(&$_d, $cart, $ciid)
+	function CartAdd(&$_d, $ciid)
 	{
 		$atrs = GetVar("atrs");
 
@@ -560,17 +631,6 @@ class ModAttribute extends Module
 	function CartRemove(&$_d)
 	{
 		$_d['cartoption.ds']->Remove(array('carto_item' => GetVar('ci')));
-	}
-}
-
-class ModAtrAssign extends Module
-{
-	function Get()
-	{
-		global $_d;
-
-		if ($_d['cs'] == 'product' && $_d['ca'] == 'edit')
-		return GetBox('box_atrgs', 'Test', 'Blah.');
 	}
 }
 

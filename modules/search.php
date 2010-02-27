@@ -1,6 +1,4 @@
-<?
-
-RegisterModule('ModSearch');
+<?php
 
 /**
  * A simple interface to a search engine.
@@ -16,7 +14,7 @@ class ModSearch extends Module
 
 		global $_d;
 
-		if ($_d['ca'] == 'search')
+		if (@$_d['q'][0] == 'search')
 		{
 			$query = GetVar('query');
 			$_d['product.ds.match'][] = "(prod_name LIKE '%{$query}%' OR
@@ -39,5 +37,7 @@ class ModSearch extends Module
 		return GetBox('box_search', 'Search', $out);
 	}
 }
+
+Module::RegisterModule('ModSearch');
 
 ?>

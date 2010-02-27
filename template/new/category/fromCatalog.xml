@@ -4,7 +4,7 @@
 <ul>
 <category>
 <li id="liCategory.{{cat_id}}">
-<a href="{{me}}?cc={{cat_id}}">
+<a href="catalog/{{cat_id}}/">
 	<img src="{{icon}}" border="0" alt="category" /> {{cat_name}}
 </a>
 <admin> -
@@ -22,6 +22,6 @@
 <a href="{{me}}?cs=category&amp;ca=prepare&amp;cc={{cc}}">Create Category</a>
 </admin>
 
-<script type="text/javascript" src="{{tempath}}category/js.js"></script>
+<script type="text/javascript" src="{{tempurl}}category/js.js"></script>
 
 </null>

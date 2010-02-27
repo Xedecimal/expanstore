@@ -1,6 +1,6 @@
 <?php
 
-RegisterModule('ModNarrow');
+Module::RegisterModule('ModNarrow');
 
 class ModNarrow extends Module
 {
