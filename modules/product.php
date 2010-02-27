@@ -41,25 +41,16 @@ function QueryProductCount($_d, $cat)
 function GetProductImages($id)
 {
 	$arimages = array();
-	$x = 0;
-	$set = 0;
 
 	if (file_exists("prodimages/{$id}/"))
 	{
-		$dir = opendir("prodimages/{$id}/");
-		while (($file = readdir($dir)))
+		foreach (glob("prodimages/{$id}/*") as $f)
 		{
-			if ($file == "." || $file == ".." || strpos($file, ".") == null) continue;
-			if ($x % 3 == 0) $arimages[$set][0] = "prodimages/{$id}/$file";
-			if ($x % 3 == 1) $arimages[$set][1] = "prodimages/{$id}/$file";
-			if ($x % 3 == 2)
-			{
-				$arimages[$set][2] = "prodimages/{$id}/$file";
-				$set++;
-			}
-			$x++;
+			preg_match('/(l|m|s)_([^.]+)\.([^.]+)$/', basename($f), $m);
+			$arimages[$m[2]][$m[1]] = $f;
 		}
 	}
+
 	return $arimages;
 }
 
@@ -126,6 +117,54 @@ EOF;
 
 		$ca = @$_d['q'][1];
 
+		if ($ca == 'image')
+		{
+			$ca2 = @$_d['q'][2];
+
+			if ($ca2 == 'add')
+			{
+				$pid = $_d['q'][3];
+
+				$file = GetVar("file");
+				if ($file["size"] > 1024*1024*5) die("Image size too large, must be less than 5mb");
+
+				$images = GetProductImages($pid);
+
+				$num = count($images);
+				if ($num >= 5) die("Too many images, you may only have 5 images per product.");
+
+				$tempfile = $file["tmp_name"];
+
+				CreateProductThumbnails($pid, $file);
+
+				$_d['q'][1] = 'edit';
+				$_d['q'][2] = $pid;
+			}
+			if ($ca2 == 'rem')
+			{
+				$pid = $_d['q'][3];
+
+				$image = GetVar("image");
+
+				$images = GetProductImages($pid);
+				if (isset($images[$image][0])) unlink($images[$image][0]);
+				if (isset($images[$image][1])) unlink($images[$image][1]);
+				if (isset($images[$image][2])) unlink($images[$image][2]);
+
+				for ($x = $image + 1; $x < count($images); $x++)
+				{
+					rename($images[$x][0], $images[$x-1][0]);
+					rename($images[$x][1], $images[$x-1][1]);
+					rename($images[$x][2], $images[$x-1][2]);
+				}
+
+				if ($x == 1) DelTree("prodimages/{$pid}/");
+
+				$_d['q'][1] = 'edit';
+				$_d['q'][2] = $pid;
+			}
+		}
+
 		if ($ca == 'add')
 		{
 			if (!preg_match("/([\d]+\.*[\d]{0,2})*/",
@@ -153,47 +192,6 @@ EOF;
 
 			if (empty($error)) $_d['ca'] = 'view';
 		}
-
-		else if ($ca == 'add_image')
-		{
-			$file = GetVar("frmImages_file");
-			if ($file["size"] > 1024*1024*5) die("Image size too large, must be less than 5mb");
-
-			$images = GetProductImages($_d['ci']);
-
-			$num = count($images);
-			if ($num >= 5) die("Too many images, you may only have 5 images per product.");
-
-			$tempfile = $file["tmp_name"];
-
-			CreateProductThumbnails($_d['ci'], $num, $file);
-
-			$GLOBALS['_POST']['ci'] = $_d['ci'];
-			$GLOBALS['_POST']['ca'] = 'edit';
-			$GLOBALS['_POST']['cs'] = 'product';
-		}
-
-		else if ($ca == 'remove_image')
-		{
-			$prod = QueryProduct($_d, $_d['ci']);
-			$image = GetVar("image");
-
-			$images = GetProductImages($prod['prod_id']);
-			if (isset($images[$image][0])) unlink($images[$image][0]);
-			if (isset($images[$image][1])) unlink($images[$image][1]);
-			if (isset($images[$image][2])) unlink($images[$image][2]);
-
-			for ($x = $image + 1; $x < count($images); $x++)
-			{
-				rename($images[$x][0], $images[$x-1][0]);
-				rename($images[$x][1], $images[$x-1][1]);
-				rename($images[$x][2], $images[$x-1][2]);
-			}
-
-			if ($x == 1) DelTree("prodimages/{$prod['prod_id']}/");
-			$_d['ca'] = 'edit';
-		}
-
 		else if ($ca == 'update')
 		{
 			$ci = $_d['q'][2];
@@ -211,7 +209,6 @@ EOF;
 
 			$_d['q'][1] = 'view';
 		}
-
 		else if ($ca == 'delete')
 		{
 			$ci = $_d['q'][2];
@@ -243,9 +240,13 @@ EOF;
 	{
 		global $_d;
 
-		if (@$_d['q'][0] != 'product') return;
+		$cs = @$_d['q'][0];
 
-		if (@$_d['q'][1] == 'view')
+		if (@$cs != 'product') return;
+
+		$ca = @$_d['q'][1];
+
+		if ($ca == 'view')
 		{
 			$ci = @$_d['q'][2];
 
@@ -262,7 +263,7 @@ EOF;
 
 			return $ret;
 		}
-		else if (@$_d['q'][1] == 'prepare')
+		else if ($ca == 'prepare')
 		{
 			$frmAdd = new Form("formProduct");
 			$frmAdd->AddInput(new FormInput('Name', 'text', 'name',
@@ -282,13 +283,12 @@ EOF;
 				'width="100%"'));
 			return $ret;
 		}
-		else if (@$_d['q'][1] == 'edit')
+		else if ($ca == 'edit')
 		{
-			$ret = GetVar("ret");
-			$ci = $_d['q'][2];
+			$pid = $_d['q'][2];
 
 			$query = array(
-				'match' => array('prod_id' => $ci),
+				'match' => array('prod_id' => $pid),
 				'sort' => @$_d['product.ds.sort'],
 				'limit' => @$_d['product.ds.limit'],
 				'joins' => @$_d['product.ds.joins']
@@ -303,9 +303,9 @@ EOF;
 			$frmViewProd = new Form('formProdProps',
 				array(null, 'width="100%"'));
 			$frmViewProd->AddHidden('ca', 'update');
-			$frmViewProd->AddHidden('ci', $ci);
+			$frmViewProd->AddHidden('ci', $pid);
 			$frmViewProd->AddHidden('cs', 'product');
-			if ($ret) $frmViewProd->AddHidden('ret', $ret);
+
 			$frmViewProd->AddInput(new FormInput('Name', 'text', 'name',
 				$prod['prod_name'], 'style="width: 100%"'));
 			$frmViewProd->AddInput(new FormInput('Description', 'area', 'desc',
@@ -321,25 +321,23 @@ EOF;
 
 			$body = GetBox('box_props', 'Product Properties for '.
 				$prod['prod_name'],
-				$frmViewProd->Get('action="{{app_abs}}/product/update/'.$ci.'" method="post"',
-				'width="100%"'));
+				$frmViewProd->Get('action="{{app_abs}}/product/update/'.$pid
+					.'" method="post"', 'width="100%"'));
 
 			$images = GetProductImages($prod['prod_id']);
+
 			if (count($images) > 0)
 			{
 				$str = "<table><tr>";
-				for ($x = 0; $x < count($images); $x++)
+				foreach ($images as $f => $sizes)
 				{
-					$set = $images[$x];
 					$str .= '<td align="center">';
-					$str .= "<a href=\"$set[0]\" target=\"_blank\">
-						<img src=\"$set[1]\" border=\"0\"
+					$str .= "<a href=\"{$sizes['l']}\" target=\"_blank\">
+						<img src=\"{{app_abs}}/{$sizes['s']}\" border=\"0\"
 						alt=\"Click to enlarge\" title=\"Click to enlarge\"
 						/></a><br/>";
-					$str .= "<a href=\"{{me}}?cs={$_d['cs']}&amp;".
-						"ca=remove_image&amp;ci={$prod['prod_id']}&amp;".
-						"image=$x&amp;cc={$_d['cc']}\"".
-						" onclick=\"return confirm('Are you sure?');\">".
+					$str .= "<a href=\"{{app_abs}}/{$cs}/image/rem/{$pid}/{$f}\""
+						." onclick=\"return confirm('Are you sure?');\">".
 						"Remove</a>\n";
 					$str .= "</td>";
 				}
@@ -539,20 +537,15 @@ class ProductTemplate
 
 	function TagImage($t, $g)
 	{
-		$arimages = GetProductImages($this->prod['prod_id']);
-
 		$vp = new VarParser();
 		$imgout = null;
-		if (!empty($arimages))
+		foreach (GetProductImages($this->prod['prod_id']) as $f => $sizes)
 		{
-			foreach ($arimages as $image)
-			{
-				$d = $this->prod;
-				$d['large'] = $image[0];
-				$d['medium'] = $image[1];
-				$d['small'] = $image[2];
-				$imgout .= $vp->ParseVars($g, $d);
-			}
+			$d = $this->prod;
+			$d['large'] = $sizes['l'];
+			$d['medium'] = $sizes['m'];
+			$d['small'] = $sizes['s'];
+			$imgout .= $vp->ParseVars($g, $d);
 		}
 		return $imgout;
 	}
@@ -622,23 +615,23 @@ class ProductTemplate
 	}
 }
 
-function CreateProductThumbnails($id, $num, $src)
+function CreateProductThumbnails($id, $file)
 {
-	$destfile1 = "prodimages/{$id}/{$num}l.png";
-	$destfile2 = "prodimages/{$id}/{$num}m.png";
-	$destfile3 = "prodimages/{$id}/{$num}s.png";
+	$destfile1 = "prodimages/{$id}/l_{$file['name']}";
+	$destfile2 = "prodimages/{$id}/m_{$file['name']}";
+	$destfile3 = "prodimages/{$id}/s_{$file['name']}";
 
 	$pal = false;
 
-	if (is_array($src['type']))
+	if (is_array($file['type']))
 	{
-		$filetype = $src["type"];
-		$filename = $src['tmp_name'];
+		$filetype = $file["type"];
+		$filename = $file['tmp_name'];
 	}
 	else
 	{
-		$filetype = fileext($src['name']);
-		$filename = $src['tmp_name'];
+		$filetype = fileext($file['name']);
+		$filename = $file['tmp_name'];
 	}
 
 	if (!file_exists($filename))
