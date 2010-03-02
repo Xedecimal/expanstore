@@ -24,7 +24,9 @@ class PaymentModule
 				require_once($file);
 				$name = 'Pay' . $module;
 				$mod = new $name();
-				$tblPayment->AddRow(array("<input type=\"radio\" name=\"paytype\" id=\"$module\" value=\"$module\"/>",'<label for="'.$module.'">'.$mod->GetName().'</label>',""));
+				$tblPayment->AddRow(array("<input type=\"radio\"
+					name=\"paytype\" id=\"$module\" value=\"$module\"/>",
+					'<label for="'.$module.'">'.$mod->GetName().'</label>',""));
 			}
 		}
 		return $tblPayment->Get();
