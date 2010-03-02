@@ -1,0 +1,2 @@
+<div id="divCatLocation">Current Category: <path sep="&raquo;"><a
+	href="{{app_abs}}/category/{{cat_id}}">{{cat_name}}</a></path></div>

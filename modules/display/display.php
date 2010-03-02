@@ -6,15 +6,20 @@ if (!isset($_d['settings']['site_template'])) $_d['settings']['site_template'] =
 $_d['template_path'] = $_d['settings']['site_template'];
 $_d['template_url'] = $_d['app_abs'].'/template/'.$_d['settings']['site_template'];
 
+$_d['template.transforms']['link'] = array('ModTemplate', 'TransHref');
+$_d['template.transforms']['script'] = array('ModTemplate', 'TransSrc');
+
 function t($path)
 {
 	global $_d;
 
 	// Overloaded Path
 	$opath = $_d['settings']['site_template'].'/'.$path;
+	if (file_exists($opath)) return $opath;
 	// Default Path
 	$dpath = 'modules/'.$path;
-	return file_exists($opath) ? $opath : $dpath;
+	if (file_exists($dpath)) return $dpath;
+	return $path;
 }
 
 function TemplateCheck()
@@ -31,6 +36,16 @@ class ModTemplate extends Module
 
 		$_d['index.cb.prelink']['template'] = array(&$this, 'cb_index_prelink');
 		$_d['index.cb.get']['template'] = array(&$this, 'cb_index_get');
+		if (file_exists('config/blocks.dat'))
+		{
+			$_d['settings']['blocks'] =
+				unserialize(file_get_contents('config/blocks.dat'));
+		}
+		if (file_exists('config/order.dat'))
+		{
+			$orders = unserialize(file_get_contents('config/order.dat'));
+			foreach ($orders as $m => $v) $_d['module.order'][$m] = $v;
+		}
 	}
 
 	function cb_index_prelink()
@@ -75,9 +90,8 @@ class ModTemplate extends Module
 
 		if (@$_d['q'][1] == 'update')
 		{
-			$_d['settings']['blocks'] = GetVar('blocks');
-			$_d['settings']['priority'] = GetVar('priority');
-			file_put_contents('settings.txt', serialize($_d['settings']));
+			file_put_contents('config/blocks.dat', serialize(GetVar('blocks')));
+			file_put_contents('config/order.dat', serialize(GetVar('order')));
 		}
 	}
 
@@ -99,12 +113,11 @@ class ModTemplate extends Module
 			if (isset($_d['settings']['blocks'][$name]))
 				$sel = $_d['settings']['blocks'][$name];
 			else $sel = 'default';
-
-			$sel = MakeSelect(array('name' => "blocks[{$name}]"), $bnames, $sel);
-			$pri = @$_d['settings']['priority'][$name];
+			$sel = MakeSelect(array('NAME' => "blocks[{$name}]"), $bnames, $sel);
+			$pri = @$_d['module.order'][$name];
 			$ret .= "<tr><td>{$name}</td>";
 			$ret .= "<td>{$sel}</td>";
-			$ret .= "<td><input type=\"text\" name=\"priority[$name]\" value=\"{$pri}\" /></td>";
+			$ret .= "<td><input type=\"text\" name=\"order[$name]\" value=\"{$pri}\" /></td>";
 			$ret .= '</tr>';
 		}
 		$ret .= '</table>';
@@ -139,6 +152,18 @@ class ModTemplate extends Module
 			if (is_dir("template/{$f}")) $temps[$f] = new SelOption($f, false, $sel);
 		}
 		return $temps;
+	}
+
+	static function TransHref($a)
+	{
+		if (isset($a['HREF'])) $a['HREF'] = t($a['HREF']);
+		return $a;
+	}
+
+	static function TransSrc($a)
+	{
+		if (isset($a['SRC'])) $a['SRC'] = t($a['SRC']);
+		return $a;
 	}
 }
 
