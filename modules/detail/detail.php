@@ -331,7 +331,7 @@ EOF;
 		}
 	}
 
-	function CategoryFields(&$_d, $form, $cat = null)
+	function CategoryFields($_d, $form, $cat = null)
 	{
 		$specs = $_d['spec.ds']->Get();
 		$default = isset($cat['spec']) ? $cat['spec'] : 0;

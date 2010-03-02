@@ -259,7 +259,7 @@ EOF;
 			$ret .= RunCallbacks($_d['product.callbacks.details'], $_d,
 				$pt->prods[0]);
 
-			$ret .= $pt->ParseFile($_d['template_path'].'/product/details.xml');
+			$ret .= $pt->ParseFile(t('product/details.xml'));
 
 			return $ret;
 		}

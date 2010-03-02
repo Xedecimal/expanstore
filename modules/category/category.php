@@ -328,7 +328,7 @@ class ModCategoryAdmin extends Module
 
 		if (@$_d['q'][0] != 'category') return;
 
-		$ca = GetVar('ca');
+		$ca = @$_d['q'][1];
 
 		if ($ca == 'add')
 		{
@@ -361,11 +361,14 @@ class ModCategoryAdmin extends Module
 
 		else if ($ca == 'update')
 		{
+			$cid = $_d['q'][2];
+
 			$f = GetVar('formViewCat_image');
+
 			if (!empty($f))
 			{
 				// Get rid of the existing images.
-				$existing = glob('catimages/'.$_d['ci'].'.*');
+				$existing = glob("catimages/{$cid}/.*");
 				if (!empty($existing))
 					foreach($existing as $ef)
 						unlink($ef);
@@ -373,14 +376,14 @@ class ModCategoryAdmin extends Module
 				if (!file_exists('catimages')) mkdir('catimages');
 
 				$ext = fileext($f['name']);
-				move_uploaded_file($f['tmp_name'],'catimages/'.$_d['ci'].'.'.$ext);
+				move_uploaded_file($f['tmp_name'], "catimages/{$cid}.{$ext}");
 			}
 
-			$_d['category.ds']->Update(array('cat_id' => $_d['ci']), array(
-				'cat_parent' => GetVar('formViewCat_parent'),
-				'cat_name' => GetVar('formViewCat_name'),
-				'cat_desc' => GetVar('formViewCat_desc'),
-				'cat_hidden' => GetVar('formViewCat_hidden')
+			$_d['category.ds']->Update(array('cat_id' => $cid), array(
+				'cat_parent' => GetVar('parent'),
+				'cat_name' => GetVar('name'),
+				'cat_desc' => GetVar('desc'),
+				'cat_hidden' => GetVar('hidden')
 			));
 		}
 	}
@@ -389,9 +392,9 @@ class ModCategoryAdmin extends Module
 	{
 		global $_d;
 
-		$ca = GetVar('ca');
-
 		if ($_d['q'][0] != 'category') return;
+
+		$ca = @$_d['q'][1];
 
 		if ($ca == 'prepare')
 		{
@@ -418,14 +421,18 @@ class ModCategoryAdmin extends Module
 
 		else if ($ca == 'edit')
 		{
-			$_d['page_title'] .= " - Category Properties";
+			$cid = $_d['q'][2];
+
 			$dsCats = $_d['category.ds'];
-			$cat = $dsCats->GetOne(array("cat_id" => $_d['ci']));
+
+			$cat = $dsCats->GetOne(array(
+				'match' => array(
+					'cat_id' => $cid
+				)
+			));
+
 			$cats = $dsCats->Get();
 			$frmViewCat = new Form("formViewCat");
-			$frmViewCat->AddHidden("cs", $_d['cs']);
-			$frmViewCat->AddHidden("ca", "update");
-			$frmViewCat->AddHidden("ci", $_d['ci']);
 			$frmViewCat->AddInput(new FormInput('Parent', 'select', 'parent',
 				DataToSel($cats, 'cat_name', 'cat_id', $cat['cat_parent'], "Home")));
 			$frmViewCat->AddInput(new FormInput('Name', 'text', 'name',
@@ -442,16 +449,7 @@ class ModCategoryAdmin extends Module
 				'Save'));
 
 			return GetBox("box_category", "Category Properties",
-				$frmViewCat->Get('action="{{me}}" method="post" enctype="multipart/form-data"'));
-		}
-
-		else if ($ca == 'update' || $ca == 'add' || $ca == 'remove')
-		{
-			#$_d['cs'] = 'catalog';
-			#$_d['cc'] = $ca == 'update' ? GetVar('parent') : GetVar('cc');
-			#$mod = RequireModule($_d, 'modules/content.php', 'ModContent');
-			#$mod->Prepare($_d);
-			#return $mod->Get($_d);
+				$frmViewCat->Get('action="{{app_abs}}/category/update/'.$cid.'" method="post" enctype="multipart/form-data"'));
 		}
 
 		else // Category listing.
@@ -459,9 +457,13 @@ class ModCategoryAdmin extends Module
 			$ret = null;
 
 			$items = QueryCatsAll($_d);
+			$tree = DataToTree($items, 'cat_id', 'cat_parent', 0);
+
+			return GetTree($tree, "<a href=\"{{app_abs}}/category/edit/{{cat_id}}\">{{cat_name}}</a>");
+
 			foreach ($items as $i)
 			{
-				$ret .= "<p><a href=\"{{me}}?cs=category&ca=edit&ci={$i['cat_id']}\">{$i['cat_name']}</a></p>";
+				$ret .= "<p></p>";
 			}
 			return $ret;
 		}
