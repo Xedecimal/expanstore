@@ -266,9 +266,9 @@ EOF;
 		if (empty($_d['cl'])) return;
 
 		return '<a id="{{name}}_ancAddCart.{{prod_id}}"
-			class="ancAddCart" href="#">'.
-			"<img src=\"{{template_url}}/cart/cart_add.png\"".
-			" title=\"Add To Cart\" alt=\"Add To Cart\" /></a>\n";
+			class="ancAddCart" href="#">'
+			.'<img src="{{app_abs}}/'.t('cart/cart_add.png"')
+			." title=\"Add To Cart\" alt=\"Add To Cart\" /></a>\n";
 	}
 }
 

@@ -20,10 +20,8 @@ class ModCPanel extends Module
 
 		if (!empty($_d['cl']))
 		{
-			$_d['page.links']["Control Panel"]['Personal'] =
-				'{{me}}?cs=cpanel';
-			$_d['page.links']["Control Panel"]["Financial"] =
-				'{{me}}?cs=cpanel&amp;ca=view_financial';
+			$_d['page.links']["Control Panel"]['Personal'] = '{{app_abs}}/cpanel';
+			$_d['page.links']["Control Panel"]["Financial"] = '{{app_abs}}/cpanel/financial';
 		}
 
 		$_d['package.ds.joins']['user'] =
@@ -42,10 +40,6 @@ class ModCPanel extends Module
 
 		$ca = GetVar('ca');
 
-		////////////////////////////////////////////////////////////////////////
-		//Profile
-		//
-
 		if ($ca == "update_profile")
 		{
 			$id = $cl['id'];
@@ -53,10 +47,13 @@ class ModCPanel extends Module
 			$pass2 = GetVar("pass2");
 
 			$columns = array(
-				"email"   => GetVar("email"),	"name"    => GetVar("name"),
-				"address" => GetVar("address"),	"city"    => GetVar("city"),
-				"state"   => GetVar("state"),	"zip"     => GetVar("zip"),
-				"phone"   => GetVar("phone")
+				'email'   => GetVar("email"),
+				'name'    => GetVar("name"),
+				'address' => GetVar("address"),
+				'city'    => GetVar("city"),
+				'state'   => GetVar("state"),
+				'zip'     => GetVar("zip"),
+				'phone'   => GetVar("phone")
 			);
 
 			$pass1 = GetVar("pass1");
@@ -77,10 +74,6 @@ class ModCPanel extends Module
 
 			//Redirect("$me?ct=$ct&cs=$cs");
 		}
-
-		////////////////////////////////////////////////////////////////////////
-		//Company
-		//
 
 		else if ($ca == "comp_update")
 		{
@@ -159,7 +152,7 @@ class ModCPanel extends Module
 
 		$ca = GetVar('ca');
 
-		if ($ca == "view_financial")
+		if ($ca == "financial")
 		{
 			$cl = $_d['cl'];
 
@@ -179,8 +172,6 @@ class ModCPanel extends Module
 			$cl = $_d['cl'];
 
 			$frmProfile = new Form("frmProfile");
-			$frmProfile->AddHidden("cs", $_d['cs']);
-			$frmProfile->AddHidden("ca", "update_profile");
 
 			$frmProfile->AddInput(new FormInput('Password', 'password', 'pass1',
 				null, 'size="30"', "Only specify if you wish to change."));
@@ -204,7 +195,7 @@ class ModCPanel extends Module
 				'Update'));
 
 			return GetBox("box_profile", "Your Profile",
-				$frmProfile->Get('action="{{me}}" method="post"'));
+				$frmProfile->Get('action="{{app_abs}}/cpanel/update" method="post"'));
 		}
 	}
 
