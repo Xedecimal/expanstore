@@ -1,50 +1,5 @@
 <?php
 
-Module::RegisterModule('ModCategory');
-Module::RegisterModule('ModCategoryAdmin');
-
-function QueryCat(&$_d, $id)
-{
-	global $_d;
-
-	$q = array(
-		'match' => array('cat_id' => $id),
-		'joins' => $_d['category.ds.joins']
-	);
-	return $_d['category.ds']->GetOne($q);
-}
-
-function QueryCats($_d, $parent, $include_hidden = true)
-{
-	global $_d;
-
-	$m = array('cat_parent' => $parent);
-	if (!$include_hidden) $m['cat_hidden'] = 0;
-
-	return $_d['category.ds']->Get($m, 'cat_name', null,
-		@$_d['category.ds.joins']);
-}
-
-function QueryCatsAll(&$_d)
-{
-	return $_d['category.ds']->Get();
-}
-
-function GetBreadcrumb($_d, $cat)
-{
-	if ($cat == 0) return "<a href=\"{{app_abs}}?cc=0\">Home</a>";
-	$c = QueryCat($_d, $cat);
-	$ret = "";
-	while ($c != null && $c['cat_id'] != 0)
-	{
-		$ret = ' / <a href="{{app_abs}}?cc='.$c['cat_id'].'">'.$c['cat_name'].'</a>'
-			.$ret;
-		$c = QueryCat($_d, $c['cat_parent']);
-	}
-	$ret = "<a href=\"{{app_abs}}\">Home</a>" . $ret;
-	return $ret;
-}
-
 class ModCategory extends Module
 {
 	function __construct($inst)
@@ -99,7 +54,7 @@ EOF;
 	}
 
 	function Link()
-	{
+ 	{
 		global $_d;
 
 		// Attach to Product
@@ -160,7 +115,7 @@ EOF;
 			}
 		}
 
-		$_d['category.current'] = QueryCat($_d, GetVar('cc'));
+		$_d['category.current'] = ModCategory::QueryCat(GetVar('cc'));
 	}
 
 	function cb_product_props($_d, $prod)
@@ -248,7 +203,7 @@ EOF;
 	{
 		global $_d;
 
-		$breadcrumb = GetBreadcrumb($_d, number_format(GetVar('cc')));
+		$breadcrumb = ModCategoryLocation::GetBreadcrumb(GetVar('cc'), 'FIXME', 'Nothing');
 		$_d['product.title'] = "Products in " . $breadcrumb;
 
 		$this->data = $_d;
@@ -256,58 +211,43 @@ EOF;
 		$cl = $_d['cl'];
 
 		$t = new Template();
-		$t->Set('cats', $this->cats = QueryCats($this->data, number_format($cc), false));
+		$t->Set('cats', $this->cats = ModCategory::QueryCats($cc, false));
 		$t->ReWrite('notempty', 'TagNotEmpty');
 		$t->ReWrite('admin', array(&$this, 'TagAdmin'));
 		$t->ReWrite('category', array(&$this, 'TagCategory'));
 
 		return $t->ParseFile(t('category/fromCatalog.xml'));
+	}
 
-		if (!empty($_d['category.current']))
-			$_d['page.title'] .= ' - '.$_d['category.current']['name'];
-		else $_d['page.title'] .= ' - Home';
+	static function QueryAll()
+	{
+		return $GLOBALS['_d']['category.ds']->Get();
+	}
 
-		$butparent = "<img src=\"images/dirup.gif\" alt=\"parent category\" border=\"0\" />";
-		$butdir = "<img src=\"images/folder.png\" border=\"0\" alt=\"category\" />";
+	static function QueryCats($parent, $include_hidden = true)
+	{
+		global $_d;
 
-		//Display sub-categories.
-		$cats = QueryCats($_d, number_format($cc), false);
+		$m = array('cat_parent' => $parent);
+		if (!$include_hidden) $m['cat_hidden'] = 0;
 
-		if (!empty($cats) || $cc != 0)
-		{
-			$this->out .= '<table width="100%"><tr><td>';
+		return $_d['category.ds']->Get($m, 'cat_name', null,
+			@$_d['category.ds.joins']);
+	}
 
-			//Up a level
-			if ($cc != 0)
-			{
-				$curcat = QueryCat($_d, $_d['cc']);
-				$this->out .= "<div class=\"float\"><a href=\"{{me}}?cc={$curcat['parent']}\">$butparent Parent Category</a></div>";
-			}
+	static function QueryCat($id)
+	{
+		global $_d;
 
-			if (!empty($cats)) foreach ($cats as $cat)
-			{
-				$this->out .= '<div class="float"><span class="float-in">';
-				$this->out .= "&nbsp;<a href=\"{{me}}?cc={$cat['id']}\">$butdir {$cat['name']}</a>";
-				if (isset($_d['cl']) && $_d['cl']['usr_access'] > 500)
-				{
-					$this->out .= "<br /><a href=\""
-						.htmlspecialchars("{{me}}?cs=category&ca=edit&ci={$cat['id']}&cc=$cc")
-						."\" title=\"Edit\">Edit</a> | "
-						."<a href=\""
-						.htmlspecialchars("{{me}}?cs=category&ca=remove&ci={$cat['id']}&cc=$cc")
-						."\" title=\"Delete\" onclick=\"return confirm('Are you sure?');\">Delete</a>";
-				}
-				$this->out .= " - {$cat['desc']}</span></div>";
-			}
-			$this->out .= '</td></tr></table>';
-		}
-
-		if (!empty($_d['category.callbacks.footer']))
-			$this->out .= RunCallbacks($_d['category.callbacks.footer'], $_d);
-
-		return GetBox('box_cats', 'Categories', $this->out);
+		$q = array(
+			'match' => array('cat_id' => $id),
+			'joins' => $_d['category.ds.joins']
+		);
+		return $_d['category.ds']->GetOne($q);
 	}
 }
+
+Module::RegisterModule('ModCategory');
 
 class ModCategoryAdmin extends Module
 {
@@ -335,10 +275,10 @@ class ModCategoryAdmin extends Module
 			$dsCats = $_d['category.ds'];
 			$ci = $dsCats->Add(array(
 				'cat_date' => SqlUnquote('NOW()'),
-				'cat_parent' => GetVar('cc'),
-				'cat_name' => GetVar('formAddCat_name'),
-				'cat_desc' => GetVar('formAddCat_desc'),
-				'cat_hidden' => GetVar('formAddCat_hidden')));
+				'cat_parent' => GetVar('parent'),
+				'cat_name' => GetVar('name'),
+				'cat_desc' => GetVar('desc'),
+				'cat_hidden' => GetVar('hidden')));
 
 			$f = GetVar('formAddCat_image');
 			if (!empty($f))
@@ -398,7 +338,6 @@ class ModCategoryAdmin extends Module
 
 		if ($ca == 'prepare')
 		{
-			$GLOBALS['page_section'] = 'Create Category';
 			$formAddCat = new Form("formAddCat");
 			$formAddCat->AddHidden("ca", "add");
 			$formAddCat->AddHidden("cs", GetVar('cs'));
@@ -407,6 +346,9 @@ class ModCategoryAdmin extends Module
 				'style="width: 100%"'));
 			$formAddCat->AddInput(new FormInput('Description', 'area', 'desc', null,
 				'style="width: 100%; height: 100px;"'));
+			$formAddCat->AddInput(new FormInput('Parent Category', 'select',
+				'parent', DataToSel(ModCategory::QueryAll(), 'cat_name', 'cat_id',
+				$_d['category.current']['cat_id'])));
 			$formAddCat->AddInput(new FormInput('Hide','checkbox','hidden'));
 			$formAddCat->AddInput(new FormInput('Image','file','image'));
 			RunCallbacks($_d['category.callbacks.fields'], $_d, $formAddCat);
@@ -415,8 +357,9 @@ class ModCategoryAdmin extends Module
 
 			return GetBox('box_create',
 				'Create Category',
-				$formAddCat->Get('action="{{me}}" method="post" enctype="multipart/form-data"',
-				'style="width: 100%"'));
+				$formAddCat->Get('action="{{app_abs}}/category/add"
+					method="post" enctype="multipart/form-data"',
+					'style="width: 100%"'));
 		}
 
 		else if ($ca == 'edit')
@@ -456,7 +399,7 @@ class ModCategoryAdmin extends Module
 		{
 			$ret = null;
 
-			$items = QueryCatsAll($_d);
+			$items = ModCategory::QueryAll();
 			$tree = DataToTree($items, 'cat_id', 'cat_parent', 0);
 
 			return GetTree($tree, "<a href=\"{{app_abs}}/category/edit/{{cat_id}}\">{{cat_name}}</a>");
@@ -469,5 +412,40 @@ class ModCategoryAdmin extends Module
 		}
 	}
 }
+
+Module::RegisterModule('ModCategoryAdmin');
+
+class ModCategoryLocation extends Module
+{
+	function Get()
+	{
+		global $_d;
+		$t = new Template();
+		$t->Set($_d['category.current']);
+		$t->ReWrite('path', array($this, 'TagPath'));
+		return $t->ParseFile(t('category/location.xml'));
+	}
+
+	static function TagPath($t, $g, $a)
+	{
+	}
+
+	static function GetBreadcrumb($cat, $sep, $guts)
+	{
+		if ($cat == 0) return "<a href=\"{{app_abs}}?cc=0\">Home</a>";
+		$c = QueryCat($_d, $cat);
+		$ret = "";
+		while ($c != null && $c['cat_id'] != 0)
+		{
+			$ret = ' / <a href="{{app_abs}}?cc='.$c['cat_id'].'">'.$c['cat_name'].'</a>'
+				.$ret;
+			$c = QueryCat($_d, $c['cat_parent']);
+		}
+		$ret = "<a href=\"{{app_abs}}\">Home</a>" . $ret;
+		return $ret;
+	}
+}
+
+Module::RegisterModule('ModCategoryLocation');
 
 ?>
