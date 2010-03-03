@@ -184,7 +184,7 @@ EOF;
 
 		$t = new Template();
 		$t->ReWrite('cart', array(&$this, 'GetCart'));
-		return $t->ParseFile(t('cart/index.xml'));
+		return $t->ParseFile(l('cart/index.xml'));
 	}
 
 	function GetCart()

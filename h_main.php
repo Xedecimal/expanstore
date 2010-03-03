@@ -16,8 +16,8 @@ define('STR_VER', '1.0a');
 
 $_d['q'] = explode('/', GetVar('q', 'home'));
 
-$_d['app_abs'] = GetRelativePath(dirname(__FILE__));
-$_d['app_rel'] = '';
+$_d['app_dir'] = dirname(__FILE__);
+$_d['app_abs'] = GetRelativePath($_d['app_dir']);
 
 //Persistant variables
 
