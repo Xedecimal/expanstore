@@ -94,10 +94,10 @@ class ModAdmin extends Module
 		return <<<EOF
 		<a href="product/edit/{{prod_id}}?cc={{catprod_cat}}"
 			class="{{name}}_ancEditProduct">
-			<img src="{{app_abs}}/$eb" title="Edit" alt="Edit" />
+			<img src="$eb" title="Edit" alt="Edit" />
 		</a>
 		<a href="{{app_abs}}/product/delete/{{prod_id}}" class="aProductDelete">
-			<img src="{{app_abs}}/$db" title="Delete" alt="Delete" />
+			<img src="$db" title="Delete" alt="Delete" />
 		</a>
 EOF;
 	}

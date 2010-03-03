@@ -13,6 +13,9 @@ class ModCategory extends Module
 
 		$dsCP = new DataSet($_d['db'], 'cat_prod');
 		$_d['cat_prod.ds'] = $dsCP;
+
+		if ($_d['q'][0] == 'category' && is_numeric($_d['q'][1]))
+			$_SESSION['cc'] = $_d['q'][1];
 	}
 
 	function Install()
@@ -86,9 +89,10 @@ EOF;
 	function Prepare($require = false)
 	{
 		parent::Prepare();
+
 		global $_d;
 
-		$_d['category.current'] = ModCategory::QueryCat(GetVar('cc'));
+ 		$_d['category.current'] = ModCategory::QueryCat(GetVar('cc'));
 
 		$cs = $_d['q'][0];
 
@@ -114,10 +118,6 @@ EOF;
 				$res['msg'] = 'Successfully deleted.';
 			}
 			die(json_encode($res));
-		}
-		if (is_numeric($ca))
-		{
-			$_SESSION['cc'] = $ca;
 		}
 	}
 
@@ -247,7 +247,7 @@ EOF;
 
 		$q = array(
 			'match' => array('cat_id' => $id),
-			'joins' => $_d['category.ds.joins']
+			'joins' => @$_d['category.ds.joins']
 		);
 		return $_d['category.ds']->GetOne($q);
 	}
