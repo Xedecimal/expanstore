@@ -92,7 +92,7 @@ class ModAdmin extends Module
 		$db = p('catalog/delete.png');
 
 		return <<<EOF
-		<a href="{{app_abs}}/product/edit/{{prod_id}}?cc={{catprod_cat}}"
+		<a href="product/edit/{{prod_id}}?cc={{catprod_cat}}"
 			class="{{name}}_ancEditProduct">
 			<img src="{{app_abs}}/$eb" title="Edit" alt="Edit" />
 		</a>
