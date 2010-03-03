@@ -9,17 +9,28 @@ $_d['template_url'] = $_d['app_abs'].'/template/'.$_d['settings']['site_template
 $_d['template.transforms']['link'] = array('ModTemplate', 'TransHref');
 $_d['template.transforms']['script'] = array('ModTemplate', 'TransSrc');
 
-function t($path)
+function p($path)
 {
 	global $_d;
 
 	// Overloaded Path
 	$opath = $_d['settings']['site_template'].'/'.$path;
-	if (file_exists($opath)) return $opath;
+	if (file_exists($opath)) return $_d['app_abs'].'/'.$opath;
 	// Default Path
-	$dpath = 'modules/'.$path;
-	if (file_exists($dpath)) return $dpath;
+	$modpath = "modules/{$path}";
+	//$dpath = 'modules/'.$path;
+	if (file_exists($modpath)) return "{$_d['app_abs']}/modules/{$path}";
 	return $path;
+}
+
+function l($path)
+{
+	global $_d;
+
+	$ovrpath = $_d['settings']['site_template'].'/'.$path;
+	if (file_exists($ovrpath)) return "{$_d['app_dir']}/{$ovrpath}";
+	$modpath = "{$_d['app_dir']}/modules/{$path}";
+	if (file_exists($modpath)) return "{$_d['app_dir']}/modules/{$path}";
 }
 
 function TemplateCheck()
@@ -156,13 +167,13 @@ class ModTemplate extends Module
 
 	static function TransHref($a)
 	{
-		if (isset($a['HREF'])) $a['HREF'] = t($a['HREF']);
+		if (isset($a['HREF'])) $a['HREF'] = p($a['HREF']);
 		return $a;
 	}
 
 	static function TransSrc($a)
 	{
-		if (isset($a['SRC'])) $a['SRC'] = t($a['SRC']);
+		if (isset($a['SRC'])) $a['SRC'] = p($a['SRC']);
 		return $a;
 	}
 }

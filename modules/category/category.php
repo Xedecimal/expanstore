@@ -88,34 +88,33 @@ EOF;
 		parent::Prepare();
 		global $_d;
 
-		$cs = GetVar('cs');
-
-		if ($cs == 'category')
-		{
-			$ca = GetVar('ca');
-
-			if ($ca == 'delete')
-			{
-				$ci = GetVar('ci');
-
-				$cats = QueryCats($_d, $ci);
-
-				$dsProducts = $_d['product.ds'];
-				$prods = QueryProductList(array('cat_id' => $ci));
-				if (!empty($cats)) $res = array('res' => 0, 'msg' => 'Category not empty.');
-				else if (!empty($prods)) $res = array('res' => 0, 'msg' => 'Category not empty.');
-				else
-				{
-					$_d['category.ds']->Remove(array('cat_id' => $ci));
-					#xslog($_d, "Removed category {$ci}");
-					$res['res'] = 1;
-					$res['msg'] = 'Successfully deleted.';
-				}
-				die(json_encode($res));
-			}
-		}
-
 		$_d['category.current'] = ModCategory::QueryCat(GetVar('cc'));
+
+		$cs = $_d['q'][0];
+
+		if ($cs != 'category') return;
+
+		$ca = $_d['q'][1];
+
+		if ($ca == 'delete')
+		{
+			$cid = $_d['q'][2];
+
+			$cats = ModCategory::QueryCats($cid);
+			$dsProducts = $_d['product.ds'];
+			$prods = QueryProductList(array('cat_id' => $cid));
+
+			if (!empty($cats)) $res = array('res' => 0, 'msg' => 'Category not empty.');
+			else if (!empty($prods)) $res = array('res' => 0, 'msg' => 'Category not empty.');
+			else
+			{
+				$_d['category.ds']->Remove(array('cat_id' => $cid));
+				#xslog($_d, "Removed category {$ci}");
+				$res['res'] = 1;
+				$res['msg'] = 'Successfully deleted.';
+			}
+			die(json_encode($res));
+		}
 	}
 
 	function cb_product_props($_d, $prod)
@@ -216,7 +215,7 @@ EOF;
 		$t->ReWrite('admin', array(&$this, 'TagAdmin'));
 		$t->ReWrite('category', array(&$this, 'TagCategory'));
 
-		return $t->ParseFile(t('category/fromCatalog.xml'));
+		return $t->ParseFile(l('category/fromCatalog.xml'));
 	}
 
 	static function QueryAll()
@@ -231,8 +230,11 @@ EOF;
 		$m = array('cat_parent' => $parent);
 		if (!$include_hidden) $m['cat_hidden'] = 0;
 
-		return $_d['category.ds']->Get($m, 'cat_name', null,
-			@$_d['category.ds.joins']);
+		return $_d['category.ds']->Get(array(
+			'match' => $m,
+			'order' => array('cat_name'),
+			'joins' => @$_d['category.ds.joins']
+		));
 	}
 
 	static function QueryCat($id)
@@ -423,7 +425,7 @@ class ModCategoryLocation extends Module
 		$t = new Template();
 		$t->Set($_d['category.current']);
 		$t->ReWrite('path', array($this, 'TagPath'));
-		return $t->ParseFile(t('category/location.xml'));
+		return $t->ParseFile(l('category/location.xml'));
 	}
 
 	static function TagPath($t, $g, $a)

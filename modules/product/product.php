@@ -409,7 +409,7 @@ class ModProductList extends Module
 
 		$pt->prods = QueryProductList($_d['product.ds.match']);
 
-		$ret .= $pt->ParseFile(t('product/fromCatalog.xml'));
+		$ret .= $pt->ParseFile(l('product/fromCatalog.xml'));
 
 		if (!empty($_d['products.callbacks.footer']))
 			$ret .= RunCallbacks($_d['products.callbacks.footer'], $_d);
