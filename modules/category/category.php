@@ -422,6 +422,9 @@ class ModCategoryLocation extends Module
 
 	static function TagPath($t, $g, $a)
 	{
+		global $_d;
+
+		return ModCategoryLocation::GetBreadcrumb(GetVar('cc'));
 	}
 
 	static function GetBreadcrumb($cat, $sep = '/', $guts = null)
