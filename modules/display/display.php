@@ -18,9 +18,8 @@ function p($path)
 	if (file_exists($opath)) return $_d['app_abs'].'/'.$opath;
 	// Default Path
 	$modpath = "modules/{$path}";
-	//$dpath = 'modules/'.$path;
 	if (file_exists($modpath)) return "{$_d['app_abs']}/modules/{$path}";
-	return $path;
+	return $_d['app_abs'].'/'.$path;
 }
 
 function l($path)

@@ -115,11 +115,15 @@ EOF;
 			}
 			die(json_encode($res));
 		}
+		if (is_numeric($ca))
+		{
+			$_SESSION['cc'] = $ca;
+		}
 	}
 
 	function cb_product_props($_d, $prod)
 	{
-		return array('Category' => GetBreadcrumb($_d, $prod['cat_id']));
+		return array('Category' => ModCategoryLocation::GetBreadcrumb($prod['cat_id']));
 	}
 
 	function cb_product_addfields($_d, $form)
@@ -253,15 +257,7 @@ Module::RegisterModule('ModCategory');
 
 class ModCategoryAdmin extends Module
 {
-	function Link()
-	{
-		global $_d;
-
-		#if (ModUser::RequestAccess(500))
-		#{
-		#	$_d['page.links']['Admin']['Categories'] = '{{me}}?cs=category';
-		#}
-	}
+	function Link() { global $_d; }
 
 	function Prepare($required = false)
 	{
@@ -336,6 +332,8 @@ class ModCategoryAdmin extends Module
 
 		if ($_d['q'][0] != 'category') return;
 
+		if (!ModUser::RequestAccess(500)) return;
+
 		$ca = @$_d['q'][1];
 
 		if ($ca == 'prepare')
@@ -405,12 +403,6 @@ class ModCategoryAdmin extends Module
 			$tree = DataToTree($items, 'cat_id', 'cat_parent', 0);
 
 			return GetTree($tree, "<a href=\"{{app_abs}}/category/edit/{{cat_id}}\">{{cat_name}}</a>");
-
-			foreach ($items as $i)
-			{
-				$ret .= "<p></p>";
-			}
-			return $ret;
 		}
 	}
 }
@@ -432,18 +424,20 @@ class ModCategoryLocation extends Module
 	{
 	}
 
-	static function GetBreadcrumb($cat, $sep, $guts)
+	static function GetBreadcrumb($cat, $sep = '/', $guts = null)
 	{
-		if ($cat == 0) return "<a href=\"{{app_abs}}?cc=0\">Home</a>";
-		$c = QueryCat($_d, $cat);
+		global $_d;
+
+		if ($cat == 0) return "<a href=\"{{app_abs}}/category/0\">Home</a>";
+		$c = ModCategory::QueryCat($cat);
 		$ret = "";
 		while ($c != null && $c['cat_id'] != 0)
 		{
-			$ret = ' / <a href="{{app_abs}}?cc='.$c['cat_id'].'">'.$c['cat_name'].'</a>'
+			$ret = ' / <a href="{{app_abs}}/category/'.$c['cat_id'].'">'.$c['cat_name'].'</a>'
 				.$ret;
-			$c = QueryCat($_d, $c['cat_parent']);
+			$c = ModCategory::QueryCat($c['cat_parent']);
 		}
-		$ret = "<a href=\"{{app_abs}}\">Home</a>" . $ret;
+		$ret = "<a href=\"{{app_abs}}/category/0\">Home</a>" . $ret;
 		return $ret;
 	}
 }
