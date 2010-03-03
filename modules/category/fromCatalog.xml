@@ -1,6 +1,6 @@
 <null>
 <notempty var="cats">
-<script type="text/javascript" src="{{app_abs}}/modules/category/js.js"></script>
+<script type="text/javascript" src="category/js.js"></script>
 
 <ul class="ulCats">
 <category>
