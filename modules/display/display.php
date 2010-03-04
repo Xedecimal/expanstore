@@ -7,6 +7,7 @@ $_d['template_path'] = $_d['settings']['site_template'];
 $_d['template_url'] = $_d['app_abs'].'/template/'.$_d['settings']['site_template'];
 
 $_d['template.transforms']['link'] = array('ModTemplate', 'TransHref');
+$_d['template.transforms']['a'] = array('ModTemplate', 'TransHref');
 $_d['template.transforms']['script'] = array('ModTemplate', 'TransSrc');
 
 function p($path)
