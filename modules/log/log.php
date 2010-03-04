@@ -4,20 +4,6 @@ Module::RegisterModule('ModLog');
 
 $GLOBALS['log_types'] = array('Information');
 
-function xslog(&$_d, $msg, $level = 0)
-{
-	$ins['log_date'] = SqlUnquote('NOW()');
-	$ins['log_level'] = $level;
-	$ins['log_message'] = $msg;
-
-	if (isset($_D['cl']))
-		$ins['log_user'] = $_d['cl']['usr_id'];
-	if (isset($_d['cl']['c2u_company']))
-		$ins['log_company'] = $_d['cl']['c2u_company'];
-
-	$_d['log.ds']->Add($ins);
-}
-
 class ModLog extends Module
 {
 	function Install()
@@ -39,6 +25,14 @@ EOF;
 		$GLOBALS['_d']['db']->Queries($queries);
 	}
 
+	function __construct()
+	{
+		global $_d;
+
+		$_d['log.ds'] = new DataSet($_d['db'], 'log');
+		$_d['log.ds']->Shortcut = 'log';
+	}
+
 	function Prepare()
 	{
 		parent::Prepare();
@@ -48,11 +42,6 @@ EOF;
 			$_d['page.links']['Admin']['Logs'] =
 				htmlspecialchars("{{me}}?cs=log");
 		}
-
-		global $_d;
-
-		$_d['log.ds'] = new DataSet($_d['db'], 'ype_log');
-		$_d['log.ds']->Shortcut = 'log';
 	}
 
 	function Get()
@@ -117,6 +106,22 @@ EOF;
 		}
 		else $body = "No log entries.<br />\n";
 		return GetBox("box_logs", "Logs", $body);
+	}
+
+	static function Log($msg, $level = 0)
+	{
+		global $_d;
+
+		$ins['log_date'] = SqlUnquote('NOW()');
+		$ins['log_level'] = $level;
+		$ins['log_message'] = $msg;
+
+		if (isset($_d['cl']))
+			$ins['log_user'] = $_d['cl']['usr_id'];
+		if (isset($_d['cl']['c2u_company']))
+			$ins['log_company'] = $_d['cl']['c2u_company'];
+
+		$_d['log.ds']->Add($ins);
 	}
 }
 

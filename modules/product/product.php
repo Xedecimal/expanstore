@@ -167,8 +167,9 @@ EOF;
 
 		if ($ca == 'add')
 		{
-			if (!preg_match("/([\d]+\.*[\d]{0,2})*/",
-				GetVar('formProduct_price', 0), $m))
+			$price = GetVar('price', 0);
+
+			if (!preg_match('/([\d]+)/', $price, $m))
 			{
 				$ca = 'prepare';
 				$error['price'] = "You must specify a numeric price (eg. 52.32)";
@@ -177,8 +178,8 @@ EOF;
 			{
 				$prod = array(
 					'prod_date' => SqlUnquote('NOW()'),
-					'prod_name' => GetVar('formProduct_name'),
-					'prod_desc' => GetVar('formProduct_desc'),
+					'prod_name' => GetVar('name'),
+					'prod_desc' => GetVar('desc'),
 					'prod_price' => number_format($m[1], 2));
 
 				$prod['prod_id'] = $_d['product.ds']->Add($prod);
@@ -187,7 +188,7 @@ EOF;
 					RunCallbacks($_d['product.callbacks.add'], $_d, $prod,
 						$prod['prod_id']);
 
-				#xslog($_d, "Added product {$prod['prod_name']} ({$prod['model']})");
+				ModLog::Log("Added product {$prod['prod_name']} ({$prod['prod_id']})");
 			}
 
 			if (empty($error)) $_d['ca'] = 'view';

@@ -128,18 +128,17 @@ EOF;
 
 	function cb_product_addfields($_d, $form)
 	{
-		$cats = QueryCatsAll($_d);
+		$cats = ModCategory::QueryAll();
 
 		$cc = GetVar('cc');
 
 		$form->AddInput(new FormInput('Category', 'select', 'category',
-			DataToSel($cats, 'cat_name', 'cat_id', $cc, 'Home'),
-			'onchange="catChange();" style="width: 100%"'));
+			DataToSel($cats, 'cat_name', 'cat_id', 'Home')));
 	}
 
 	function cb_product_editfields($_d, $prod, $form)
 	{
-		$cats = QueryCatsAll($_d);
+		$cats = ModCategory::QueryAll();
 		$sels = DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat'], 'Home');
 		$form->AddInput(new FormInput('Category',
 			'select', 'category', $sels, array('STYLE' => "width: 100%")));
@@ -148,7 +147,7 @@ EOF;
 	function cb_product_add($_d, $prod, $id)
 	{
 		$_d['cat_prod.ds']->Add(array(
-			'catprod_cat' => GetVar('formProduct_category'),
+			'catprod_cat' => GetVar('category'),
 			'catprod_prod' => $id
 		));
 	}
