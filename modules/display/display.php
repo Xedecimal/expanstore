@@ -46,16 +46,7 @@ class ModTemplate extends Module
 
 		$_d['index.cb.prelink']['template'] = array(&$this, 'cb_index_prelink');
 		$_d['index.cb.get']['template'] = array(&$this, 'cb_index_get');
-		if (file_exists('config/blocks.dat'))
-		{
-			$_d['settings']['blocks'] =
-				unserialize(file_get_contents('config/blocks.dat'));
-		}
-		if (file_exists('config/order.dat'))
-		{
-			$orders = unserialize(file_get_contents('config/order.dat'));
-			foreach ($orders as $m => $v) $_d['module.order'][$m] = $v;
-		}
+		$this->Load();
 	}
 
 	function cb_index_prelink()
@@ -102,6 +93,7 @@ class ModTemplate extends Module
 		{
 			file_put_contents('config/blocks.dat', serialize(GetVar('blocks')));
 			file_put_contents('config/order.dat', serialize(GetVar('order')));
+			$this->Load();
 		}
 	}
 
@@ -162,6 +154,22 @@ class ModTemplate extends Module
 			if (is_dir("template/{$f}")) $temps[$f] = new SelOption($f, false, $sel);
 		}
 		return $temps;
+	}
+
+	function Load()
+	{
+		global $_d;
+
+		if (file_exists('config/blocks.dat'))
+		{
+			$_d['settings']['blocks'] =
+				unserialize(file_get_contents('config/blocks.dat'));
+		}
+		if (file_exists('config/order.dat'))
+		{
+			$orders = unserialize(file_get_contents('config/order.dat'));
+			foreach ($orders as $m => $v) $_d['module.order'][$m] = $v;
+		}
 	}
 
 	static function TransHref($a)
