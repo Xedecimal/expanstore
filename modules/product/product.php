@@ -368,7 +368,7 @@ EOF;
 
 		$pt = new ProductTemplate('admin');
 		$pt->prods = $this->GetAdminProducts();
-		return $pt->ParseFile(t('product/listing.xml'));
+		return $pt->ParseFile(l('product/listing.xml'));
 	}
 
 	/**
