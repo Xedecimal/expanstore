@@ -6,23 +6,26 @@ if (!isset($_d['settings']['site_template'])) $_d['settings']['site_template'] =
 $_d['template_path'] = $_d['settings']['site_template'];
 $_d['template_url'] = $_d['app_abs'].'/template/'.$_d['settings']['site_template'];
 
-//$_d['template.transforms']['link'] = array('ModTemplate', 'TransHref');
-//$_d['template.transforms']['a'] = array('ModTemplate', 'TransHref');
-//$_d['template.transforms']['img'] = array('ModTemplate', 'TransSrc');
-//$_d['template.transforms']['script'] = array('ModTemplate', 'TransSrc');
+$_d['template.transforms']['link'] = array('ModTemplate', 'TransHref');
+$_d['template.transforms']['a'] = array('ModTemplate', 'TransHref');
+$_d['template.transforms']['img'] = array('ModTemplate', 'TransSrc');
+$_d['template.transforms']['script'] = array('ModTemplate', 'TransSrc');
 
-/*function p($path)
+function p($path)
 {
 	global $_d;
+	$abs = $_d['app_abs'];
+	$tmp = $_d['settings']['site_template'];
 
 	// Overloaded Path
-	$opath = $_d['settings']['site_template'].'/'.$path;
-	if (file_exists($opath)) return $_d['app_abs'].'/'.$opath;
-	// Default Path
+	$opath = "$tmp/$path";
+	if (file_exists($opath)) return "$abs/$opath";
+	// Module Path
 	$modpath = "modules/{$path}";
-	if (file_exists($modpath)) return "{$_d['app_abs']}/modules/{$path}";
-	return $_d['app_abs'].'/'.$path;
-}*/
+	if (file_exists($modpath)) return "$abs/modules/$path";
+	if (substr($path, 0, strlen($abs)) == $abs) return $path;
+	return "$abs/$path";
+}
 
 function l($path)
 {
