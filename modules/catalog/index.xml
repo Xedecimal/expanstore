@@ -6,7 +6,7 @@
 	<script type="text/javascript" src="xedlib/js/jquery-ui.min.js"></script>
 </head>
 <body>
-<a href="index.php"><img src="{{app_abs}}/images/logo.png" border="0" alt="Logo"/></a>
+<a href="index.php"><img src="{{app_abs}}/images/logo.png" alt="Logo"/></a>
 
 <div id="left"><block name="left" /></div>
 <div id="right"><block name="right">RIGHT BLOCK</block></div>

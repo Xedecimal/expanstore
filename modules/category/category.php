@@ -132,17 +132,16 @@ EOF;
 
 		$cc = GetVar('cc');
 
+		varinfo($cc);
 		$form->AddInput(new FormInput('Category', 'select', 'category',
-			DataToSel($cats, 'cat_name', 'cat_id', 'Home')));
+			DataToSel($cats, 'cat_name', 'cat_id', $cc)));
 	}
 
 	function cb_product_editfields($_d, $prod, $form)
 	{
 		$cats = ModCategory::QueryAll();
-		varinfo($prod['catprod_cat']);
 		$sels = DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat']);
-		$form->AddInput(new FormInput('Category',
-			'select', 'category', $sels));
+		$form->AddInput(new FormInput('Category', 'select', 'category', $sels));
 	}
 
 	function cb_product_add($_d, $prod, $id)
@@ -351,7 +350,7 @@ class ModCategoryAdmin extends Module
 				$_d['category.current']['cat_id'])));
 			$formAddCat->AddInput(new FormInput('Hide','checkbox','hidden'));
 			$formAddCat->AddInput(new FormInput('Image','file','image'));
-			RunCallbacks($_d['category.callbacks.fields'], $_d, $formAddCat);
+			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $formAddCat);
 			$formAddCat->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Add'));
 
@@ -395,7 +394,7 @@ class ModCategoryAdmin extends Module
 				$frmViewCat->Get('action="{{app_abs}}/category/update/'.$cid.'" method="post" enctype="multipart/form-data"'));
 		}
 
-		else // Category listing.
+		else if (!isset($ca)) // Category listing.
 		{
 			$ret = null;
 

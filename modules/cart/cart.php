@@ -188,9 +188,8 @@ EOF;
 	{
 		global $_d;
 
-		$body = null;
-
-		if (empty($_d['cl'])) return $body;
+		if ($_d['q'][0] != 'cart') return;
+		if (empty($_d['cl'])) return;
 
 		$cart = QueryProductList(array('cart_user' => $_d['cl']['usr_id']));
 

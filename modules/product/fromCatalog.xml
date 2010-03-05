@@ -2,23 +2,8 @@
 <product>
 <div class="product" id="divProd_{{prod_id}}">
 <prodhead />
-<span class="product_name"><a
-	href="product/view/{{prod_id}}">{{prod_name}}</a></span>
 
 <prodneck />
-
-	<!-- Properties -->
-	<prodprops>
-	<div class="divProdProps">
-		<prodprop>
-			<div class="product-prop">
-			<div class="product-field">{{field}}</div>
-			<div class="product-value">{{value}}</div>
-			</div>
-		</prodprop>
-	</div>
-	</prodprops>
-	<!-- /Properties -->
 
 	<!-- Images -->
 	<div class="photos">
@@ -28,9 +13,7 @@
 	</div>
 	<!-- /Images -->
 
-	<div class="product-description">
-	{{prod_desc}}
-	</div>
+	<span class="product_name"><a href="product/view/{{prod_id}}">{{prod_name}}</a></span>
 
 	<div class="divProdControls">
 		<callback ds="_d" name="product.cb.knee" />
@@ -40,6 +23,8 @@
 
 </div>
 </product>
+
+<div class="clear"></div>
 
 <callback ds="_d" name="product.cb.listing.foot" />
 
