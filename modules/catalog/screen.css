@@ -1,18 +1,4 @@
-body
-{
-	color: #000;
-	background-color: #FFF;
-	font-family: Tahoma, Verdana, sans-serif;
-}
-
-img { border: 0px; }
-
-table
-{
-	color: #000000;
-	font-family: Tahoma, Verdana, sans-serif;
-	font-size: 10pt;
-}
+a img { border: 0px; }
 
 table.light { color: #000000; }
 th { text-align: left; }
@@ -66,6 +52,10 @@ a:visited { color: #800; }
 .input_generic { width: 100%; }
 .form { width: 100%; }
 .product { width: 100%; }
+.product-prop { clear: both; }
+.product-field,.product-value { float: left; padding: 0 5px; }
+.product-field { width: 20%; text-align: right; }
+.product-description { clear: both; }
 
 #left { float: left; width: 200px; }
 #middle { padding-left: 200px; }

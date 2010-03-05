@@ -143,22 +143,13 @@ EOF;
 			if ($ca2 == 'rem')
 			{
 				$pid = $_d['q'][3];
-
-				$image = GetVar("image");
+				$img = $_d['q'][4];
 
 				$images = GetProductImages($pid);
-				if (isset($images[$image][0])) unlink($images[$image][0]);
-				if (isset($images[$image][1])) unlink($images[$image][1]);
-				if (isset($images[$image][2])) unlink($images[$image][2]);
 
-				for ($x = $image + 1; $x < count($images); $x++)
-				{
-					rename($images[$x][0], $images[$x-1][0]);
-					rename($images[$x][1], $images[$x-1][1]);
-					rename($images[$x][2], $images[$x-1][2]);
-				}
-
-				if ($x == 1) DelTree("prodimages/{$pid}/");
+				if (isset($images[$img]['l'])) unlink($images[$img]['l']);
+				if (isset($images[$img]['m'])) unlink($images[$img]['m']);
+				if (isset($images[$img]['s'])) unlink($images[$img]['s']);
 
 				$_d['q'][1] = 'edit';
 				$_d['q'][2] = $pid;

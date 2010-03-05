@@ -88,8 +88,8 @@ class ModAdmin extends Module
 
 	function cb_product_knee()
 	{
-		$eb = '{{app_abs}}/catalog/edit.png';
-		$db = '{{app_abs}}/catalog/delete.png';
+		$eb = 'catalog/edit.png';
+		$db = 'catalog/delete.png';
 
 		return <<<EOF
 		<a href="product/edit/{{prod_id}}?cc={{catprod_cat}}"
