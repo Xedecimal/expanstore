@@ -163,6 +163,7 @@ class ModUserAdmin extends Module
 
 		$dsUser->joins = array_merge($dsUser->joins, $_d['user.ds.joins']);
 		$edUsers = new EditorData('user', $dsUser);
+		$edUsers->Behavior->Target = 'user';
 		if (!empty($_d['user.ds.handlers']))
 			foreach ($_d['user.ds.handlers'] as $h)
 				$edUsers->AddHandler($h);
