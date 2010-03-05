@@ -1,7 +1,5 @@
 <?php
 
-Module::RegisterModule('ModNarrow');
-
 class ModNarrow extends Module
 {
 	function Prepare()
@@ -98,5 +96,7 @@ class ModNarrow extends Module
 		return $ret;
 	}
 }
+
+Module::RegisterModule('ModNarrow', array('ModDetail'));
 
 ?>

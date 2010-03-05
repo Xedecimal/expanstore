@@ -139,9 +139,10 @@ EOF;
 	function cb_product_editfields($_d, $prod, $form)
 	{
 		$cats = ModCategory::QueryAll();
-		$sels = DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat'], 'Home');
+		varinfo($prod['catprod_cat']);
+		$sels = DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat']);
 		$form->AddInput(new FormInput('Category',
-			'select', 'category', $sels, array('STYLE' => "width: 100%")));
+			'select', 'category', $sels));
 	}
 
 	function cb_product_add($_d, $prod, $id)
@@ -385,7 +386,7 @@ class ModCategoryAdmin extends Module
 				$cat['cat_hidden']));
 			$frmViewCat->AddInput(new FormInput('Image','file','image'));
 
-			RunCallbacks($_d['category.callbacks.fields'], $_d, $frmViewCat, $cat);
+			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $frmViewCat, $cat);
 
 			$frmViewCat->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Save'));
