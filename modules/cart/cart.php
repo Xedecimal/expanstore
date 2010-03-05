@@ -1,7 +1,5 @@
 <?php
 
-Module::RegisterModule('ModCart');
-
 class ModCart extends Module
 {
 	function __construct($installed)
@@ -104,8 +102,7 @@ EOF;
 		// Attach to Navigation
 
 		if (!empty($_d['cl']))
-			$_d['page.links']['Personal']['View Cart'] =
-				'{{me}}?cs=cart';
+			$_d['page.links']['Personal']['View Cart'] = '{{app_abs}}/cart';
 
 		// Attach to User.
 
@@ -183,11 +180,11 @@ EOF;
 		global $_d;
 
 		$t = new Template();
-		$t->ReWrite('cart', array(&$this, 'GetCart'));
+		$t->ReWrite('cart', array(&$this, 'TagCart'));
 		return $t->ParseFile(l('cart/index.xml'));
 	}
 
-	function GetCart()
+	function TagCart()
 	{
 		global $_d;
 
@@ -244,6 +241,10 @@ EOF;
 				$body .= $pt->ParseString($t->ParseFile($_d['tempath'].
 					'cart/product.xml'));
 			}
+			else
+			{
+				return "No items are currently in your cart.";
+			}
 		}
 
 		if (!empty($body)) return GetBox('box_cart', 'Your Cart', $body);
@@ -271,5 +272,7 @@ EOF;
 			." title=\"Add To Cart\" alt=\"Add To Cart\" /></a>\n";
 	}
 }
+
+Module::RegisterModule('ModCart');
 
 ?>
