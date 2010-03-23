@@ -21,7 +21,8 @@ $_d['app_abs'] = GetRelativePath($_d['app_dir']);
 
 //Persistant variables
 
-if (file_exists('settings.ini')) $_d['settings'] = parse_ini_file('settings.ini');
+if (file_exists('settings.ini'))
+	$_d['settings'] = parse_ini_file('settings.ini');
 
 foreach (explode(',', $_d['settings']['module.disable']) as $m)
 	$_d['module.disable'][$m] = true;
