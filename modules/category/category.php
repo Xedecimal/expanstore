@@ -14,7 +14,7 @@ class ModCategory extends Module
 		$dsCP = new DataSet($_d['db'], 'cat_prod');
 		$_d['cat_prod.ds'] = $dsCP;
 
-		if ($_d['q'][0] == 'category' && is_numeric($_d['q'][1]))
+		if ($_d['q'][0] == 'category' && is_numeric(@$_d['q'][1]))
 			$_SESSION['cc'] = $_d['q'][1];
 	}
 
@@ -84,7 +84,10 @@ EOF;
 
 		// Globally available tags for templating
 		$_d['template.rewrites']['showcat'] = array(&$this, 'TagShowCat');
-	}
+
+		if ($_d['cl']['usr_access'] > 500)
+			$_d['page.links']['Admin']['Categories'] = '{{app_abs}}/category';
+ 	}
 
 	function Prepare($require = false)
 	{
@@ -98,7 +101,7 @@ EOF;
 
 		if ($cs != 'category') return;
 
-		$ca = $_d['q'][1];
+		$ca = @$_d['q'][1];
 
 		if ($ca == 'delete')
 		{
