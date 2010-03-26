@@ -110,7 +110,8 @@ EOF;
 
 		$ret = null;
 		if (isset($cl['usr_access']))
-			if (isset($cl['c2u_company']) && $cl['c2u_company'] != 0)
+			if ((isset($cl['c2u_company']) && $cl['c2u_company'] != 0)
+			|| $cl['usr_access'] > 500)
 				return '<a href="{{app_abs}}/product/prepare">Add Product</a>';
 	}
 }

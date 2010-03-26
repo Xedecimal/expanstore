@@ -2,7 +2,7 @@
 
 require_once('h_main.php');
 
-Module::Initialize();
+Module::Initialize(true);
 echo Module::Run(l('catalog/index.xml'));
 
 function TagInstallForm($t)

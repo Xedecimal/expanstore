@@ -7,5 +7,5 @@
 	# ignore existing directories
 	RewriteCond %{REQUEST_FILENAME} !-d
 
-	RewriteRule ^(.*)$ index.php?q=$1 [L]
+	RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
 </IfModule>
