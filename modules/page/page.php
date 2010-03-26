@@ -33,7 +33,8 @@ class ModPage extends Module
 			if (file_exists("content/{$name}.xml"))
 				$out = file_get_contents("content/{$name}.xml");
 		}
-		else if (file_exists('content/index.xml') && empty($_SESSION['cc']))
+		else if (file_exists('content/index.xml') && empty($_d['q'][0])
+			&& empty($_SESSION['cc']))
 		{
 			$name = 'Home';
 			$out = file_get_contents('content/index.xml');

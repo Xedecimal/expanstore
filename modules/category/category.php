@@ -135,7 +135,6 @@ EOF;
 
 		$cc = GetVar('cc');
 
-		varinfo($cc);
 		$form->AddInput(new FormInput('Category', 'select', 'category',
 			DataToSel($cats, 'cat_name', 'cat_id', $cc)));
 	}
@@ -341,9 +340,6 @@ class ModCategoryAdmin extends Module
 		if ($ca == 'prepare')
 		{
 			$formAddCat = new Form("formAddCat");
-			$formAddCat->AddHidden("ca", "add");
-			$formAddCat->AddHidden("cs", GetVar('cs'));
-			$formAddCat->AddHidden("cc", GetVar('cc'));
 			$formAddCat->AddInput(new FormInput('Name', 'text', 'name', null,
 				'style="width: 100%"'));
 			$formAddCat->AddInput(new FormInput('Description', 'area', 'desc', null,
@@ -351,8 +347,8 @@ class ModCategoryAdmin extends Module
 			$formAddCat->AddInput(new FormInput('Parent Category', 'select',
 				'parent', DataToSel(ModCategory::QueryAll(), 'cat_name', 'cat_id',
 				$_d['category.current']['cat_id'])));
-			$formAddCat->AddInput(new FormInput('Hide','checkbox','hidden'));
-			$formAddCat->AddInput(new FormInput('Image','file','image'));
+			$formAddCat->AddInput(new FormInput('Hide', 'checkbox', 'hidden'));
+			$formAddCat->AddInput(new FormInput('Image', 'file', 'image'));
 			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $formAddCat);
 			$formAddCat->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Add'));
@@ -394,7 +390,8 @@ class ModCategoryAdmin extends Module
 				'Save'));
 
 			return GetBox("box_category", "Category Properties",
-				$frmViewCat->Get('action="{{app_abs}}/category/update/'.$cid.'" method="post" enctype="multipart/form-data"'));
+				$frmViewCat->Get('action="{{app_abs}}/category/update/'.$cid
+					.'" method="post" enctype="multipart/form-data"'));
 		}
 
 		else if (!isset($ca)) // Category listing.
@@ -417,6 +414,7 @@ class ModCategoryLocation extends Module
 	{
 		global $_d;
 		$t = new Template();
+		if (@$_d['category.current']['cat_hidden']) return;
 		$t->Set($_d['category.current']);
 		$t->ReWrite('path', array($this, 'TagPath'));
 		return $t->ParseFile(l('category/location.xml'));
