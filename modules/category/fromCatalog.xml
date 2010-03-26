@@ -7,11 +7,11 @@
 <li class="liCat" id="liCategory.{{cat_id}}">
 <div class="divCat" id="divCat_{{cat_id}}">
 <a class="aCat" id="aCat_{{cat_id}}"
-	href="category/{{cat_id}}">{{cat_name}}</a>
+	href="{{app_abs}}/category/{{cat_id}}">{{cat_name}}</a>
 
 <admin>
 <a class="aCatEdit" id="aCatEdit_{{cat_id}}"
-	href="category/edit/{{cat_id}}" title="Edit">Edit</a>
+	href="{{app_abs}}/category/edit/{{cat_id}}" title="Edit">Edit</a>
 <a href="#" class="aCatDelete" id="aCatDelete_{{cat_id}}"
 	title="Delete">Delete</a>
 </admin>
@@ -24,7 +24,7 @@
 </notempty>
 
 <admin>
-<a href="category/prepare">Create Category</a>
+<a href="{{app_abs}}/category/prepare">Create Category</a>
 </admin>
 
 </null>

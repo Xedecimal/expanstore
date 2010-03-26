@@ -11,32 +11,6 @@ $_d['template.transforms']['a'] = array('ModTemplate', 'TransHref');
 $_d['template.transforms']['img'] = array('ModTemplate', 'TransSrc');
 $_d['template.transforms']['script'] = array('ModTemplate', 'TransSrc');
 
-function p($path)
-{
-	global $_d;
-	$abs = $_d['app_abs'];
-	$tmp = $_d['settings']['site_template'];
-
-	// Overloaded Path
-	$opath = "$tmp/$path";
-	if (file_exists($opath)) return "$abs/$opath";
-	// Module Path
-	$modpath = "modules/{$path}";
-	if (file_exists($modpath)) return "$abs/modules/$path";
-	if (substr($path, 0, strlen($abs)) == $abs) return $path;
-	return "$abs/$path";
-}
-
-function l($path)
-{
-	global $_d;
-
-	$ovrpath = $_d['settings']['site_template'].'/'.$path;
-	if (file_exists($ovrpath)) return "{$_d['app_dir']}/{$ovrpath}";
-	$modpath = "{$_d['app_dir']}/modules/{$path}";
-	if (file_exists($modpath)) return "{$_d['app_dir']}/modules/{$path}";
-}
-
 function TemplateCheck()
 {
 	global $_d;

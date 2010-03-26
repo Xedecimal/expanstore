@@ -231,6 +231,7 @@ EOF;
 		}
 
 		$edCompany = new EditorData('company', $_d['company.ds']);
+		$edCompany->Behavior->Target = 'company';
 		$edCompany->Prepare();
 		return $edCompany->GetUI('cs');
 
