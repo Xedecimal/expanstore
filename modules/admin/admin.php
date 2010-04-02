@@ -88,6 +88,10 @@ class ModAdmin extends Module
 
 	function cb_product_knee()
 	{
+		global $_d;
+
+		if ($_d['cl']['usr_access'] < 500) return;
+
 		$eb = 'catalog/edit.png';
 		$db = 'catalog/delete.png';
 
