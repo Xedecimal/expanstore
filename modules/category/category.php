@@ -84,6 +84,7 @@ EOF;
 
 		// Globally available tags for templating
 		$_d['template.rewrites']['showcat'] = array(&$this, 'TagShowCat');
+		$_d['template.rewrites']['category'] = array(&$this, 'TagCategory');
 
 		if ($_d['cl']['usr_access'] > 500)
 			$_d['page.links']['Admin']['Categories'] = '{{app_abs}}/category';
@@ -175,8 +176,11 @@ EOF;
 		if ($_d['cl']['usr_access'] > 500) return $g;
 	}
 
-	function TagCategory($t, $g)
+	function TagCategory($t, $g, $a)
 	{
+		if (!empty($a['PARENT']))
+			$this->cats = ModCategory::QueryCats($a['PARENT']);
+
 		$tt = new Template();
 		$tt->ReWrite('admin', array(&$this, 'TagAdmin'));
 		$gen = array('icon' => 'images/folder.png');
