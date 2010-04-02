@@ -13,7 +13,17 @@
 		</table>
 		</td>
 		</prodprops>
-		<td align="right"><prodimages/></td>
+		<td align="right">
+			<!-- Images -->
+			<div class="photos">
+			<prodimage>
+				<a href="{{app_abs}}/{{large}}" class="thumb">
+					<img src="{{app_abs}}/{{small}}" alt="thumbnail"
+						title="Click to enlarge" /></a>
+			</prodimage>
+			</div>
+			<!-- /Images -->
+		</td>
 	</tr>
 	<tr><td><proddesc/></td></tr>
 	<tr><td>

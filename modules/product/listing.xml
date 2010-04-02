@@ -3,7 +3,7 @@
 <table>
 <tr><th>Name</th><th>Price</th></tr>
 <product><tr id="trProd.{{prod_id}}">
-	<td><a href="product/edit/{{prod_id}}">{{prod_name}}</a></td>
+	<td><a href="{{app_abs}}/product/edit/{{prod_id}}">{{prod_name}}</a></td>
 	<td>{{prod_price}}</td>
 	<admin_product>
 		<td><a href="#" id="ancDelete.{{prod_id}}" class="ancDelete">Delete</a></td>
