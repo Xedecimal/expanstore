@@ -5,15 +5,16 @@
 
 <prodneck />
 
+	<span class="product_name"><a href="product/view/{{prod_id}}">{{prod_name}}</a></span>
+
 	<!-- Images -->
 	<div class="photos">
 	<prodimage>
-		<a href="{{large}}" class="thumb"><img src="{{small}}" alt="thumbnail" title="Click to enlarge" /></a>
+		<a href="{{app_abs}}/{{large}}" class="thumb">
+			<img src="{{app_abs}}/{{small}}" alt="thumbnail" title="Click to enlarge" /></a>
 	</prodimage>
 	</div>
 	<!-- /Images -->
-
-	<span class="product_name"><a href="product/view/{{prod_id}}">{{prod_name}}</a></span>
 
 	<div class="divProdControls">
 		<callback ds="_d" name="product.cb.knee" />
