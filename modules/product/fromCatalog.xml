@@ -1,27 +1,33 @@
 <null>
 <product>
 <div class="product" id="divProd_{{prod_id}}">
-<prodhead />
-
-<prodneck />
-
-	<span class="product_name"><a href="product/view/{{prod_id}}">{{prod_name}}</a></span>
+	<prodhead />
+	<prodneck />
 
 	<!-- Images -->
 	<div class="photos">
 	<prodimage>
 		<a href="{{app_abs}}/{{large}}" class="thumb">
-			<img src="{{app_abs}}/{{small}}" alt="thumbnail" title="Click to enlarge" /></a>
+			<img src="{{app_abs}}/{{small}}" alt="thumbnail"
+				title="Click to enlarge" /></a>
 	</prodimage>
 	</div>
 	<!-- /Images -->
+
+	<span class="product_name"><a
+		href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
+
+	<prodprops exclude="Category">
+	<ul>
+		<prodprop><li><b>{{field}}</b> {{value}}</li></prodprop>
+	</ul>
+	</prodprops>
 
 	<div class="divProdControls">
 		<callback ds="_d" name="product.cb.knee" />
 	</div>
 
 	<prodfoot/>
-
 </div>
 </product>
 

@@ -26,12 +26,12 @@ a { color: #800; font-weight: bold; text-decoration: none; }
 .form { width: 100%; }
 .product
 {
-	width: 150px;
+	width: 300px;
 	height: 150px;
 	float: left;
-	text-align: middle;
-	overflow: auto;
 }
+
+.product ul { margin: 0; padding: 0; list-style: none; }
 
 #left { float: left; width: 200px; }
 #middle { padding-left: 200px; }

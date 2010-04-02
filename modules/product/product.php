@@ -390,8 +390,8 @@ class ModProductList extends Module
 	{
 		global $_d;
 
-		$cs = GetVar('cs');
-		if (!empty($cs)) return;
+		$cs = @$_d['q'][0];
+		if (!empty($cs) && $cs != 'category') return;
 
 		$ret = null;
 
@@ -495,9 +495,25 @@ class ProductTemplate
 			return RunCallbacks($_d['product.callbacks.neck'], $_d, $prod);
 	}
 
-	function TagProps($t, $guts)
+	function TagProps($t, $g, $a)
 	{
-		if (!empty($this->props)) return $guts;
+		global $_d;
+
+		if (!empty($_d['product.callbacks.props']))
+		{
+			foreach ($_d['product.callbacks.props'] as $cb)
+			{
+				$rv = call_user_func($cb, $_d, $this->prod);
+				if (is_array($rv)) $this->props = array_merge($this->props, $rv);
+			}
+		}
+
+		if (!empty($a['EXCLUDE']))
+			foreach (explode(',', $a['EXCLUDE']) as $i)
+				unset($this->props[$i]);
+
+		if (!empty($this->props))
+			return $g;
 	}
 
 	function TagProp($t, $guts)
@@ -509,17 +525,7 @@ class ProductTemplate
 		if (!empty($this->prod['model']))
 			$this->props['Model'] = $this->prod['model'];
 
-		$ret = '';
-
-		if (!empty($_d['product.callbacks.props']))
-		{
-			foreach ($_d['product.callbacks.props'] as $cb)
-			{
-				$rv = call_user_func($cb, $_d, $this->prod);
-				if (is_array($rv)) $this->props = array_merge($this->props, $rv);
-				else $ret .= $rv;
-			}
-		}
+		$ret = null;
 
 		$vp = new VarParser();
 		foreach ($this->props as $f => $v)
