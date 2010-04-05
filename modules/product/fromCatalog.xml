@@ -6,7 +6,7 @@
 
 	<!-- Images -->
 	<div class="photos">
-	<prodimage>
+	<prodimage limit="1">
 		<a href="{{app_abs}}/{{large}}" class="thumb">
 			<img src="{{app_abs}}/{{small}}" alt="thumbnail"
 				title="Click to enlarge" /></a>

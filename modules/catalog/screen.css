@@ -24,9 +24,10 @@ a { color: #800; font-weight: bold; text-decoration: none; }
 
 .input_generic { width: 100%; }
 .form { width: 100%; }
+.product_details { clear: both; }
 .product
 {
-	width: 300px;
+	width: 200px;
 	height: 150px;
 	float: left;
 }
