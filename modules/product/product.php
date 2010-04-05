@@ -38,19 +38,20 @@ function QueryProductCount($_d, $cat)
 	return $_d['product.ds']->GetCount(array('cat' => number_format($cat)));
 }
 
-function GetProductImages($id)
+function GetProductImages($id, $limit = null)
 {
 	$arimages = array();
 
 	if (file_exists("prodimages/{$id}/"))
 	{
-		foreach (glob("prodimages/{$id}/*") as $f)
+		foreach (glob("prodimages/{$id}/*") as $ix => $f)
 		{
 			preg_match('/(l|m|s)_([^.]+)\.([^.]+)$/', basename($f), $m);
 			$arimages[$m[2]][$m[1]] = $f;
 		}
 	}
 
+	if (is_numeric($limit)) return array_splice($arimages, 0, $limit);
 	return $arimages;
 }
 
@@ -438,7 +439,7 @@ class ModProdsLatest extends Module
 		$pt->prods = QueryProductList($_d['product.latest.match'], $sort);
 
 		if (empty($pt->prods)) return;
-		return $pt->ParseFile($_d['template_path'].'/product/fromCatalog.xml');
+		return $pt->ParseFile(l('product/latest.xml'));
 	}
 }
 
@@ -459,7 +460,6 @@ class ProductTemplate
 		$tt->ReWrite('prodhead', array(&$this, 'TagHead'));
 		$tt->ReWrite('prodneck', array(&$this, 'TagNeck'));
 		$tt->ReWrite('prodprops', array(&$this, 'TagProps'));
-		$tt->ReWrite('prodprop', array(&$this, 'TagProp'));
 		$tt->ReWrite('prodimage', array(&$this, 'TagImage'));
 		$tt->ReWrite('proddesc', array(&$this, 'TagDesc'));
 		$tt->ReWrite('prodknee', array(&$this, 'TagKnee'));
@@ -508,12 +508,20 @@ class ProductTemplate
 			}
 		}
 
+		if (!@$_d['settings']['hideanonprice'] || !empty($_d['cl']))
+			$this->props['Price'] = "\$".$this->prod['prod_price'];
+		if (!empty($this->prod['model']))
+			$this->props['Model'] = $this->prod['model'];
+
 		if (!empty($a['EXCLUDE']))
 			foreach (explode(',', $a['EXCLUDE']) as $i)
 				unset($this->props[$i]);
 
 		if (!empty($this->props))
-			return $g;
+		{
+			$t->ReWrite('prodprop', array(&$this, 'TagProp'));
+			return $t->GetString($g);
+		}
 	}
 
 	function TagProp($t, $guts)
@@ -533,11 +541,12 @@ class ProductTemplate
 		return $ret;
 	}
 
-	function TagImage($t, $g)
+	function TagImage($t, $g, $a)
 	{
 		$vp = new VarParser();
 		$imgout = null;
-		foreach (GetProductImages($this->prod['prod_id']) as $f => $sizes)
+		foreach (GetProductImages($this->prod['prod_id'], @$a['LIMIT'])
+			as $f => $sizes)
 		{
 			$d = $this->prod;
 			$d['large'] = $sizes['l'];
