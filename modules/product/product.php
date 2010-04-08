@@ -104,7 +104,7 @@ EOF;
 
 		if (isset($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
-			$_d['page.links']['Admin']['Products'] = '{{app_abs}}/product';
+			$_d['page.links']['Admin']['Products']['Listing'] = '{{app_abs}}/product';
 		}
 	}
 
