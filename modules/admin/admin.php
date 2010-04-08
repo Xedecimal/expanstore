@@ -15,7 +15,9 @@ class ModAdmin extends Module
 		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
 			$_d['page.links']['Admin']['Settings'] =
-				htmlspecialchars("{{app_abs}}/admin");
+				p("admin");
+			$_d['page.links']['Admin']['Products']['Create'] =
+				p('product/prepare');
 		}
 
 		// Attach to Product.
@@ -104,19 +106,6 @@ class ModAdmin extends Module
 			<img src="$db" title="Delete" alt="Delete" />
 		</a>
 EOF;
-	}
-
-	function cb_product_listing_foot()
-	{
-		global $_d;
-
-		$cl = $_d['cl'];
-
-		$ret = null;
-		if (isset($cl['usr_access']))
-			if ((isset($cl['c2u_company']) && $cl['c2u_company'] != 0)
-			|| $cl['usr_access'] > 500)
-				return '<a href="{{app_abs}}/product/prepare">Add Product</a>';
 	}
 }
 
