@@ -24,7 +24,7 @@
 </div>
 <!-- /Images -->
 
-<proddesc/>
+<p>{{prod_desc}}</p>
 
 <admin_product>
 <a href="{{me}}?cs=product&amp;ca=edit&amp;ci={{prod_id}}&amp;cc={{cat}}"

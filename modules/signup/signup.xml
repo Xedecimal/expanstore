@@ -1,0 +1,30 @@
+<div class="signup">
+<script type="text/javascript" src="signup/signup.js"></script>
+
+<form action="{{app_abs}}/signup/signup" method="post">
+<fieldset>
+<legend>User Information</legend>
+<ul>
+<li><label for="usr_user">Username</label>
+<input type="text" name="user[usr_user]" id="usr_user" value="{{usr_user}}" />
+<span id="user_text">{{errors.usr_user}}</span></li>
+<li><label for="usr_email">Email</label>
+<input type="text" name="user[usr_email]" id="usr_email" value="{{usr_email}}" />
+<span id="email_text">{{errors.usr_email}}</span></li>
+<li><label for="usr_name">Real Name</label>
+<input type="text" name="user[usr_name]" id="usr_name" value="{{usr_name}}" /></li>
+<li><label for="usr_address">Address</label>
+<input type="text" name="user[usr_address]" id="usr_address" value="{{usr_address}}" /></li>
+<li><label for="usr_city">City</label>
+<input type="text" name="user[usr_city]" id="usr_city" value="{{usr_city}}" /></li>
+<li><label for="usr_state">State</label>
+<input type="text" name="user[usr_state]" id="usr_state" value="{{usr_state}}" /></li>
+<li><label for="usr_zip">Zip</label>
+<input type="text" name="user[usr_zip]" id="usr_zip" value="{{usr_zip}}" /></li>
+<li><label for="usr_phone">Phone</label>
+<input type="text" name="user[usr_phone]" id="usr_phone" value="{{usr_phone}}" /></li>
+</ul>
+</fieldset>
+<input type="submit" value="Sign Up" />
+</form>
+</div>

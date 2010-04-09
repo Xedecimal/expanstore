@@ -155,11 +155,11 @@ EOF;
 		));
 	}
 
-	function cb_product_update($_d, $prod)
+	function cb_product_update($_d, $prod, $pid)
 	{
 		$_d['cat_prod.ds']->Add(array(
 			'catprod_cat' => GetVar('category'),
-			'catprod_prod' => GetVar('ci')
+			'catprod_prod' => $pid
 		), true);
 	}
 
@@ -350,7 +350,7 @@ class ModCategoryAdmin extends Module
 				'style="width: 100%; height: 100px;"'));
 			$formAddCat->AddInput(new FormInput('Parent Category', 'select',
 				'parent', DataToSel(ModCategory::QueryAll(), 'cat_name', 'cat_id',
-				$_d['category.current']['cat_id'])));
+				@$_d['category.current']['cat_id'])));
 			$formAddCat->AddInput(new FormInput('Hide', 'checkbox', 'hidden'));
 			$formAddCat->AddInput(new FormInput('Image', 'file', 'image'));
 			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $formAddCat);
