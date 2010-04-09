@@ -156,24 +156,18 @@ EOF;
 				$_d['q'][2] = $pid;
 			}
 		}
-
 		if ($ca == 'add')
 		{
-			$price = GetVar('price', 0);
+			$prod = GetVar('prod');
 
-			if (!preg_match('/([\d]+)/', $price, $m))
+			if (!preg_match('/([\d]+)/', $prod['prod_price'], $m))
 			{
-				$ca = 'prepare';
-				$error['price'] = "You must specify a numeric price (eg. 52.32)";
+				$_d['q'][1] = 'prepare';
+				$this->errors['price'] = "You must specify a numeric price (eg. 52.32)";
 			}
 			else
 			{
-				$prod = array(
-					'prod_date' => SqlUnquote('NOW()'),
-					'prod_name' => GetVar('name'),
-					'prod_desc' => GetVar('desc'),
-					'prod_price' => number_format($m[1], 2));
-
+				$prod['prod_date'] = SqlUnquote('NOW()');
 				$prod['prod_id'] = $_d['product.ds']->Add($prod);
 
 				if (!empty($_d['product.callbacks.add']))
@@ -187,19 +181,14 @@ EOF;
 		}
 		else if ($ca == 'update')
 		{
-			$ci = $_d['q'][2];
+			$pid = $_d['q'][2];
 
-			$cols = array(
-				'prod_name'  => GetVar('name'),
-				'prod_desc'  => GetVar('desc'),
-				'prod_price' => GetVar('price'),
-			);
+			$prod = GetVar('prod');
 
-			RunCallbacks($_d['product.callbacks.update'], $_d, $cols,
-				$ci);
+			RunCallbacks($_d['product.callbacks.update'], $_d, $prod,
+				$pid);
 
-			$_d['product.ds']->Update(array('prod_id' => $ci), $cols);
-
+			$_d['product.ds']->Update(array('prod_id' => $pid), $prod);
 			$_d['q'][1] = 'view';
 		}
 		else if ($ca == 'delete')
@@ -243,7 +232,7 @@ EOF;
 		{
 			$ci = @$_d['q'][2];
 
-			$ret = '';
+			$ret = null;
 
 			$pt = new ProductTemplate('admin');
 			$pt->prods = QueryProductDetails($_d, $ci);
@@ -256,42 +245,95 @@ EOF;
 
 			return $ret;
 		}
-		else if ($ca == 'prepare')
+		else if ($ca == 'prepare' || $ca == 'edit')
 		{
-			$frmAdd = new Form("formProduct");
-			$frmAdd->AddInput(new FormInput('Name', 'text', 'name',
-				GetVar('name'), 'style="width: 100%"'));
-			$frmAdd->AddInput(new FormInput('Description', 'area', 'desc',
-				GetVar('desc'), 'cols="30" rows="10"'));
-			$frmAdd->AddInput(new FormInput('Price', 'text', 'price',
-				GetVar('price'), 'style="width: 100%"',
-				isset($error['price']) ? $error['price'] : null));
+			if ($ca == 'edit')
+			{
+				$pid = $_d['q'][2];
+				$query = array(
+					'match' => array('prod_id' => $pid),
+					'sort' => @$_d['product.ds.sort'],
+					'limit' => @$_d['product.ds.limit'],
+					'joins' => @$_d['product.ds.joins']
+				);
+				$data = $_d['product.ds']->GetOne($query);
+				$title = $data['prod_name'].' Properties';
+				$act = 'update/'.$pid;
+			}
+			else
+			{
+				$data = GetVar('prod');
+				$title = 'Create Product';
+				$act = 'add';
+			}
 
-			RunCallbacks($_d['product.callbacks.addfields'], $_d, $frmAdd);
+			$frmAdd = new Form("formProduct");
+			$frmAdd->AddInput(new FormInput('Name', 'text',
+				'prod[prod_name]', $data['prod_name'], 'style="width: 100%"'));
+			$frmAdd->AddInput(new FormInput('Description', 'area',
+				'prod[prod_desc]', $data['prod_desc'], 'cols="30" rows="10"'));
+			$frmAdd->AddInput(new FormInput('Price', 'text',
+				'prod[prod_price]', $data['prod_price'], 'style="width: 100%"',
+				isset($this->errors['price']) ? $this->errors['price'] : null));
+
+			if ($ca == 'prepare')
+				RunCallbacks($_d['product.callbacks.addfields'], $_d, $frmAdd);
+			if ($ca == 'edit')
+				RunCallbacks($_d['product.callbacks.editfields'], $_d, $data,
+					$frmAdd);
 
 			$frmAdd->AddInput(new FormInput(null, 'submit', 'butSubmit',
-				'Create Product'));
-			$ret = GetBox('box_create', 'Create Product',
-				$frmAdd->Get('action="{{app_abs}}/product/add" method="post" id="formProduct"',
+				'Save'));
+			$ret = GetBox('box_create', $title,
+				$frmAdd->Get('action="{{app_abs}}/product/'.$act.'" method="post" id="formProduct"',
 				'width="100%"'));
+
+			if ($ca == 'edit')
+			{
+				$images = GetProductImages($data['prod_id']);
+
+				if (count($images) > 0)
+				{
+					$str = "<table><tr>";
+					foreach ($images as $f => $sizes)
+					{
+						$str .= '<td align="center">';
+						$str .= "<a href=\"{$sizes['l']}\" target=\"_blank\">
+							<img src=\"{{app_abs}}/{$sizes['s']}\" border=\"0\"
+							alt=\"Click to enlarge\" title=\"Click to enlarge\"
+							/></a><br/>";
+						$str .= "<a href=\"{{app_abs}}/{$cs}/image/rem/{$pid}/{$f}\""
+							." onclick=\"return confirm('Are you sure?');\">".
+							"Remove</a>\n";
+						$str .= "</td>";
+					}
+					$str .= "</tr></table>\n";
+
+					$ret .= GetBox('box_images', 'Product Images', $str);
+				}
+
+				if (count($images) < 5)
+				{
+					$frmImages = new Form('frmImages');
+					$frmImages->AddHidden('ci', GetVar('ci'));
+					$frmImages->AddInput(new FormInput('File', 'file', 'file',
+						null, 'size="50"'));
+					$frmImages->AddInput(new FormInput(null, 'submit', 'butSubmit',
+						'Upload'));
+					$ret .= GetBox('box_upload', 'Upload Product Image',
+						$frmImages->Get('action="{{app_abs}}/product/image/add/'.
+							$_d['q'][2].'" method="post"'));
+				}
+			}
+
 			return $ret;
 		}
 		else if ($ca == 'edit')
 		{
 			$pid = $_d['q'][2];
 
-			$query = array(
-				'match' => array('prod_id' => $pid),
-				'sort' => @$_d['product.ds.sort'],
-				'limit' => @$_d['product.ds.limit'],
-				'joins' => @$_d['product.ds.joins']
-			);
-			$prod = $_d['product.ds']->GetOne($query);
-
 			if (!ModUser::RequestAccess(500))
-			{
 				if (!RequestCompany($prod['comp_id'])) return;
-			}
 
 			$frmViewProd = new Form('formProdProps',
 				array(null, 'width="100%"'));
@@ -306,9 +348,6 @@ EOF;
 			$frmViewProd->AddInput(new FormInput('Price', 'text', 'price',
 				$prod['prod_price'], 'style="width: 100%"'));
 
-			RunCallbacks($_d['product.callbacks.editfields'], $_d, $prod,
-				$frmViewProd);
-
 			$frmViewProd->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Save'));
 
@@ -316,41 +355,6 @@ EOF;
 				$prod['prod_name'],
 				$frmViewProd->Get('action="{{app_abs}}/product/update/'.$pid
 					.'" method="post"', 'width="100%"'));
-
-			$images = GetProductImages($prod['prod_id']);
-
-			if (count($images) > 0)
-			{
-				$str = "<table><tr>";
-				foreach ($images as $f => $sizes)
-				{
-					$str .= '<td align="center">';
-					$str .= "<a href=\"{$sizes['l']}\" target=\"_blank\">
-						<img src=\"{{app_abs}}/{$sizes['s']}\" border=\"0\"
-						alt=\"Click to enlarge\" title=\"Click to enlarge\"
-						/></a><br/>";
-					$str .= "<a href=\"{{app_abs}}/{$cs}/image/rem/{$pid}/{$f}\""
-						." onclick=\"return confirm('Are you sure?');\">".
-						"Remove</a>\n";
-					$str .= "</td>";
-				}
-				$str .= "</tr></table>\n";
-
-				$body .= GetBox('box_images', 'Product Images', $str);
-			}
-
-			if (count($images) < 5)
-			{
-				$frmImages = new Form('frmImages');
-				$frmImages->AddHidden('ci', GetVar('ci'));
-				$frmImages->AddInput(new FormInput('File', 'file', 'file',
-					null, 'size="50"'));
-				$frmImages->AddInput(new FormInput(null, 'submit', 'butSubmit',
-					'Upload'));
-				$body .= GetBox('box_upload', 'Upload Product Image',
-					$frmImages->Get('action="{{app_abs}}/product/image/add/'.
-						$_d['q'][2].'" method="post"'));
-			}
 
 			return $body;
 		}
@@ -555,18 +559,6 @@ class ProductTemplate
 			$imgout .= $vp->ParseVars($g, $d);
 		}
 		return $imgout;
-	}
-
-	function TagDesc($t, $guts)
-	{
-		global $_d;
-
-		if (isset($this->prod['desc']))
-		{
-			if (GetVar('cs') != 'product')
-				return htmlspecialchars(ChompString($this->prod['desc'], 255));
-			else return htmlspecialchars($this->prod['desc']);
-		}
 	}
 
 	function TagFoot($t)

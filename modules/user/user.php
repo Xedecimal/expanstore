@@ -101,6 +101,12 @@ EOF;
 
 			$_d['page.links']['Log Out'] = $_d['app_abs'].'/lm/logout';
 		}
+
+		if (@$_d['q'][0] != 'user') return;
+
+		// Validate
+		if ($_d['q'][1] == 'v')
+			die(json_encode(ModUser::Validate(GetVar('user'))));
 	}
 
 	function Get()
@@ -117,8 +123,30 @@ EOF;
 		{
 			$out .= $this->lm->Get();
 			$out .= RunCallbacks(@$_d['user.callbacks.knee']);
-			$out .= "Password forgotten? Remind me<br />\n";
 			return GetBox('box_user', 'Login', $out);
+		}
+	}
+
+	static function Validate($data)
+	{
+		global $_d;
+
+		if (isset($data['usr_user']))
+		{
+			// Simple validations
+			if (strlen($data['usr_user']) < 3) return array('usr_user' => 'Username is too short.');
+			else // On to data validation
+			{
+				$item = $_d['user.ds']->GetOne(array('match' => array(
+					'usr_user' => $data['usr_user'])));
+				if (!empty($item)) return
+					array('usr_user' => 'Username is already taken.');
+			}
+		}
+		if (isset($data['usr_email']))
+		{
+			if (!preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/', $data['usr_email']))
+				return array('usr_email' => 'Invalid address.');
 		}
 	}
 }

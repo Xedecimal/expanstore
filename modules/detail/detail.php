@@ -93,7 +93,7 @@ function QueryPropsByCat(&$_d, $cat)
 
 function QuerySPP(&$_d)
 {
-	$spec = isset($_d['category.current']) ?
+	$spec = isset($_d['category.current']['sc_spec']) ?
 		$_d['category.current']['sc_spec'] : 0;
 
 	$joins = array(
