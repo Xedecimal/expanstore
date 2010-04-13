@@ -15,16 +15,15 @@ class ModAdmin extends Module
 		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
 		{
 			$_d['page.links']['Admin']['Settings'] =
-				p("admin");
+				'{{app_abs}}/admin';
 			$_d['page.links']['Admin']['Products']['Create'] =
-				p('product/prepare');
+				'{{app_abs}}/product/prepare';
 		}
 
 		// Attach to Product.
 
 		$_d['catalog.cb.head']['admin'] = array(&$this, 'cb_catalog_head');
 		$_d['product.cb.knee'][] = array(&$this, 'cb_product_knee');
-		$_d['product.cb.listing.foot'][] = array(&$this, 'cb_product_listing_foot');
 	}
 
 	function Prepare()
