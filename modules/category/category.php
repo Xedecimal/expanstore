@@ -178,7 +178,7 @@ EOF;
 
 	function TagCategory($t, $g, $a)
 	{
-		if (!empty($a['PARENT']))
+		if (isset($a['PARENT']))
 			$this->cats = ModCategory::QueryCats($a['PARENT']);
 
 		$tt = new Template();
