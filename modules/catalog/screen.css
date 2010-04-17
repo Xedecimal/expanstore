@@ -1,6 +1,6 @@
 a img { border: 0px; }
 
-a { color: #800; font-weight: bold; text-decoration: none; }
+.box { margin: 1em 0; }
 .box_row_even { background-color: #E0E0E0; font-size: 13px; }
 .box_row_odd { background-color: #D0D0D0; }
 
@@ -14,7 +14,6 @@ a { color: #800; font-weight: bold; text-decoration: none; }
 
 .error { color: #A00000; font-weight: bold; }
 .success { color: #00A000; font-weight: bold; }
-.clear { clear: both; }
 
 .form_separator
 {
@@ -38,3 +37,5 @@ a { color: #800; font-weight: bold; text-decoration: none; }
 #middle { padding-left: 200px; }
 #right { float: right; }
 #foot { clear: both; }
+
+.clear { clear: both; }

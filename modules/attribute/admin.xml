@@ -1,0 +1,40 @@
+<div id="attributes">
+
+<script type="text/javascript" src="attribute/js.js"></script>
+
+<box title="Attributes">
+
+<attribs>
+	<ul>
+	<attrib>
+	<li id="liAtr.{{atr_id}}">
+		<a href="{{app_abs}}/attribute/view/{{atr_id}}">{{atr_name}}</a>
+		<a href="{{app_abs}}/attribute/delete/{{atr_id}}" class="delete"><img
+			src="catalog/delete.png" title="Delete" alt="Delete" /></a>
+	</li>
+	</attrib>
+	</ul>
+</attribs>
+
+<p><a href="{{app_abs}}/attribute/prepare" class="ancCreateAtr">Create Attribute</a></p>
+
+</box>
+
+<options>
+<ul class="ulAtr" id="ulAtr.{{atr_id}}">
+	<option><li id="liOpt.{{opt_id}}">
+		<span id="spnOpt.{{opt_id}}">{{opt_name}}</span>:
+		<span id="spnFor.{{opt_id}}">{{opt_formula}}</span>
+	<a href="#" class="ancEditOpt" id="ancEditOpt.{{opt_id}}"><img
+		src="catalog/edit.png"
+		title="Edit" alt="Edit" /></a>
+	<a href="#" class="ancDeleteOpt" id="ancDeleteOpt.{{opt_id}}"><img
+		src="catalog/delete.png"
+		title="Delete" alt="Delete" /></a>
+	</li></option>
+</ul>
+</options>
+
+<script type="text/javascript" src="{{tempath}}attribute/js.js" />
+
+</div>
