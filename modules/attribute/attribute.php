@@ -67,9 +67,9 @@ class ModAttribute extends Module
 		$_d['product.ds.columns'][] = 'atr_id';
 
 		$_d['product.callbacks.addfields'][] =
-			array(&$this, 'ProductAddFields');
+			array(&$this, 'ProductFields');
 		$_d['product.callbacks.editfields'][] =
-			array(&$this, 'ProductEditFields');
+			array(&$this, 'ProductFields');
 		$_d['product.callbacks.update']['attribute'] =
 			array(&$this, 'ProductUpdate');
 		$_d['product.callbacks.props'][] =
@@ -145,14 +145,13 @@ class ModAttribute extends Module
 				$id = $_d['q'][2];
 				$_d[$dsname]->Update(array($matchcol => $id),
 					$insert);
+				$_d['q'][1] = 'view';
 			}
 			if ($ca == 'delete')
 			{
 				$id = GetVar('id');
 				$_d[$dsname]->Remove(array($matchcol => $id));
 			}
-
-			die(json_encode(array_merge($insert, array('res' => 1))));
 		}
 
 		// Old Crap
@@ -341,7 +340,7 @@ class ModAttribute extends Module
 		));
 	}
 
-	static function QueryAttributes($pid)
+	static function QueryAttributes($pid = null)
 	{
 		global $_d;
 
@@ -423,23 +422,12 @@ class ModAttribute extends Module
 
 	# Product
 
-	function ProductAddFields($_d, $form)
-	{
-		$atrgs = QueryAtrgs();
-		$form->AddInput('Attribute Related');
-		$form->AddInput(new FormInput('Attribute Group', 'select',
-			'atrg', DataToSel($atrgs, 'name', 'id', GetVar('atrg'), 'None')));
-	}
-
-	function ProductEditFields($_d, $prod, $form)
+	function ProductFields($form, $prod = null)
 	{
 		$form->AddInput('Attribute Related');
-
 		$attribs = ModAttribute::QueryAttributes();
-
 		$form->AddInput(new FormInput('Attribute Set', 'select', 'atr',
-			DataToSel($attribs, 'atr_name', 'atr_id', $prod['atr_id'], 'None'),
-			'style="width: 100%"'));
+			DataToSel($attribs, 'atr_name', 'atr_id', $prod['atr_id'], 'None')));
 	}
 
 	function ProductUpdate($_d, $prod, $id)

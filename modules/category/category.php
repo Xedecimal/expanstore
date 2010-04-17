@@ -66,8 +66,8 @@ EOF;
 		$_d['product.ds.columns'][] = 'catprod_cat';
 
 		$_d['product.callbacks.props']['category'] = array(&$this, 'cb_product_props');
-		$_d['product.callbacks.addfields']['category'] = array(&$this, 'cb_product_addfields');
-		$_d['product.callbacks.editfields']['category'] = array(&$this, 'cb_product_editfields');
+		$_d['product.callbacks.addfields']['category'] = array(&$this, 'cb_product_fields');
+		$_d['product.callbacks.editfields']['category'] = array(&$this, 'cb_product_fields');
 		$_d['product.callbacks.update']['category'] = array(&$this, 'cb_product_update');
 		$_d['product.callbacks.add']['category'] = array(&$this, 'cb_product_add');
 		$_d['product.callbacks.delete']['category'] = array(&$this, 'cb_product_delete');
@@ -130,21 +130,11 @@ EOF;
 		return array('Category' => ModCategoryLocation::GetBreadcrumb($prod['cat_id']));
 	}
 
-	function cb_product_addfields($_d, $form)
+	function cb_product_fields($form, $prod = null)
 	{
 		$cats = ModCategory::QueryAll();
-
-		$cc = GetVar('cc');
-
 		$form->AddInput(new FormInput('Category', 'select', 'category',
-			DataToSel($cats, 'cat_name', 'cat_id', $cc)));
-	}
-
-	function cb_product_editfields($_d, $prod, $form)
-	{
-		$cats = ModCategory::QueryAll();
-		$sels = DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat']);
-		$form->AddInput(new FormInput('Category', 'select', 'category', $sels));
+			DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat'])));
 	}
 
 	function cb_product_add($_d, $prod, $id)
