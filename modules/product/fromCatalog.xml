@@ -24,7 +24,7 @@
 	</prodprops>
 
 	<div class="divProdControls">
-		<callback ds="_d" name="product.cb.knee" />
+		<callback ds="_d" name="product.callbacks.knee" />
 	</div>
 
 	<prodfoot/>

@@ -277,10 +277,9 @@ EOF;
 				isset($this->errors['price']) ? $this->errors['price'] : null));
 
 			if ($ca == 'prepare')
-				RunCallbacks($_d['product.callbacks.addfields'], $_d, $frmAdd);
+				RunCallbacks($_d['product.callbacks.addfields'], $frmAdd);
 			if ($ca == 'edit')
-				RunCallbacks($_d['product.callbacks.editfields'], $_d, $data,
-					$frmAdd);
+				RunCallbacks($_d['product.callbacks.editfields'], $frmAdd, $data);
 
 			$frmAdd->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Save'));

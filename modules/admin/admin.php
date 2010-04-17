@@ -22,8 +22,8 @@ class ModAdmin extends Module
 
 		// Attach to Product.
 
-		$_d['catalog.cb.head']['admin'] = array(&$this, 'cb_catalog_head');
-		$_d['product.cb.knee'][] = array(&$this, 'cb_product_knee');
+		$_d['catalog.callbacks.head']['admin'] = array(&$this, 'cb_catalog_head');
+		$_d['product.callbacks.knee'][] = array(&$this, 'cb_product_knee');
 	}
 
 	function Prepare()
