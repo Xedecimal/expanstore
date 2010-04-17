@@ -16,8 +16,17 @@ class ModAttribute extends Module
 
 		# dsAttrib
 
-		$dsAttrib = new DataSet($_d['db'], "attribute");
+		$dsAttrib = new DataSet($_d['db'], 'attribute', 'atr_id');
 		$dsAttrib->Shortcut = 'attrib';
+		$dsAttrib->Description = 'Attribute';
+		$dsAttrib->DisplayColumns = array(
+			'atr_name' => new DisplayColumn('Name'),
+			'atr_text' => new DisplayColumn('Text')
+		);
+		$dsAttrib->FieldInputs = array(
+			'atr_name' => new FormInput('Name'),
+			'atr_text' => new FormInput('Text')
+		);
 		$_d['attribute.ds'] = $dsAttrib;
 
 		# dsOption
@@ -280,28 +289,25 @@ class ModAttribute extends Module
 			return GetBox('box_create_attrib', 'Create Attribute',
 				$frm->Get('action="{{app_abs}}/attribute/create"'));
 		}
-		if (@$_d['q'][1] == 'view')
-		{
-			$ci = @$_d['q'][2];
-			$attribute = ModAttribute::QueryAttribute($ci);
-			$frm = ModAttribute::GetFormAttribute($attribute, 'Update');
-			$ret = $frm->Get("action=\"{{app_abs}}/attribute/update/$ci\"");
-
-			$ed = new EditorData('opts', $_d['option.ds'], array('opt_attrib' => $ci));
-			$ed->Behavior->Search = false;
-			$ed->Behavior->Target = $_d['app_abs'].'/attribute/view/'.$ci;
-			$ed->Prepare();
-			$ret .= $ed->GetUI();
-
-			return $ret;
-		}
 		else
 		{
-			$t = new Template();
-			$t->ReWrite('atrgs', array(&$this, 'TagAtrgs'));
-			$t->ReWrite('attribs', array(&$this, 'TagAttribs'));
-			$t->ReWrite('options', array(&$this, 'TagOptions'));
-			return $t->ParseFile(l('attribute/admin.xml'));
+			$edAtrs = new EditorData('atrs', $_d['attribute.ds']);
+			$edAtrs->Behavior->Search = false;
+			$edAtrs->Prepare();
+			$ret = $edAtrs->GetUI();
+
+			if (GetVar('atrs_action') == 'edit')
+			{
+				$ci = GetVar('atrs_ci');
+				$ed = new EditorData('opts', $_d['option.ds'],
+					array('opt_attrib' => $ci));
+				$ed->Behavior->Search = false;
+				$ed->Behavior->Target = $_d['app_abs'].'/attribute/view/'.$ci;
+				$ed->Prepare();
+				$ret .= $ed->GetUI();
+			}
+
+			return $ret;
 		}
 	}
 
@@ -426,15 +432,17 @@ class ModAttribute extends Module
 	{
 		$form->AddInput('Attribute Related');
 		$attribs = ModAttribute::QueryAttributes();
-		$form->AddInput(new FormInput('Attribute Set', 'select', 'atr',
+		$form->AddInput(new FormInput('Attribute Set(s)', 'checks', 'atr[]',
 			DataToSel($attribs, 'atr_name', 'atr_id', $prod['atr_id'], 'None')));
 	}
 
 	function ProductUpdate($_d, $prod, $id)
 	{
-		$atr = GetVar('atr');
-		if ($atr == 0) $_d['a2p.ds']->Remove(array('a2p_prod' => $id));
-		else $_d['a2p.ds']->Add(array(
+		$atrs = GetVar('atr');
+		varinfo($atrs);
+		$_d['a2p.ds']->Remove(array('a2p_product' => $id));
+		foreach ($atrs as $atr)
+		 $_d['a2p.ds']->Add(array(
 			'a2p_attribute' => $atr,
 			'a2p_product' => $id
 		), true);
@@ -442,7 +450,7 @@ class ModAttribute extends Module
 
 	function ProductProps(&$_d, $prod)
 	{
-		$t = new Template($_d);
+		//$t = new Template($_d);
 
 		$price_offset = 0;
 
@@ -469,13 +477,13 @@ class ModAttribute extends Module
 				$_d['attribute.columns']['co.option'] = 'selected';
 			}
 
-			$a = ModAttribute::QueryAttributes($prod['prod_id']);
+			$atrs = ModAttribute::QueryAttributes($prod['prod_id']);
 
 			$aid = -1;
 			$oid = -1;
 
-			if (!empty($a))
-			foreach ($a as $atr)
+			if (!empty($atrs))
+			foreach ($atrs as $atr)
 			{
 				$selname = "atrs[{$atr['atr_id']}]";
 
@@ -484,9 +492,7 @@ class ModAttribute extends Module
 					if ($aid != -1)
 					{
 						$options .= "</select>\n";
-						$t->Set('prop', $aname);
-						$t->Set('value', $options);
-						$outprops .= $t->ParseFile(l('catalog/product_property.html'));
+						$outprops[$atext] = $options;
 					}
 					$options = "<select name=\"{$selname}\" class=\"input_edit\">\n";
 				}
@@ -511,13 +517,12 @@ class ModAttribute extends Module
 
 				$aid = $atr['atr_id'];
 				$aname = $atr['atr_name'];
+				$atext = $atr['atr_text'];
 			}
 			if ($aid != -1)
 			{
 				$options .= "</select>\n";
-				$t->Set('prop', $aname);
-				$t->Set('value', $options);
-				$outprops[$aname] = $options;
+				$outprops[$atext] = $options;
 			}
 
 			if (!isset($_d['product.totalprice']))

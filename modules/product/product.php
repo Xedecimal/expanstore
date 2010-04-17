@@ -502,6 +502,8 @@ class ProductTemplate
 	{
 		global $_d;
 
+		$this->props = array();
+
 		if (!empty($_d['product.callbacks.props']))
 		{
 			foreach ($_d['product.callbacks.props'] as $cb)
@@ -520,10 +522,11 @@ class ProductTemplate
 			foreach (explode(',', $a['EXCLUDE']) as $i)
 				unset($this->props[$i]);
 
+		$tt = new Template();
 		if (!empty($this->props))
 		{
-			$t->ReWrite('prodprop', array(&$this, 'TagProp'));
-			return $t->GetString($g);
+			$tt->ReWrite('prodprop', array(&$this, 'TagProp'));
+			return $tt->GetString($g);
 		}
 	}
 
