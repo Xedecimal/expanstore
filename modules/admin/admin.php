@@ -34,18 +34,21 @@ class ModAdmin extends Module
 
 		$GLOBALS['mods']['ModUser']->Prepare();
 
-		$ca = $_d['q'][0];
+		if ($_d['q'][0] != 'admin') return;
+
+		$ca = @$_d['q'][1];
 		$cl = $_d['cl'];
 
-		if ($ca == 'setup')
+		if ($ca == 'save')
 		{
-			$_d['settings']['data_location'] = GetVar('settings_data');
-			$_d['settings']['site_name'] = GetVar('settings_name');
+			$_d['settings']['data_location'] = GetVar('data');
+			$_d['settings']['site_name'] = GetVar('name');
 
 			RunCallbacks(@$_d['admin.callbacks.setup']);
 
-			file_put_contents('settings.txt', serialize($_d['settings']));
-			xslog($_d, "Updated settings");
+			ModAdmin::SaveSettings();
+			//file_put_contents('settings.txt', serialize($_d['settings']));
+			ModLog::Log('Updated settings');
 		}
 	}
 
@@ -62,7 +65,7 @@ class ModAdmin extends Module
 		//General Settings
 
 		$frmGeneral = new Form('settings');
-		$frmGeneral->AddHidden('ca', 'setup');
+		//$frmGeneral->AddHidden('ca', 'setup');
 		$frmGeneral->AddInput(new FormInput('Data Location', 'text', 'data',
 			$_d['settings']['data_location'] , 'size="50"'));
 		$frmGeneral->AddInput(new FormInput('Store Name', 'text', 'name',
@@ -72,7 +75,7 @@ class ModAdmin extends Module
 
 		$frmGeneral->AddInput(new FormInput(null, 'submit', 'butSubmit', 'Update'));
 		$ret .= GetBox("box_general", "General Settings",
-			$frmGeneral->Get('action="{{me}}" method="post"'));
+			$frmGeneral->Get('action="{{app_abs}}/admin/save" method="post"'));
 
 		$ret .= RunCallbacks($_d['admin.callbacks.foot']);
 
@@ -105,6 +108,26 @@ class ModAdmin extends Module
 			<img src="$db" title="Delete" alt="Delete" />
 		</a>
 EOF;
+	}
+
+	static function SaveSettings()
+	{
+		global $_d;
+		$data = null;
+		foreach ($_d['settings'] as $k => $v)
+		{
+			if (!is_array($v)) $data .= $k.'="'.$v."\"\r\n";
+		}
+		file_put_contents('settings.ini', $data);
+	}
+
+	static function setting_replace($a)
+	{
+		global $_d;
+
+		$val = trim($a[2], '"');
+		if ($_d['settings'][$a[1]] != $val) varinfo("Changed '{$a[1]}' from '{$val}' to '{$_d['settings'][$a[1]]}'");
+		else varinfo("Unchanged: {$a[1]}");
 	}
 }
 

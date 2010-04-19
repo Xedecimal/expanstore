@@ -106,6 +106,11 @@ EOF;
 		{
 			$_d['page.links']['Admin']['Products']['Listing'] = '{{app_abs}}/product';
 		}
+
+		$_d['display.callbacks.options']['product'] = array(&$this,
+			'display_options');
+		$_d['display.callbacks.update']['product'] = array(&$this,
+			'display_update');
 	}
 
 	function Prepare()
@@ -379,6 +384,37 @@ EOF;
 		return $ds->Get($_d['product.ds.admin.match'], null, array(0, 100),
 			$_d['product.ds.joins']);
 	}
+
+	# Display
+
+	function display_options()
+	{
+		$t = new Template();
+		return $t->ParseFile(l('product/display_options.xml'));
+	}
+
+	function display_update()
+	{
+		global $_d;
+
+		if ($_d['settings']['product_image_size_small'] !=
+			GetVar('product_image_size_small'))
+		{
+			foreach (glob('prodimages/*/*') as $f)
+			{
+				varinfo($f);
+			}
+		}
+		$_d['settings']['product_image_size_small'] =
+			GetVar('product_image_size_small');
+		if ($_d['settings']['product_image_size_medium'] !=
+			GetVar('product_image_size_medium'))
+		{
+			# Resize all medium images.
+		}
+		$_d['settings']['product_image_size_medium'] =
+			GetVar('product_image_size_medium');
+	}
 }
 
 Module::RegisterModule('ModProduct');
@@ -616,24 +652,24 @@ class ProductTemplate
 	}
 }
 
+function UploadProductImage($id, $file)
+{
+	$dst = "prodimages/{$id}/l_{$file['name']}";
+	mkrdir("prodimages/{$id}/");
+	chmod("prodimages/{$id}/", 0755);
+	mv($file, $dst);
+	CreateProductThumbnails($id, $dst);
+}
+
 function CreateProductThumbnails($id, $file)
 {
-	$destfile1 = "prodimages/{$id}/l_{$file['name']}";
-	$destfile2 = "prodimages/{$id}/m_{$file['name']}";
-	$destfile3 = "prodimages/{$id}/s_{$file['name']}";
+	$fi = new finfo(FILEINFO_MIME_TYPE);
+	$fi->file(file);
 
-	$pal = false;
+	$thumb_medium = "prodimages/{$id}/m_{$file['name']}";
+	$thumb_small = "prodimages/{$id}/s_{$file['name']}";
 
-	if (is_array($file['type']))
-	{
-		$filetype = $file["type"];
-		$filename = $file['tmp_name'];
-	}
-	else
-	{
-		$filetype = fileext($file['name']);
-		$filename = $file['tmp_name'];
-	}
+	$mimetype = $fi->file($file);
 
 	if (!file_exists($filename))
 	{
@@ -650,24 +686,20 @@ function CreateProductThumbnails($id, $file)
 		case 'image/png':
 		case 'png':
 			$img = imagecreatefrompng($filename);
-			if (!imageistruecolor($img)) $pal = true;
 			break;
 		case 'image/gif':
 		case 'gif':
 			$img = imagecreatefromgif($filename);
-			$pal = true;
 			break;
 		default:
 			return "Error: [PID: $id] Unknown image type: $filetype.";
 			break;
 	}
 
-	mkrdir("prodimages/{$id}/");
-	chmod("prodimages/{$id}/", 0755);
 	imagepng($img, $destfile1);
-	$img2 = ResizeImage($img, 100, 100, $pal);
+	$img2 = ResizeImage($img, 100, 100);
 	imagepng($img2, $destfile2);
-	$img3 = ResizeImage($img, 64, 64, $pal);
+	$img3 = ResizeImage($img, 64, 64);
 	imagepng($img3, $destfile3);
 }
 

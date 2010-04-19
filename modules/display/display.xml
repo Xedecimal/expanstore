@@ -1,0 +1,18 @@
+<form action="{{app_abs}}/display/update" method="post">
+
+<modules>
+<table>
+<tr><th>Module</th><th>Location</th><th>Priority</th></tr>
+<module>
+	<tr><td class="field">{{name}}</td>
+	<td>{{location}}</td>
+	<td><input type="text" name="order[{{name}}]" value="{{priority}}"
+		size="3" /></td></tr>
+</module>
+</table>
+</modules>
+
+<callback ds="_d" name="display.callbacks.options"/>
+
+<input type="submit" value="Update" />
+</form>
