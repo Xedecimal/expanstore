@@ -1,0 +1,11 @@
+<fieldset>
+<legend>Product Settings</legend>
+<ul>
+<li><label for="product_image_size_small">Small Image Size</label>
+	<input type="text" name="product_image_size_small"
+		id="product_image_size_small" size="3" value="{{product_image_size_small}}" /></li>
+<li><label for="product_image_size_medium">Medium Image Size</label>
+	<input type="text" name="product_image_size_medium"
+		id="product_image_size_medium" size="3" value="{{product_image_size_medium}}" /></li>
+</ul>
+</fieldset>

@@ -6,11 +6,6 @@ if (!isset($_d['settings']['site_template'])) $_d['settings']['site_template'] =
 $_d['template_path'] = $_d['settings']['site_template'];
 $_d['template_url'] = $_d['app_abs'].'/template/'.$_d['settings']['site_template'];
 
-$_d['template.transforms']['link'] = array('ModTemplate', 'TransHref');
-$_d['template.transforms']['a'] = array('ModTemplate', 'TransHref');
-$_d['template.transforms']['img'] = array('ModTemplate', 'TransSrc');
-$_d['template.transforms']['script'] = array('ModTemplate', 'TransSrc');
-
 function TemplateCheck()
 {
 	global $_d;
@@ -72,6 +67,7 @@ class ModTemplate extends Module
 		{
 			file_put_contents('config/blocks.dat', serialize(GetVar('blocks')));
 			file_put_contents('config/order.dat', serialize(GetVar('order')));
+			RunCallbacks($_d['display.callbacks.update']);
 			$this->Load();
 		}
 	}
@@ -82,41 +78,52 @@ class ModTemplate extends Module
 
 		if (@$_d['q'][0] != 'display') return;
 
+		$t = new Template();
+		$t->ReWrite('modules', array(&$this, 'TagModules'));
+		return $t->ParseFile(l('display/display.xml'));
+	}
+
+	function TagModules($t, $g)
+	{
+		$t->ReWrite('module', array(&$this, 'TagModule'));
+		return $t->GetString($g);
+	}
+
+	function TagModule($t, $g)
+	{
+		global $_d, $mods;
+
 		$bnames = ArrayToSelOptions(array_keys($_d['blocks']), null, false);
 
-		$ret = '<form action="{{app_abs}}/display/update" method="post">';
-		$ret .= '<table>';
-		$ret .= '<tr><th>Module</th><th>Location</th><th>Priority</th></tr>';
+		$ret = null;
 		foreach ($mods as $mod)
 		{
-			$name = get_class($mod);
+			$t->Set('name', $name = get_class($mod));
 
 			if (isset($_d['settings']['blocks'][$name]))
 				$sel = $_d['settings']['blocks'][$name];
 			else $sel = 'default';
-			$sel = MakeSelect(array('NAME' => "blocks[{$name}]"), $bnames, $sel);
-			$pri = @$_d['module.order'][$name];
-			$ret .= "<tr><td>{$name}</td>";
-			$ret .= "<td>{$sel}</td>";
-			$ret .= "<td><input type=\"text\" name=\"order[$name]\" value=\"{$pri}\" /></td>";
-			$ret .= '</tr>';
+			$t->Set('location', $sel = MakeSelect(array(
+				'NAME' => "blocks[{$name}]"), $bnames, $sel));
+			$t->Set('priority', @$_d['module.order'][$name]);
+
+			$ret .= $t->GetString($g);
 		}
-		$ret .= '</table>';
-		$ret .= '<input type="submit" value="Update" />';
-		$ret .= '</form>';
 		return $ret;
 	}
 
 	function AdminSettings($frm)
 	{
-		$frm->AddInput(new FormInput('Default Template', 'select', 'template',
-			$this->GetTemps()));
+		global $_d;
+
+		$frm->AddInput(new FormInput('Default Template', 'text', 'template',
+			$_d['settings']['site_template']));
 	}
 
 	function AdminSetup()
 	{
 		global $_d;
-		$_d['settings']['site_template'] = GetVar('settings_template');
+		$_d['settings']['site_template'] = GetVar('template');
 	}
 
 	function GetTemps()
@@ -149,18 +156,6 @@ class ModTemplate extends Module
 			$orders = unserialize(file_get_contents('config/order.dat'));
 			foreach ($orders as $m => $v) $_d['module.order'][$m] = $v;
 		}
-	}
-
-	static function TransHref($a)
-	{
-		if (isset($a['HREF'])) $a['HREF'] = p($a['HREF']);
-		return $a;
-	}
-
-	static function TransSrc($a)
-	{
-		if (isset($a['SRC'])) $a['SRC'] = p($a['SRC']);
-		return $a;
 	}
 }
 
