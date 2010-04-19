@@ -389,7 +389,14 @@ EOF;
 
 	function display_options()
 	{
+		global $_d;
+
 		$t = new Template();
+		$t->Behavior->Bleed = false;
+		$t->Set('product_image_size_small',
+			@$_d['settings']['product_image_size_small']);
+		$t->Set('product_image_size_medium',
+			@$_d['settings']['product_image_size_medium']);
 		return $t->ParseFile(l('product/display_options.xml'));
 	}
 
@@ -397,23 +404,22 @@ EOF;
 	{
 		global $_d;
 
-		if ($_d['settings']['product_image_size_small'] !=
-			GetVar('product_image_size_small'))
-		{
-			foreach (glob('prodimages/*/*') as $f)
-			{
-				varinfo($f);
-			}
-		}
+		$resize = false;
+
+		if (@$_d['settings']['product_image_size_small'] !=
+			GetVar('product_image_size_small') ||
+			@$_d['settings']['product_image_size_medium'] !=
+			GetVar('product_image_size_medium'))
+			$resize = true;
+
 		$_d['settings']['product_image_size_small'] =
 			GetVar('product_image_size_small');
-		if ($_d['settings']['product_image_size_medium'] !=
-			GetVar('product_image_size_medium'))
-		{
-			# Resize all medium images.
-		}
 		$_d['settings']['product_image_size_medium'] =
 			GetVar('product_image_size_medium');
+
+		if ($resize)
+			foreach (glob('prodimages/*/l_*') as $f)
+				CreateProductThumbnails($f);
 	}
 }
 
@@ -661,46 +667,53 @@ function UploadProductImage($id, $file)
 	CreateProductThumbnails($id, $dst);
 }
 
-function CreateProductThumbnails($id, $file)
+function CreateProductThumbnails($file)
 {
+	global $_d;
+
 	$fi = new finfo(FILEINFO_MIME_TYPE);
-	$fi->file(file);
+	$mimetype = $fi->file(realpath($file));
 
-	$thumb_medium = "prodimages/{$id}/m_{$file['name']}";
-	$thumb_small = "prodimages/{$id}/s_{$file['name']}";
+	preg_match('#(\d+)/l_(.*)#', $file, $m);
+	$id = $m[1];
 
-	$mimetype = $fi->file($file);
+	$thumb_medium = "prodimages/{$id}/m_{$m[2]}";
+	$thumb_small = "prodimages/{$id}/s_{$m[2]}";
 
-	if (!file_exists($filename))
+	if (!file_exists($file))
 	{
-		return "Error: [PID: $id] Image does not exist {$filename}.";
+		return "Error: [PID: $id] Image does not exist {$file}.";
 	}
 
-	switch (strtolower($filetype))
+	switch (strtolower($mimetype))
 	{
 		case 'image/jpeg':
 		case 'jpg':
-			$img = imagecreatefromjpeg($filename);
+			$img = imagecreatefromjpeg($file);
+			$dst_func = 'imagejpeg';
 			break;
 		case 'image/x-png':
 		case 'image/png':
 		case 'png':
-			$img = imagecreatefrompng($filename);
+			$img = imagecreatefrompng($file);
+			$dst_func = 'imagepng';
 			break;
 		case 'image/gif':
 		case 'gif':
-			$img = imagecreatefromgif($filename);
+			$img = imagecreatefromgif($file);
+			$dst_func = 'imagegif';
 			break;
 		default:
-			return "Error: [PID: $id] Unknown image type: $filetype.";
+			return "Error: [PID: $id] Unknown image type: $mimetype.";
 			break;
 	}
 
-	imagepng($img, $destfile1);
-	$img2 = ResizeImage($img, 100, 100);
-	imagepng($img2, $destfile2);
-	$img3 = ResizeImage($img, 64, 64);
-	imagepng($img3, $destfile3);
+	$sm = $_d['settings']['product_image_size_medium'];
+	$img_medium = ResizeImage($img, $sm, $sm);
+	$dst_func($img_medium, $thumb_medium);
+	$ss = $_d['settings']['product_image_size_small'];
+	$img_small = ResizeImage($img, $ss, $ss);
+	$dst_func($img_small, $thumb_small);
 }
 
 ?>
