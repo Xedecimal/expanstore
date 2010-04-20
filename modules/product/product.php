@@ -1,6 +1,6 @@
 <?php
 
-function QueryProductList($match = null, $sort = null)
+function QueryProductList($match = null, $sort = null, $limit = null)
 {
 	global $_d;
 
@@ -21,7 +21,7 @@ function QueryProductList($match = null, $sort = null)
 		$q['order'] = $_d['product.ds.order'];
 
 	$q['match'] = $match;
-	$q['limit'] = $_d['product.ds.count'];
+	$q['limit'] = isset($limit) ? $limit : $_d['product.ds.count'];
 	$q['joins'] = @$_d['product.ds.joins'];
 	$q['group'] = 'prod_id';
 
@@ -141,7 +141,7 @@ EOF;
 
 				$tempfile = $file["tmp_name"];
 
-				CreateProductThumbnails($pid, $file);
+				UploadProductImage($pid, $file);
 
 				$_d['q'][1] = 'edit';
 				$_d['q'][2] = $pid;
@@ -404,6 +404,8 @@ EOF;
 	{
 		global $_d;
 
+		set_time_limit(0);
+
 		$resize = false;
 
 		if (@$_d['settings']['product_image_size_small'] !=
@@ -481,7 +483,8 @@ class ModProdsLatest extends Module
 
 		$sort = array('prod_date' => 'DESC');
 
-		$pt->prods = QueryProductList($_d['product.latest.match'], $sort);
+		$pt->prods = QueryProductList($_d['product.latest.match'], $sort,
+			array(0, 10));
 
 		if (empty($pt->prods)) return;
 		return $pt->ParseFile(l('product/latest.xml'));
@@ -663,27 +666,33 @@ function UploadProductImage($id, $file)
 	$dst = "prodimages/{$id}/l_{$file['name']}";
 	mkrdir("prodimages/{$id}/");
 	chmod("prodimages/{$id}/", 0755);
-	mv($file, $dst);
-	CreateProductThumbnails($id, $dst);
+	copy($file['tmp_name'], $dst);
+	CreateProductThumbnails($dst);
 }
 
 function CreateProductThumbnails($file)
 {
 	global $_d;
 
-	$fi = new finfo(FILEINFO_MIME_TYPE);
-	$mimetype = $fi->file(realpath($file));
+	preg_match('#(\d+)/l_(.*)\.([^.]+)#', $file, $m);
 
-	preg_match('#(\d+)/l_(.*)#', $file, $m);
+	if (class_exists('finfo'))
+	{
+		$fi = new finfo(FILEINFO_MIME_TYPE);
+		$mimetype = $fi->file(realpath($file));
+	}
+	else
+	{
+		$mimetype = $m[3];
+	}
+
+
 	$id = $m[1];
 
-	$thumb_medium = "prodimages/{$id}/m_{$m[2]}";
-	$thumb_small = "prodimages/{$id}/s_{$m[2]}";
+	$thumb_medium = "prodimages/{$id}/m_{$m[2]}.{$m[3]}";
+	$thumb_small = "prodimages/{$id}/s_{$m[2]}.{$m[3]}";
 
-	if (!file_exists($file))
-	{
-		return "Error: [PID: $id] Image does not exist {$file}.";
-	}
+	if (!file_exists($file)) return "Error: [PID: $id] Image does not exist {$file}.";
 
 	switch (strtolower($mimetype))
 	{

@@ -69,6 +69,7 @@ class ModTemplate extends Module
 			file_put_contents('config/order.dat', serialize(GetVar('order')));
 			RunCallbacks($_d['display.callbacks.update']);
 			$this->Load();
+			ModAdmin::SaveSettings();
 		}
 	}
 
