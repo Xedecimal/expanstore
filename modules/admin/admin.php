@@ -47,7 +47,6 @@ class ModAdmin extends Module
 			RunCallbacks(@$_d['admin.callbacks.setup']);
 
 			ModAdmin::SaveSettings();
-			//file_put_contents('settings.txt', serialize($_d['settings']));
 			ModLog::Log('Updated settings');
 		}
 	}
@@ -65,7 +64,6 @@ class ModAdmin extends Module
 		//General Settings
 
 		$frmGeneral = new Form('settings');
-		//$frmGeneral->AddHidden('ca', 'setup');
 		$frmGeneral->AddInput(new FormInput('Data Location', 'text', 'data',
 			$_d['settings']['data_location'] , 'size="50"'));
 		$frmGeneral->AddInput(new FormInput('Store Name', 'text', 'name',
@@ -96,8 +94,8 @@ class ModAdmin extends Module
 
 		if ($_d['cl']['usr_access'] < 500) return;
 
-		$eb = 'catalog/edit.png';
-		$db = 'catalog/delete.png';
+		$eb = 'admin/edit.png';
+		$db = 'admin/delete.png';
 
 		return <<<EOF
 		<a href="{{app_abs}}/product/edit/{{prod_id}}"

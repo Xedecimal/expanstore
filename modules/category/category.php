@@ -87,7 +87,10 @@ EOF;
 		$_d['template.rewrites']['category'] = array(&$this, 'TagCategory');
 
 		if ($_d['cl']['usr_access'] > 500)
-			$_d['page.links']['Admin']['Categories'] = '{{app_abs}}/category';
+		{
+			$_d['page.links']['Admin']['Categories']['Listing'] = '{{app_abs}}/category';
+			$_d['page.links']['Admin']['Categories']['Add'] = '{{app_abs}}/category/prepare';
+		}
  	}
 
 	function Prepare($require = false)
@@ -395,7 +398,8 @@ class ModCategoryAdmin extends Module
 			$items = ModCategory::QueryAll();
 			$tree = DataToTree($items, 'cat_id', 'cat_parent', 0);
 
-			return GetTree($tree, "<a href=\"{{app_abs}}/category/edit/{{cat_id}}\">{{cat_name}}</a>");
+			$ret = GetTree($tree, "<a href=\"{{app_abs}}/category/{{cat_id}}\">{{cat_name}}</a> | <a href=\"{{app_abs}}/category/edit/{{cat_id}}\">Edit</a> | <a href=\"{{app_abs}}/category/delete/{{cat_id}}\" class=\"aCatDelete\">Delete</a>");
+			return $ret;
 		}
 	}
 }
