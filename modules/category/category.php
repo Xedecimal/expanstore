@@ -80,7 +80,6 @@ EOF;
 			new Join($_d['category.ds'], 'catprod_cat = cat_id', 'LEFT JOIN');
 
 		$_d['product.latest.match']['catprod_cat'] = SqlNot(0);
-		$_d['product.latest.hide'] = GetVar('cc', 0) != 0;
 
 		// Globally available tags for templating
 		$_d['template.rewrites']['showcat'] = array(&$this, 'TagShowCat');

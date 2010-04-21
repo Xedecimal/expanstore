@@ -34,8 +34,9 @@ class ModPage extends Module
 				$t = new Template();
 				$out = $t->ParseFile("content/{$name}.xml");
 		}
-		else if (file_exists('content/index.xml') && empty($_d['q'][0])
-			&& empty($_SESSION['cc']))
+		else if (file_exists('content/index.xml') && empty($_SESSION['cc'])
+			&& (empty($_d['q'][0]) || $_d['q'][0] == 'category')
+		)
 		{
 			$name = 'Home';
 			$out = file_get_contents('content/index.xml');
