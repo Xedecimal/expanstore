@@ -14,10 +14,14 @@ function QueryProductList($match = null, $sort = null, $limit = null)
 	if (!empty($_d['product.ds.columns']))
 		$q['columns'] = array_merge($_d['product.ds.columns'], $columns);
 
-	if (!empty($_d['product.ds.order']) && !empty($sort))
-		$q['sort'] = array_merge($sort, $_d['product.ds.order']);
 
-	else if (!empty($_d['product.ds.order']))
+	if (!empty($_d['product.ds.order']))
+		$q['sort'] = $_d['product.ds.order'];
+	else $q['sort'] = array();
+	if (!empty($sort))
+		$q['sort'] += $sort;
+
+	if (!empty($_d['product.ds.order']))
 		$q['order'] = $_d['product.ds.order'];
 
 	$q['match'] = $match;
@@ -473,9 +477,6 @@ class ModProdsLatest extends Module
 	function Get()
 	{
 		global $_d;
-
-		$cs = GetVar('cs');
-		if (!empty($cs)) return;
 
 		if ($_d['product.latest.hide']) return;
 
