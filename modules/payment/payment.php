@@ -20,7 +20,7 @@ class ModPayment extends Module
 
 		$t = new Template();
 		$t->ReWrite('method', array(&$this, 'TagMethod'));
-		return $t->ParseFile($_d['tempath'].'payment/cartKnee.xml');
+		return $t->ParseFile(l('payment/cartKnee.xml'));
 	}
 
 	function AdminFoot()

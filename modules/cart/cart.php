@@ -118,7 +118,7 @@ EOF;
 
 		$_d['product.ds.columns'][] = 'ci_id';
 
-		$_d['product.callbacks.knee']['cart'] = array(&$this, 'ProductKnee');
+		$_d['product.callbacks.knee']['cart'] = array(&$this, 'product_knee');
 	}
 
 	function Prepare()
@@ -132,8 +132,7 @@ EOF;
 		// Handle Methods
 
 		if ($_d['q'][0] != 'cart') return;
-
-		$ca = GetVar('ca');
+		$ca = @$_d['q'][1];
 
 		if ($ca == 'add')
 		{
@@ -208,8 +207,6 @@ EOF;
 		{
 			if (!empty($cart[0]['prod_id']))
 			{
-				$_d['page.title'] = ' - View Cart';
-
 				//Products
 
 				$totalprice = 0;
@@ -237,8 +234,7 @@ EOF;
 				$t->Set('totalprice', $totalprice);
 				$t->ReWrite('cartknee', array(&$this, 'CartKnee'));
 
-				$body .= $pt->ParseString($t->ParseFile($_d['tempath'].
-					'cart/product.xml'));
+				$body = $pt->ParseString($t->ParseFile(l('cart/product.xml')));
 			}
 			else
 			{
@@ -259,14 +255,13 @@ EOF;
 		return $knee;
 	}
 
-	function ProductKnee()
+	function product_knee()
 	{
 		global $_d;
 
 		if (empty($_d['cl'])) return;
 
-		return '<a id="{{name}}_ancAddCart.{{prod_id}}"
-			class="ancAddCart" href="#">'
+		return '<a class="ancAddCart" href="{{prod_id}}">'
 			.'<img src="'.p('cart/cart_add.png').'"'
 			." title=\"Add To Cart\" alt=\"Add To Cart\" /></a>\n";
 	}

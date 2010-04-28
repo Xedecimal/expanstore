@@ -510,7 +510,6 @@ class ProductTemplate
 		$tt->ReWrite('prodneck', array(&$this, 'TagNeck'));
 		$tt->ReWrite('prodprops', array(&$this, 'TagProps'));
 		$tt->ReWrite('prodimage', array(&$this, 'TagImage'));
-		$tt->ReWrite('proddesc', array(&$this, 'TagDesc'));
 		$tt->ReWrite('prodknee', array(&$this, 'TagKnee'));
 		$tt->ReWrite('prodfoot', array(&$this, 'TagFoot'));
 		$tt->ReWrite('admin_product', array(&$this, 'TagAdminProduct'));
