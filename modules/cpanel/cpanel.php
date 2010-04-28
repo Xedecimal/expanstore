@@ -38,22 +38,22 @@ class ModCPanel extends Module
 
 		global $_d;
 
-		$ca = GetVar('ca');
+		$ca = @$_d['q'][1];
 
-		if ($ca == "update_profile")
+		if ($ca == "update")
 		{
-			$id = $cl['id'];
+			$id = $_d['cl']['usr_id'];
 			$pass1 = GetVar("pass1");
 			$pass2 = GetVar("pass2");
 
 			$columns = array(
-				'email'   => GetVar("email"),
-				'name'    => GetVar("name"),
-				'address' => GetVar("address"),
-				'city'    => GetVar("city"),
-				'state'   => GetVar("state"),
-				'zip'     => GetVar("zip"),
-				'phone'   => GetVar("phone")
+				'usr_email'   => GetVar("email"),
+				'usr_name'    => GetVar("name"),
+				'usr_address' => GetVar("address"),
+				'usr_city'    => GetVar("city"),
+				'usr_state'   => GetVar("state"),
+				'usr_zip'     => GetVar("zip"),
+				'usr_phone'   => GetVar("phone")
 			);
 
 			$pass1 = GetVar("pass1");
@@ -68,9 +68,9 @@ class ModCPanel extends Module
 				else die("Passwords did not match.");
 			}
 
-			$dsUsers->Update(array('id' => $id), $columns);
+			$_d['user.ds']->Update(array('usr_id' => $id), $columns);
 
-			xslog($_d, "Updated profile");
+			ModLog::Log("Updated profile");
 
 			//Redirect("$me?ct=$ct&cs=$cs");
 		}
