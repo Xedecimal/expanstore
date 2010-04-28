@@ -50,9 +50,11 @@ class PayManual
 		return "All done.";
 	}
 
-	function Checkout(&$data, $cart)
+	function Checkout()
 	{
-		$ca = $data['ca'];
+		global $_d;
+
+		$ca = @$_d['q'][2];
 
 		if ($ca == 'finish')
 		{
@@ -208,23 +210,23 @@ function updateBilling()
 <table id="tblBillingPersonal" cellspacing="0" cellpadding="0">
 	<tr>
 		<td align="right"><b>Name</b>&nbsp;</td>
-		<td>{$data['cl']['usr_name']}</td>
+		<td>{$_d['cl']['usr_name']}</td>
 		</tr>
 	<tr>
 		<td align="right"><b>Address</b>&nbsp;</td>
-		<td>{$data['cl']['usr_address']}</td>
+		<td>{$_d['cl']['usr_address']}</td>
 		</tr>
 	<tr>
 		<td align="right"><b>City</b>&nbsp;</td>
-		<td>{$data['cl']['usr_city']}</td>
+		<td>{$_d['cl']['usr_city']}</td>
 		</tr>
 	<tr>
 		<td align="right"><b>State</b>&nbsp;</td>
-		<td>{$data['cl']['usr_state']}</td>
+		<td>{$_d['cl']['usr_state']}</td>
 		</tr>
 	<tr>
 		<td align="right"><b>Zip</b>&nbsp;</td>
-		<td>{$data['cl']['usr_zip']}</td>
+		<td>{$_d['cl']['usr_zip']}</td>
 		</tr>
 </table>
 <p>
@@ -237,5 +239,7 @@ EOF;
 		return true;
 	}
 }
+
+ModPayment::RegisterPayMod('manual', 'PayManual');
 
 ?>
