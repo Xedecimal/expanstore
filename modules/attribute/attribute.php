@@ -352,10 +352,8 @@ class ModAttribute extends Module
 
 		$match = array();
 		if (!empty($pid))
-		{
-			$joins[] = new Join($_d['a2p.ds'], 'a2p_attribute = atr_id', 'LEFT JOIN');
-			$match['a2p_product'] = $pid;
-		}
+			$joins[] = new Join($_d['a2p.ds'], "a2p_attribute = atr_id AND a2p_product = $pid",
+				'LEFT JOIN');
 
 		$joins[] = new Join($_d['option.ds'], 'opt_attrib = atr_id',
 			'LEFT JOIN');
@@ -431,15 +429,17 @@ class ModAttribute extends Module
 	function ProductFields($form, $prod = null)
 	{
 		$form->AddInput('Attribute Related');
-		$attribs = ModAttribute::QueryAttributes();
+		$atrs = ModAttribute::QueryAttributes($prod['prod_id']);
+		$sels = DataToSel($atrs, 'atr_name', 'atr_id', null, 'None');
+		foreach ($atrs as $atr)
+			$sels[$atr['atr_id']]->selected = !empty($atr['a2p_product']);
 		$form->AddInput(new FormInput('Attribute Set(s)', 'checks', 'atr[]',
-			DataToSel($attribs, 'atr_name', 'atr_id', $prod['atr_id'], 'None')));
+			$sels));
 	}
 
 	function ProductUpdate($_d, $prod, $id)
 	{
 		$atrs = GetVar('atr');
-		varinfo($atrs);
 		$_d['a2p.ds']->Remove(array('a2p_product' => $id));
 		foreach ($atrs as $atr)
 		 $_d['a2p.ds']->Add(array(
@@ -450,8 +450,6 @@ class ModAttribute extends Module
 
 	function ProductProps(&$_d, $prod)
 	{
-		//$t = new Template($_d);
-
 		$price_offset = 0;
 
 		$outprops = null;
@@ -485,6 +483,8 @@ class ModAttribute extends Module
 			if (!empty($atrs))
 			foreach ($atrs as $atr)
 			{
+				if (empty($atr['a2p_product'])) continue;
+
 				$selname = "atrs[{$atr['atr_id']}]";
 
 				if ($aid != $atr['atr_id'])
@@ -531,11 +531,9 @@ class ModAttribute extends Module
 
 			if ($_d['q'][0] == 'cart')
 			{
-				$t->Set(array('prop' => 'Total price', 'value' => '<b>$'.($prod['price']+$price_offset).'</b>'));
-				$outprops .= $t->ParseFile($_d['tempath'].'catalog/product_property.html');
+				$outprops['Total Price'] = '<b>$'.($prod['prod_price']+$price_offset).'</b>';
 			}
 		}
-
 		return $outprops;
 	}
 
