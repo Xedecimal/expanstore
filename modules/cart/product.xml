@@ -1,11 +1,11 @@
 <div>
 
 <product>
-	<div class="product">
+	<div id="divCartProd.{{ci_id}}" class="cart-item">
 
 	<prodhead />
-	<span class="product_name"><a
-		href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
+	<span class="product_name">
+		<a href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
 
 	<prodneck />
 		<prodprops>
@@ -15,7 +15,7 @@
 		</prodprops>
 		<prodimages/>
 	<proddesc/>
-	<a href="#" id="ancCartRemove.{{ci_id}}" class="ancCartRemove">
+	<a href="{{ci_id}}" class="ancCartRemove">
 		<img src="cart/cart_remove.png" alt="Remove Item"
 		title="Remove Item" /></a>
 	<prodfoot/>
