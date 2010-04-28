@@ -20,7 +20,7 @@ class CFormulaParser
 	*/
 	function GetFormula($prod, $formula)
 	{
-		if (strlen($formula) < 1) return 0;
+		if (empty($formula)) return 0;
 		$this->prod = $prod;
 		$ret = preg_replace_callback("/{(.*?)}/", array(&$this, "FormulaReplaceCallback"), $formula);
 		$ret2 = @number_format(eval("return floatval($ret);"), 2);

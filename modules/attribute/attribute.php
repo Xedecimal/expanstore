@@ -81,15 +81,14 @@ class ModAttribute extends Module
 			array(&$this, 'ProductFields');
 		$_d['product.callbacks.update']['attribute'] =
 			array(&$this, 'ProductUpdate');
-		$_d['product.callbacks.props'][] =
-			array(&$this, 'ProductProps');
+		$_d['product.callbacks.props'][] = array(&$this, 'product_props');
 
 		# Attach to Cart.
 
-		$_d['cart.callbacks.add'][] = array(&$this, 'CartAdd');
-		$_d['cart.callbacks.price'][] = array(&$this, 'CartPrice');
-		$_d['cart.callbacks.update'][] = array(&$this, 'CartUpdate');
-		$_d['cart.callbacks.remove'][] = array(&$this, 'CartRemove');
+		$_d['cart.callbacks.add'][] = array(&$this, 'cart_add');
+		#$_d['cart.callbacks.price'][] = array(&$this, 'cart_price');
+		$_d['cart.callbacks.update'][] = array(&$this, 'cart_update');
+		$_d['cart.callbacks.remove'][] = array(&$this, 'cart_remove');
 
 		$dsCartOption = &$_d['cartoption.ds'];
 
@@ -358,9 +357,13 @@ class ModAttribute extends Module
 		$joins[] = new Join($_d['option.ds'], 'opt_attrib = atr_id',
 			'LEFT JOIN');
 
+		if (!empty($_d['attribute.ds.joins']))
+			$joins += $_d['attribute.ds.joins'];
+
 		return $_d['attribute.ds']->Get(array(
 			'match' => $match,
-			'joins' => $joins
+			'joins' => $joins,
+			'columns' => @$_d['attribute.ds.columns']
 		));
 	}
 
@@ -448,8 +451,10 @@ class ModAttribute extends Module
 		), true);
 	}
 
-	function ProductProps(&$_d, $prod)
+	function product_props($prod)
 	{
+		global $_d;
+
 		$price_offset = 0;
 
 		$outprops = null;
@@ -464,18 +469,26 @@ class ModAttribute extends Module
 				$dsCartItem = $_d['cartitem.ds'];
 				$dsCartOption = $_d['cartoption.ds'];
 
-				$_d['attribute.joins'][$dsCart->table] =
-					new Join($dsCart, "cart.user = {$_d['cl']['usr_id']}");
-				$_d['attribute.joins'][$dsCartItem->table] =
-					new Join($dsCartItem, "ci.cart = cart.id");
-				$_d['attribute.joins'][$dsCartOption->table] =
-					new Join($dsCartOption, 'co.cart = cart.id AND co.cartitem
-						= ci.id AND co.attribute = attrib.id');
+				$_d['attribute.ds.joins'][$dsCart->table] =
+					new Join($dsCart, "cart_user = {$_d['cl']['usr_id']}");
+				$_d['attribute.ds.joins'][$dsCartItem->table] =
+					new Join($dsCartItem, "ci_cart = cart_id");
+				$_d['attribute.ds.joins'][$dsCartOption->table] =
+					new Join($dsCartOption, 'carto_cart = cart_id
+						AND carto_item = ci_id
+						AND carto_attribute = atr_id');
 
-				$_d['attribute.columns']['co.option'] = 'selected';
+				$_d['attribute.ds.columns'][] = 'atr_id';
+				$_d['attribute.ds.columns'][] = 'atr_name';
+				$_d['attribute.ds.columns'][] = 'atr_text';
+				$_d['attribute.ds.columns'][] = 'a2p_product';
+				$_d['attribute.ds.columns'][] = 'opt_id';
+				$_d['attribute.ds.columns'][] = 'opt_name';
+				$_d['attribute.ds.columns']['selected'] = 'carto_option';
 			}
 
 			$atrs = ModAttribute::QueryAttributes($prod['prod_id']);
+			#varinfo($atrs);
 
 			$aid = -1;
 			$oid = -1;
@@ -494,25 +507,27 @@ class ModAttribute extends Module
 						$options .= "</select>\n";
 						$outprops[$atext] = $options;
 					}
-					$options = "<select name=\"{$selname}\" class=\"input_edit\">\n";
+					$options = "<select name=\"$selname\" class=\"atrs-{$prod['prod_id']}\">\n";
 				}
 
-				if ($atr['opt_formula'] == null) $result = $prod['prod_price'];
+				if (empty($atr['opt_formula'])) $result = $prod['prod_price'];
 				else $result = $fp->GetFormula($prod, $atr['opt_formula']);
 
 				$selected = null;
 
 				if (isset($atr['selected']))
 				{
-					if ($atr['selected'] == $atr['oid'])
+					if ($atr['selected'] == $atr['opt_id'])
 					{
 						$price_offset += $result;
 						$selected = ' selected="true"';
 					}
 				}
 
-				$options .= "<option value=\"{$atr['opt_id']}\"$selected>".htmlspecialchars($atr['opt_name']);
-				if ($result != 0) $options .= " $".($result > -1 ? '+' : null)."$result</option>";
+				$options .= "<option value=\"{$atr['opt_id']}\"$selected>"
+					.htmlspecialchars($atr['opt_name']);
+				if ($result != 0) $options .= " $".($result > -1 ? '+' : null)
+					."$result</option>";
 				else $options .= "</option>";
 
 				$aid = $atr['atr_id'];
@@ -539,8 +554,10 @@ class ModAttribute extends Module
 
 	# Cart
 
-	function CartAdd(&$_d, $ciid)
+	function cart_add($cid, $ciid)
 	{
+		global $_d;
+
 		$atrs = GetVar("atrs");
 
 		if (!empty($atrs))
@@ -550,15 +567,15 @@ class ModAttribute extends Module
 			foreach ($atrs as $atr => $opt)
 			{
 				$dsCartOptions->Add(array(
-					'cart' => $cart,
-					'cartitem' => $ciid,
-					'attribute' => $atr,
-					'option' => $opt));
+					'carto_cart' => $cid,
+					'carto_item' => $ciid,
+					'carto_attribute' => $atr,
+					'carto_option' => $opt));
 			}
 		}
 	}
 
-	function CartUpdate(&$_d)
+	function cart_update(&$_d)
 	{
 		$atrs = GetVar('atrs');
 
@@ -580,9 +597,11 @@ class ModAttribute extends Module
 		}
 	}
 
-	function CartRemove(&$_d)
+	function cart_remove($id)
 	{
-		$_d['cartoption.ds']->Remove(array('carto_item' => GetVar('ci')));
+		global $_d;
+
+		$_d['cartoption.ds']->Remove(array('carto_item' => $id));
 	}
 }
 

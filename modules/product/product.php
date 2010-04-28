@@ -553,7 +553,7 @@ class ProductTemplate
 		{
 			foreach ($_d['product.callbacks.props'] as $cb)
 			{
-				$rv = call_user_func($cb, $_d, $this->prod);
+				$rv = call_user_func($cb, $this->prod);
 				if (is_array($rv)) $this->props = array_merge($this->props, $rv);
 			}
 		}

@@ -127,7 +127,7 @@ EOF;
 		}
 	}
 
-	function cb_product_props($_d, $prod)
+	function cb_product_props($prod)
 	{
 		return array('Category' => ModCategoryLocation::GetBreadcrumb($prod['cat_id']));
 	}

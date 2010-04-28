@@ -146,26 +146,27 @@ EOF;
 				));
 			}
 
-			$ci = GetVar('ci');
+			$ci = $_d['q'][2];
 
 			$id = $_d['cartitem.ds']->Add(array(
 				'ci_date' => SqlUnquote('NOW()'),
 				'ci_cart' => $_d['cl']['cart_id'],
 				'ci_product' => $ci
-			));
+			), true);
 
-			RunCallbacks($_d['cart.callbacks.add'], $_d, $id);
+			RunCallbacks($_d['cart.callbacks.add'], $_d['cl']['cart_id'], $id);
 
 			die(json_encode(array('res' => 1)));
 		}
-		if ($ca == 'cart_update')
+		if ($ca == 'update')
 		{
 			RunCallbacks($_d['cart.callbacks.update'], $_d);
 		}
-		if ($ca == 'cart_remove')
+		if ($ca == 'remove')
 		{
-			RunCallbacks($_d['cart.callbacks.remove'], $_d);
-			$_d['cartitem.ds']->Remove(array('ci_id' => GetVar('ci')));
+			$ci = $_d['q'][2];
+			RunCallbacks($_d['cart.callbacks.remove'], $ci);
+			$_d['cartitem.ds']->Remove(array('ci_id' => $ci));
 			die(json_encode(array('res' => 1)));
 		}
 		if ($ca == 'part')
