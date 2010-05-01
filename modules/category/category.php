@@ -194,7 +194,7 @@ EOF;
 		$id = $a['ID'];
 		$imgs = glob('catimages/'.$id.'.*');
 		if (!empty($imgs))
-			return "<a href=\"{{app_abs}}?cc=$id\"><img src=\"{{app_abs}}/$imgs[0]\" alt=\"category\" /></a>";
+			return "<a href=\"{{app_abs}}/category/$id\"><img src=\"{{app_abs}}/$imgs[0]\" alt=\"category\" /></a>";
 		else
 			return $id;
 	}

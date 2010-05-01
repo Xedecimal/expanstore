@@ -24,12 +24,15 @@ class ModCPanel extends Module
 			$_d['page.links']["Control Panel"]["Financial"] = '{{app_abs}}/cpanel/financial';
 		}
 
-		$_d['package.ds.joins']['user'] =
-			new Join($_d['user.ds'], 'usr_id = pkg_user', 'LEFT JOIN');
-		$_d['package.ds.joins']['package_prod'] =
-			new Join($_d['packageprod.ds'], 'pp_package = pkg_id', 'LEFT JOIN');
-		$_d['package.ds.joins']['ppo'] =
-			new Join($_d['packageprodoption.ds'], 'ppo_pprod = pp_id', 'LEFT JOIN');
+		if (isset($_d['package.ds']))
+		{
+			$_d['package.ds.joins']['user'] =
+				new Join($_d['user.ds'], 'usr_id = pkg_user', 'LEFT JOIN');
+			$_d['package.ds.joins']['package_prod'] =
+				new Join($_d['packageprod.ds'], 'pp_package = pkg_id', 'LEFT JOIN');
+			$_d['package.ds.joins']['ppo'] =
+				new Join($_d['packageprodoption.ds'], 'ppo_pprod = pp_id', 'LEFT JOIN');
+		}
 	}
 
 	function Prepare()
