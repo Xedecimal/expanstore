@@ -32,6 +32,8 @@ function QueryCompany($id)
 */
 class ModCompany extends Module
 {
+	# ModCompany
+
 	function __construct($inst)
 	{
 		global $_d;
@@ -72,6 +74,8 @@ class ModCompany extends Module
 		$dsCompUser = new DataSet($_d['db'], 'comp_user');
 		$_d['compuser.ds'] = $dsCompUser;
 	}
+
+	# Module
 
 	function Install()
 	{
@@ -153,31 +157,20 @@ EOF;
 		$_d['product.ds.columns'][] = 'comp_id';
 		$_d['product.ds.columns'][] = 'comp_name';
 
-		$_d['product.callbacks.props']['company'] =
-			array(&$this, 'CallbackProductProps');
-
 		$_d['product.ds.joins']['compprod'] =
 			new Join($_d['compprod.ds'], 'cp_prod = prod_id', 'LEFT JOIN');
 
 		$_d['product.ds.joins']['company'] =
 			new Join($_d['company.ds'], 'cp_comp = comp_id', 'LEFT JOIN');
 
-		$_d['product.callbacks.admin']['company'] =
-			array(&$this, 'product_admin');
+		$_d['product.callbacks.props']['company'] = array(&$this, 'product_props');
+		$_d['product.callbacks.admin']['company'] = array(&$this, 'product_admin');
 	}
 
 	function Prepare()
 	{
 		parent::Prepare();
 		global $_d;
-	}
-
-	function product_admin($prod)
-	{
-		global $_d;
-
-		if ($_d['cl']['usr_access'] > 500) return 1;
-		if ($prod['comp_id'] == $_d['cl']['comp_id']) return 1;
 	}
 
 	function Get()
@@ -238,7 +231,17 @@ EOF;
 		return $ret;
 	}
 
-	function CallbackProductProps($_d, $prod)
+	# Product
+
+	function product_admin($prod)
+	{
+		global $_d;
+
+		if ($_d['cl']['usr_access'] > 500) return 1;
+		if ($prod['comp_id'] == $_d['cl']['comp_id']) return 1;
+	}
+
+	function product_props($prod)
 	{
 		if (!empty($prod['company']))
 		{
