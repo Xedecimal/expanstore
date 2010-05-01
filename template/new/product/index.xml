@@ -1,4 +1,0 @@
-<null>
-<include file="modules/product.php" class="ModProductAdmin" />
-<present name="ModProductAdmin" />
-</null>

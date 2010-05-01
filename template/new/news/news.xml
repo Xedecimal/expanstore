@@ -1,8 +1,0 @@
-<null>
-<box title="News" id="box_news">
-<table id="news_table">
-{{news}}
-</table>
-{{pages}}
-</box><br/>
-</null>
