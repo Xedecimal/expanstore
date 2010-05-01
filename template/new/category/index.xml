@@ -1,4 +1,0 @@
-<null>
-<include file="modules/category.php" class="ModCategoryAdmin" />
-<present name="ModCategoryAdmin" />
-</null>
