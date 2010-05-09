@@ -315,7 +315,7 @@ class ModCompanyDisplay extends DisplayObject
 			$frmUpdate->AddHidden("cs", $_d['cs']);
 			$frmUpdate->AddHidden("ca", "comp_desc_update");
 			$frmUpdate->AddInput(new FormInput('area', 'body', $comp['about'],
-				'rows="5" style="width: 100%"'));
+				array('ROWS' => '5', 'STYLE' => 'width: 100%')));
 			$frmUpdate->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Update'));
 			$body .= GetBox('box_update_sum', 'Update Company Summary',

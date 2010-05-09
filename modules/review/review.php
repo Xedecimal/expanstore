@@ -115,7 +115,7 @@ EOF;
 		foreach ($revs as $rev)
 		{
 			$tblReviews = new Table('tblReviews', array(null, null),
-				array(null, 'width="100%"'));
+				array(null, array('WIDTH' => '100%')));
 			$tblReviews->AddRow(array('From', $rev['usr_name']));
 			$tblReviews->AddRow(array('Rating',
 				str_repeat('<img src="images/rate.gif" alt="rate"
@@ -157,7 +157,7 @@ EOF;
 				'Post it'));
 			$ret .= GetBox('box_review', 'Write a Review',
 				$formReview->Get('action="{{me}}" method="post"',
-				'width="100%"'));
+				array('WIDTH' => '100%')));
 		}
 		return $ret;
 	}

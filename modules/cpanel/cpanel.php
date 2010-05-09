@@ -43,7 +43,7 @@ class ModCPanel extends Module
 
 		$ca = @$_d['q'][1];
 
-		if ($ca == "update")
+		if ($ca == 'update')
 		{
 			$id = $_d['cl']['usr_id'];
 			$pass1 = GetVar("pass1");

@@ -97,7 +97,8 @@ EOF;
 			$ds = $_d['user.ds'];
 
 			$m = array('usr_id' => $_d['cl']['usr_id']);
-			$_d['cl'] = $ds->GetOne(array('match' => $m, 'joins' => @$_d['user.ds.joins']));
+			$_d['cl'] = $ds->GetOne(array('match' => $m,
+				'joins' => @$_d['user.ds.joins']));
 
 			$_d['page.links']['Log Out'] = $_d['app_abs'].'/lm/logout';
 		}

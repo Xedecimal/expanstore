@@ -23,6 +23,9 @@ a img { border: 0px; }
 
 .input_generic { width: 100%; }
 .form { width: 100%; }
+
+.category img { display: block; }
+
 .product_details { clear: both; }
 .product
 {
@@ -40,3 +43,14 @@ a img { border: 0px; }
 #foot { clear: both; }
 
 .clear { clear: both; }
+
+/* Form Related */
+
+form ul { margin: 0; padding: 0; list-style: none; }
+form li { padding: 5px 0; }
+li label { float: left; width: 100px; text-align: right; padding: 0 5px; }
+fieldset li { float: left; }
+
+/* Debug */
+
+.debug { background: #FFF; }
