@@ -38,7 +38,7 @@ class ModSignup extends Module
 				$this->user['usr_date'] = SqlUnquote('NOW()');
 				$this->user['usr_pass'] = md5($newpass);
 				$this->user['usr_access'] = 1;
-				$_d['user.ds']->Add($this->user);
+				$this->user['usr_id'] = $_d['user.ds']->Add($this->user);
 				mail($this->user['usr_email'],
 					$_d['settings']['site_name']." Confirmation Email",
 					"Welcome, your password is: $newpass\n" .
@@ -69,8 +69,8 @@ class ModSignup extends Module
 		}
 		else
 		{
-			$t = new Template();
-			$t->Set($this->user);
+			$t = new Template($_d);
+			if (!empty($this->user)) $t->Set($this->user);
 			$t->Set('errors', $this->errors);
 			$t->Behavior->Bleed = false;
 			return $t->ParseFile(l('signup/signup.xml'));

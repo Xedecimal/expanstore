@@ -486,7 +486,7 @@ EOF;
 			$formCreateProp->AddHidden('ca', 'create_spec_prop');
 			$formCreateProp->AddHidden('ci', GetVar('ci'));
 			$formCreateProp->AddInput(new FormInput('Type', 'select', 'type',
-				$prop_types, 'style="width: 100%"'));
+				$prop_types, array('STYLE' => 'width: 100%')));
 			$formCreateProp->AddInput(new FormInput('Name', 'text', 'name'));
 			$formCreateProp->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Create'));
@@ -525,7 +525,7 @@ EOF;
 			$formProps->AddHidden('ci', GetVar('ci'));
 			$formProps->AddHidden('spec', GetVar('spec'));
 			$formProps->AddInput(new FormInput('Type', 'select', 'type',
-				$prop_types, 'style="width: 100%"'));
+				$prop_types, array('STYLE' => 'width: 100%')));
 			$formProps->AddInput(new FormInput('Name', 'text', 'name',
 				$prop['name']));
 			$formProps->AddInput(new FormInput(null, 'submit', 'butSubmit',

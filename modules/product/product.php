@@ -4,16 +4,10 @@ function QueryProductList($match = null, $sort = null, $limit = null)
 {
 	global $_d;
 
-	$columns = array(
-		'prod_id',
-		'prod_name',
-		'prod_price',
-		'prod_desc'
-	);
+	$columns = array('prod_id', 'prod_name', 'prod_price', 'prod_desc');
 
 	if (!empty($_d['product.ds.columns']))
 		$q['columns'] = array_merge($_d['product.ds.columns'], $columns);
-
 
 	if (!empty($_d['product.ds.order']))
 		$q['sort'] = $_d['product.ds.order'];
@@ -278,11 +272,13 @@ EOF;
 
 			$frmAdd = new Form("formProduct");
 			$frmAdd->AddInput(new FormInput('Name', 'text',
-				'prod[prod_name]', $data['prod_name'], 'style="width: 100%"'));
+				'prod[prod_name]', $data['prod_name'],
+				array('STYLE' => 'width: 100%')));
 			$frmAdd->AddInput(new FormInput('Description', 'area',
 				'prod[prod_desc]', $data['prod_desc'], 'cols="30" rows="10"'));
 			$frmAdd->AddInput(new FormInput('Price', 'text',
-				'prod[prod_price]', $data['prod_price'], 'style="width: 100%"',
+				'prod[prod_price]', $data['prod_price'],
+				array('style' => 'width: 100%'),
 				isset($this->errors['price']) ? $this->errors['price'] : null));
 
 			if ($ca == 'prepare')
@@ -294,7 +290,7 @@ EOF;
 				'Save'));
 			$ret = GetBox('box_create', $title,
 				$frmAdd->Get('action="{{app_abs}}/product/'.$act.'" method="post" id="formProduct"',
-				'width="100%"'));
+				array('WIDTH' => '100%')));
 
 			if ($ca == 'edit')
 			{
@@ -344,17 +340,17 @@ EOF;
 				if (!RequestCompany($prod['comp_id'])) return;
 
 			$frmViewProd = new Form('formProdProps',
-				array(null, 'width="100%"'));
+				array(null, array('WIDTH' => '100%')));
 			$frmViewProd->AddHidden('ca', 'update');
 			$frmViewProd->AddHidden('ci', $pid);
 			$frmViewProd->AddHidden('cs', 'product');
 
 			$frmViewProd->AddInput(new FormInput('Name', 'text', 'name',
-				$prod['prod_name'], 'style="width: 100%"'));
+				$prod['prod_name'], array('STYLE' => 'width: 100%')));
 			$frmViewProd->AddInput(new FormInput('Description', 'area', 'desc',
 				$prod['prod_desc'], array('cols' => '30', 'rows' => '10')));
 			$frmViewProd->AddInput(new FormInput('Price', 'text', 'price',
-				$prod['prod_price'], 'style="width: 100%"'));
+				$prod['prod_price'], array('STYLE' => 'width: 100%')));
 
 			$frmViewProd->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Save'));
@@ -362,7 +358,7 @@ EOF;
 			$body = GetBox('box_props', 'Product Properties for '.
 				$prod['prod_name'],
 				$frmViewProd->Get('action="{{app_abs}}/product/update/'.$pid
-					.'" method="post"', 'width="100%"'));
+					.'" method="post"', array('WIDTH' => '100%')));
 
 			return $body;
 		}
@@ -443,7 +439,8 @@ class ModProductList extends Module
 		global $_d;
 
 		$cs = @$_d['q'][0];
-		if (!empty($cs) && $cs != 'category') return;
+
+		if (!empty($cs) && $cs != 'catalog') return;
 
 		$ret = null;
 
@@ -580,7 +577,8 @@ class ProductTemplate
 		global $_d;
 
 		if (!@$_d['settings']['hideanonprice'] || !empty($_d['cl']))
-			$this->props['Price'] = "\$".$this->prod['prod_price'];
+			$this->props['Price'] = "\$".$this->prod['prod_price']
+				.$_d['settings']['product_price_suffix'];
 		if (!empty($this->prod['model']))
 			$this->props['Model'] = $this->prod['model'];
 

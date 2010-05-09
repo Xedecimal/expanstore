@@ -444,6 +444,7 @@ class ModAttribute extends Module
 	{
 		$atrs = GetVar('atr');
 		$_d['a2p.ds']->Remove(array('a2p_product' => $id));
+		if (!empty($atrs))
 		foreach ($atrs as $atr)
 		 $_d['a2p.ds']->Add(array(
 			'a2p_attribute' => $atr,
@@ -488,7 +489,6 @@ class ModAttribute extends Module
 			}
 
 			$atrs = ModAttribute::QueryAttributes($prod['prod_id']);
-			#varinfo($atrs);
 
 			$aid = -1;
 			$oid = -1;

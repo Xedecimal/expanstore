@@ -65,14 +65,23 @@ EOF;
 		$_d['product.ds.columns'][] = 'cat_id';
 		$_d['product.ds.columns'][] = 'catprod_cat';
 
-		$_d['product.callbacks.props']['category'] = array(&$this, 'cb_product_props');
-		$_d['product.callbacks.addfields']['category'] = array(&$this, 'cb_product_fields');
-		$_d['product.callbacks.editfields']['category'] = array(&$this, 'cb_product_fields');
-		$_d['product.callbacks.update']['category'] = array(&$this, 'cb_product_update');
-		$_d['product.callbacks.add']['category'] = array(&$this, 'cb_product_add');
-		$_d['product.callbacks.delete']['category'] = array(&$this, 'cb_product_delete');
+		$_d['product.callbacks.props']['category'] =
+			array(&$this, 'cb_product_props');
+		$_d['product.callbacks.addfields']['category'] =
+			array(&$this, 'cb_product_fields');
+		$_d['product.callbacks.editfields']['category'] =
+			array(&$this, 'cb_product_fields');
+		$_d['product.callbacks.update']['category'] =
+			array(&$this, 'cb_product_update');
+		$_d['product.callbacks.add']['category'] =
+			array(&$this, 'cb_product_add');
+		$_d['product.callbacks.delete']['category'] =
+			array(&$this, 'cb_product_delete');
 
-		$_d['product.ds.match']['cat_id'] = GetVar('cc', 0);
+		if (empty($_d['category.bypass']))
+		{
+			$_d['product.ds.match']['cat_id'] = GetVar('cc', 0);
+		}
 
 		$_d['product.ds.joins']['cat_prod'] =
 			new Join($_d['cat_prod.ds'], 'catprod_prod = prod_id', 'LEFT JOIN');
@@ -87,8 +96,10 @@ EOF;
 
 		if ($_d['cl']['usr_access'] > 500)
 		{
-			$_d['page.links']['Admin']['Categories']['Listing'] = '{{app_abs}}/category';
-			$_d['page.links']['Admin']['Categories']['Add'] = '{{app_abs}}/category/prepare';
+			$_d['page.links']['Admin']['Categories']['Listing'] =
+				'{{app_abs}}/category/list';
+			$_d['page.links']['Admin']['Categories']['Add'] =
+				'{{app_abs}}/category/prepare';
 		}
  	}
 
@@ -125,11 +136,19 @@ EOF;
 			}
 			die(json_encode($res));
 		}
+		// Products only list with an empty _d['q']
+		else if (is_numeric($_d['q'][1]))
+			$_d['q'] = array('catalog');
 	}
 
 	function cb_product_props($prod)
 	{
-		return array('Category' => ModCategoryLocation::GetBreadcrumb($prod['cat_id']));
+		global $_d;
+
+		if ($_d['q'][0] == 'catalog' && empty($_d['category.show'])) return;
+
+		return array('Category' =>
+			ModCategoryLocation::GetBreadcrumb($prod['cat_id']));
 	}
 
 	function cb_product_fields($form, $prod = null)
@@ -192,11 +211,13 @@ EOF;
 	function TagShowCat($t, $g, $a)
 	{
 		$id = $a['ID'];
+		$cat = ModCategory::QueryCat($id);
 		$imgs = glob('catimages/'.$id.'.*');
 		if (!empty($imgs))
-			return "<a href=\"{{app_abs}}/category/$id\"><img src=\"{{app_abs}}/$imgs[0]\" alt=\"category\" /></a>";
+			return "<div class=\"category\"><a href=\"{{app_abs}}/category/$id\">
+				<img src=\"{{app_abs}}/$imgs[0]\" alt=\"category\" />{$cat['cat_name']}</a></div>";
 		else
-			return $id;
+			return "<a href=\"{{app_abs}}/category/$id\">{$cat['cat_name']}</a>";
 	}
 
 	function Get()
@@ -233,7 +254,7 @@ EOF;
 
 		return $_d['category.ds']->Get(array(
 			'match' => $m,
-			'order' => array('cat_name'),
+			'order' => array('cat_order', 'cat_name'),
 			'joins' => @$_d['category.ds.joins']
 		));
 	}
@@ -298,7 +319,7 @@ class ModCategoryAdmin extends Module
 		{
 			$cid = $_d['q'][2];
 
-			$f = GetVar('formViewCat_image');
+			$f = GetVar('image');
 
 			if (!empty($f))
 			{
@@ -327,7 +348,7 @@ class ModCategoryAdmin extends Module
 	{
 		global $_d;
 
-		if ($_d['q'][0] != 'category') return;
+		if (@$_d['q'][0] != 'category') return;
 
 		if (!ModUser::RequestAccess(500)) return;
 
@@ -337,9 +358,9 @@ class ModCategoryAdmin extends Module
 		{
 			$formAddCat = new Form("formAddCat");
 			$formAddCat->AddInput(new FormInput('Name', 'text', 'name', null,
-				'style="width: 100%"'));
+				array('STYLE' => 'width: 100%')));
 			$formAddCat->AddInput(new FormInput('Description', 'area', 'desc', null,
-				'style="width: 100%; height: 100px;"'));
+				array('STYLE' => 'width: 100%; height: 100px;')));
 			$formAddCat->AddInput(new FormInput('Parent Category', 'select',
 				'parent', DataToSel(ModCategory::QueryAll(), 'cat_name', 'cat_id',
 				@$_d['category.current']['cat_id'])));
@@ -353,7 +374,7 @@ class ModCategoryAdmin extends Module
 				'Create Category',
 				$formAddCat->Get('action="{{app_abs}}/category/add"
 					method="post" enctype="multipart/form-data"',
-					'style="width: 100%"'));
+					array('STYLE' => 'width: 100%')));
 		}
 
 		else if ($ca == 'edit')
@@ -390,14 +411,18 @@ class ModCategoryAdmin extends Module
 					.'" method="post" enctype="multipart/form-data"'));
 		}
 
-		else if (!isset($ca)) // Category listing.
+		else if ($ca == 'list') // Category listing.
 		{
 			$ret = null;
 
 			$items = ModCategory::QueryAll();
 			$tree = DataToTree($items, 'cat_id', 'cat_parent', 0);
 
-			$ret = GetTree($tree, "<a href=\"{{app_abs}}/category/{{cat_id}}\">{{cat_name}}</a> | <a href=\"{{app_abs}}/category/edit/{{cat_id}}\">Edit</a> | <a href=\"{{app_abs}}/category/delete/{{cat_id}}\" class=\"aCatDelete\">Delete</a>");
+			$ret = GetTree($tree,
+				'<a href="{{app_abs}}/category/{{cat_id}}">{{cat_name}}</a>
+				| <a href="{{app_abs}}/category/edit/{{cat_id}}">Edit</a>
+				| <a href="{{app_abs}}/category/delete/{{cat_id}}"
+				class="aCatDelete">Delete</a>');
 			return $ret;
 		}
 	}
@@ -410,7 +435,7 @@ class ModCategoryLocation extends Module
 	function Get()
 	{
 		global $_d;
-		$t = new Template();
+		$t = new Template($_d);
 		if (@$_d['category.current']['cat_hidden']) return;
 		$t->Set($_d['category.current']);
 		$t->ReWrite('path', array($this, 'TagPath'));

@@ -8,33 +8,36 @@
  */
 class ModSearch extends Module
 {
+	public $Block = 'search';
+
+	function PreLink()
+	{
+		global $_d;
+
+		if ($_d['q'][0] != 'search') return;
+		$_d['category.bypass'] = true;
+		$_d['category.show'] = true;
+	}
+
 	function Prepare()
 	{
 		parent::Prepare();
 
 		global $_d;
 
-		if (@$_d['q'][0] == 'search')
-		{
-			$query = GetVar('query');
-			$_d['product.ds.match'][] = "(prod_name LIKE '%{$query}%' OR
-				p.description LIKE '%{$query}%')";
-		}
+		if ($_d['q'][0] != 'search') return;
+
+		$query = GetVar('query');
+		$_d['product.ds.match'][] = "(prod_name LIKE '%{$query}%' OR
+			prod_desc LIKE '%{$query}%')";
+
+		$_d['q'] = array('catalog');
 	}
 
 	function Get()
 	{
-		//$cats = QueryCatsAll();
-
-		//if (count($cats) < 1) return null;
-		$formSearch = new Form("formSearch");
-		$formSearch->AddHidden("ca", "search");
-		//$formSearch->AddInput(new FormInput("Category:", "select", "blah", DataToSel($cats, $cc, "Home")));
-		$formSearch->AddInput(new FormInput('Keywords', 'text', 'query', null,
-			'style="width: 100%"'));
-		$formSearch->AddInput(new FormInput(null, 'submit', 'butSubmit', 'Search'));
-		$out = $formSearch->Get('action="{{me}}" method="post"', 'class="form"');
-		return GetBox('box_search', 'Search', $out);
+		$t = new Template($GLOBALS['_d']);
+		return $t->ParseFile(l('search/search.xml'));
 	}
 }
 
