@@ -24,12 +24,13 @@ a img { border: 0px; }
 .input_generic { width: 100%; }
 .form { width: 100%; }
 
-.category img { display: block; }
+.category { padding: 5px; }
 
 .product_details { clear: both; }
 .product
 {
-	width: 250px;
+	width: 175px;
+	padding: 5px;
 	height: 250px;
 	border-bottom: 1px solid #000;
 	float: left;
@@ -48,7 +49,7 @@ a img { border: 0px; }
 
 form ul { margin: 0; padding: 0; list-style: none; }
 form li { padding: 5px 0; }
-li label { float: left; width: 100px; text-align: right; padding: 0 5px; }
+li label { float: left; width: 100px; padding: 0 5px; }
 fieldset li { float: left; }
 
 /* Debug */

@@ -215,9 +215,11 @@ EOF;
 		$imgs = glob('catimages/'.$id.'.*');
 		if (!empty($imgs))
 			return "<div class=\"category\"><a href=\"{{app_abs}}/category/$id\">
-				<img src=\"{{app_abs}}/$imgs[0]\" alt=\"category\" />{$cat['cat_name']}</a></div>";
+				<img src=\"{{app_abs}}/$imgs[0]\" alt=\"category\" />
+				<p>{$cat['cat_name']}</p></a></div>";
 		else
-			return "<a href=\"{{app_abs}}/category/$id\">{$cat['cat_name']}</a>";
+			return "<div class=\"category\"><a
+				href=\"{{app_abs}}/category/$id\">{$cat['cat_name']}</a></div>";
 	}
 
 	function Get()
