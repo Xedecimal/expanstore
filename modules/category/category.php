@@ -16,6 +16,9 @@ class ModCategory extends Module
 
 		if ($_d['q'][0] == 'category' && is_numeric(@$_d['q'][1]))
 			$_SESSION['cc'] = $_d['q'][1];
+
+		$_d['category.all'] = DataToTree($_d['category.ds']->Get(), 'cat_id',
+			'cat_parent', 0);
 	}
 
 	function Install()
@@ -455,16 +458,20 @@ class ModCategoryLocation extends Module
 	{
 		global $_d;
 
-		if ($cat == 0) return "<a href=\"{{app_abs}}/category/0\">Home</a>";
-		$c = ModCategory::QueryCat($cat);
-		$ret = "";
-		while ($c != null && $c['cat_id'] != 0)
+		if (empty($cat)) return 'Home';
+
+		$c = $_d['category.all']->Find($cat);
+		$ret = null;
+
+		do
 		{
-			$ret = ' / <a href="{{app_abs}}/category/'.$c['cat_id'].'">'.$c['cat_name'].'</a>'
-				.$ret;
-			$c = ModCategory::QueryCat($c['cat_parent']);
-		}
-		$ret = "<a href=\"{{app_abs}}/category/0\">Home</a>" . $ret;
+			if (!is_object($c)) varinfo($cat);
+			$ret = '<a href="{{app_abs}}/category/'.$c->data['cat_id'].'">'
+				.$c->data['cat_name'].'</a>'.$ret;
+			if ($c->id) $ret = ' &raquo; '.$ret;
+		} while ($c = $c->parent);
+
+		#$ret = "<a href=\"{{app_abs}}/category/0\">Home</a>" . $ret;
 		return $ret;
 	}
 }
