@@ -39,13 +39,19 @@ class ModSignup extends Module
 				$this->user['usr_pass'] = md5($newpass);
 				$this->user['usr_access'] = 1;
 				$this->user['usr_id'] = $_d['user.ds']->Add($this->user);
+
+				if ($_d['settings']['mail_from']) $heads =
+					"From: {$_d['settings']['mail_from']}\r\n"
+					."Reply-To: {$_d['settings']['mail_from']}\r\n";
+				else $heads = '';
+
 				mail($this->user['usr_email'],
 					$_d['settings']['site_name']." Confirmation Email",
 					"Welcome, your password is: $newpass\n" .
 					"We suggest that you change it as soon as you can, to\n" .
 					"avoid forgetting it. You can do so at http://" . $_SERVER["HTTP_HOST"] . "\n" .
 					"login at top left and press the exposed 'Settings' button.\n\n".
-					"Thank you, the ".$_d['settings']['site_name']." Staff\n");
+					"Thank you, the ".$_d['settings']['site_name']." Staff\n", $heads);
 
 				$this->success = true;
 			}

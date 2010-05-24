@@ -21,7 +21,7 @@ class ModCPanel extends Module
 		if (!empty($_d['cl']))
 		{
 			$_d['page.links']["Control Panel"]['Personal'] = '{{app_abs}}/cpanel';
-			$_d['page.links']["Control Panel"]["Financial"] = '{{app_abs}}/cpanel/financial';
+			//$_d['page.links']["Control Panel"]["Financial"] = '{{app_abs}}/cpanel/financial';
 		}
 
 		if (isset($_d['package.ds']))
@@ -66,7 +66,7 @@ class ModCPanel extends Module
 			{
 				if (strcmp($pass1, $pass2) == 0)
 				{
-					$columns['pass'] = md5($pass1);
+					$columns['usr_pass'] = md5($pass1);
 				}
 				else die("Passwords did not match.");
 			}
