@@ -50,6 +50,7 @@ class ModCPanel extends Module
 			$pass2 = GetVar("pass2");
 
 			$columns = array(
+				'usr_user'    => GetVar('user'),
 				'usr_email'   => GetVar("email"),
 				'usr_name'    => GetVar("name"),
 				'usr_address' => GetVar("address"),
@@ -176,6 +177,8 @@ class ModCPanel extends Module
 
 			$frmProfile = new Form("frmProfile");
 
+			$frmProfile->AddInput(new FormInput('Username', 'text', 'user',
+				$cl['usr_user'], 'size="30"'));
 			$frmProfile->AddInput(new FormInput('Password', 'password', 'pass1',
 				null, 'size="30"', "Only specify if you wish to change."));
 			$frmProfile->AddInput(new FormInput('Verify', 'password', 'pass2',

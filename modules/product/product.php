@@ -471,6 +471,13 @@ class ModProdsLatest extends Module
 		$_d['product.latest.match'] = array();
 	}
 
+	function Link()
+	{
+		global $_d;
+
+		$_d['template.rewrites']['product_latest'] = array(&$this, 'tag_product_latest');
+	}
+
 	function Get()
 	{
 		global $_d;
@@ -485,7 +492,12 @@ class ModProdsLatest extends Module
 			array(0, 10));
 
 		if (empty($pt->prods)) return;
-		return $pt->ParseFile(l('product/latest.xml'));
+		return $pt->ParseFile(l('product/fromCatalog.xml'));
+	}
+
+	function tag_product_latest($t, $g)
+	{
+		return $this->Get();
 	}
 }
 

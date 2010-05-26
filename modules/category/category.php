@@ -18,7 +18,7 @@ class ModCategory extends Module
 			$_SESSION['cc'] = $_d['q'][1];
 
 		$_d['category.all'] = DataToTree($_d['category.ds']->Get(), 'cat_id',
-			'cat_parent', 0);
+			'cat_parent');
 	}
 
 	function Install()
