@@ -24,6 +24,7 @@ class ModUser extends Module
 		$ds = new DataSet($_d['db'], 'user', 'usr_id');
 		$ds->ErrorHandler = array(&$this, 'DataError');
 		$ds->Shortcut = 'u';
+		$ds->Description = 'User';
 		$_d['user.ds'] = $ds;
 	}
 
@@ -106,7 +107,7 @@ EOF;
 		if (@$_d['q'][0] != 'user') return;
 
 		// Validate
-		if ($_d['q'][1] == 'v')
+		if (@$_d['q'][1] == 'v')
 			die(json_encode(ModUser::Validate(GetVar('user'))));
 	}
 
