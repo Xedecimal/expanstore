@@ -526,7 +526,7 @@ class ModAttribute extends Module
 
 				$options .= "<option value=\"{$atr['opt_id']}\"$selected>"
 					.htmlspecialchars($atr['opt_name']);
-				if ($result != 0) $options .= " $".($result > -1 ? '+' : null)
+				if ($result != $prod['prod_price']) $options .= " $".($result > -1 ? '+' : null)
 					."$result</option>";
 				else $options .= "</option>";
 
