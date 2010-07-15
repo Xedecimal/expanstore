@@ -18,8 +18,9 @@ class ModCPanel extends Module
 
 		// Attach to Navigation.
 
-		if (!empty($_d['cl']))
+		if (!empty($_d['cl']) && !@$_d['cpanel.disable'])
 		{
+
 			$_d['page.links']["Control Panel"]['Personal'] = '{{app_abs}}/cpanel';
 			//$_d['page.links']["Control Panel"]["Financial"] = '{{app_abs}}/cpanel/financial';
 		}
@@ -78,7 +79,6 @@ class ModCPanel extends Module
 
 			//Redirect("$me?ct=$ct&cs=$cs");
 		}
-
 		else if ($ca == "comp_update")
 		{
 			$fields = GetVar("company");
@@ -94,14 +94,12 @@ class ModCPanel extends Module
 			xslog($_d, "Updated company profile");
 			//Redirect("$me?cs=cpanel&ca=view_company");
 		}
-
 		else if ($ca == "comp_desc_update")
 		{
 			$dsCompanies->Update(array('id' => $cl['company']), array("about" => GetVar("body")));
 			xslog($_d, "Updated company description.");
 			//Redirect("$me?cs=cpanel&ca=view_company");
 		}
-
 		else if ($ca == "comp_uplogo")
 		{
 			$comp = $dsCompanies->GetOne('id', $cl['company']);
@@ -142,7 +140,6 @@ class ModCPanel extends Module
 
 			xslog($_d, "Uploaded company logo.");
 		}
-
 		else if ($ca == "comp_logo_rem")
 		{
 			unlink("compimages/{$cu->company->id}/logo.gif");
@@ -153,6 +150,8 @@ class ModCPanel extends Module
 	function Get()
 	{
 		global $_d;
+
+		if (@$_d['cpanel.disable']) return;
 
 		$ca = GetVar('ca');
 

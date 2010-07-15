@@ -12,7 +12,7 @@ class ModAdmin extends Module
 
 		// Attach to Navigation.
 
-		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
+		if (ModUser::RequestAccess(500))
 		{
 			$_d['page.links']['Admin']['Settings'] =
 				'{{app_abs}}/admin';
@@ -92,7 +92,7 @@ class ModAdmin extends Module
 	{
 		global $_d;
 
-		if ($_d['cl']['usr_access'] < 500) return;
+		if (ModUser::RequestAccess(500)) return;
 
 		$eb = 'admin/edit.png';
 		$db = 'admin/delete.png';

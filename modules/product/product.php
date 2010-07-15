@@ -103,7 +103,7 @@ EOF;
 
 		// Attach to Navigation.
 
-		if (isset($_d['cl']) && $_d['cl']['usr_access'] >= 500)
+		if (ModUser::RequestAccess(500))
 		{
 			$_d['page.links']['Admin']['Products']['Listing'] = '{{app_abs}}/product';
 		}
