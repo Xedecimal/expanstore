@@ -95,7 +95,7 @@ class PayManual
 
 			$id = $data['package.ds']->Add($finished);
 
-			if (!empty($cart) > 0)
+			if (!empty($cart))
 			{
 				$formCart = new Form("formCart");
 
@@ -109,36 +109,18 @@ class PayManual
 				{
 					$totalprice = $prodprice = $citem['price'];
 
-//					if ($citem['option'] != null)
-//					{
-//						foreach ($citem->options as $newopt)
-//							$totalprice += $prodprice = $fp->GetFormula($citem->product, $newopt->option->formula);
-//					}
-
 					$pprodid = $data['packageprod.ds']->Add(array(
 						'package' => $id,
 						'name' => $citem['prod_name'],
 						'model' => $citem['model'],
 						'price' => $totalprice
 					));
-
-//					if (!empty($citem->options))
-//					{
-//						foreach ($citem->options as $option)
-//						{
-//							$dsPProdOption->Add(array(
-//								'pproduct' => $pprodid,
-//								'attribute' => $option->attribute['name'],
-//								'value' => $option->option->name
-//							));
-//						}
-//					}
 				}
 			}
 		}
 		else
 		{
-			$body =<<<EOF
+			$body = <<<EOF
 <script type="text/javascript">
 function updateBilling()
 {

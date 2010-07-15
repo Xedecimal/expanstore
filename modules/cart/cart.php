@@ -145,7 +145,7 @@ EOF;
 			{
 				$_d['cl']['cart_id'] = $_d['cart.ds']->Add(array(
 					'cart_date' => SqlUnquote('NOW()'),
-					'cart_user' => $_d['cl']['usr_id']
+					'cart_user' => $_d['cl']['id']
 				));
 			}
 
@@ -194,7 +194,7 @@ EOF;
 		if ($_d['q'][0] != 'cart') return;
 		if (empty($_d['cl'])) return;
 
-		$q['match']['cart_user'] = $_d['cl']['usr_id'];
+		$q['match']['cart_user'] = $_d['cl']['id'];
 		$q['joins']['cart_item'] = new Join($_d['cartitem.ds'], 'ci_product = prod_id');
 		$q['joins']['cart'] = new Join($_d['cart.ds'], 'ci_cart = cart_id');
 

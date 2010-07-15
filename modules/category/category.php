@@ -97,7 +97,7 @@ EOF;
 		$_d['template.rewrites']['showcat'] = array(&$this, 'TagShowCat');
 		$_d['template.rewrites']['category'] = array(&$this, 'TagCategory');
 
-		if ($_d['cl']['usr_access'] >= 500)
+		if (ModUser::RequestAccess(500))
 		{
 			$_d['page.links']['Admin']['Categories']['Listing'] =
 				'{{app_abs}}/category/list';
@@ -187,7 +187,7 @@ EOF;
 	function TagAdmin($t, $g)
 	{
 		global $_d;
-		if ($_d['cl']['usr_access'] > 500) return $g;
+		if (ModUser::RequestAccess(500)) return $g;
 	}
 
 	function TagCategory($t, $g, $a)
@@ -234,7 +234,6 @@ EOF;
 
 		$this->data = $_d;
 		$cc = GetVar('cc');
-		$cl = $_d['cl'];
 
 		$t = new Template();
 		$t->Set('cats', $this->cats = ModCategory::QueryCats($cc, false));

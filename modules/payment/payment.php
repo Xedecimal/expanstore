@@ -8,8 +8,6 @@ class ModPayment extends Module
 	{
 		global $_d;
 
-		$_d['payment.mods'] = array();
-
 		foreach (glob(dirname(__FILE__).'/pay_*.php') as $f)
 			require_once($f);
 	}

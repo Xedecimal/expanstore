@@ -12,8 +12,6 @@ class ModUser extends Module
 	 */
 	public $lm;
 
-	//public $Block = 'left';
-
 	function __construct($inst)
 	{
 		global $_d;
@@ -26,13 +24,6 @@ class ModUser extends Module
 		$ds->Shortcut = 'u';
 		$ds->Description = 'User';
 		$_d['user.ds'] = $ds;
-	}
-
-	static function RequestAccess($acc)
-	{
-		global $_d;
-		if ($_d['cl']['usr_access'] >= $acc) return true;
-		return false;
 	}
 
 	function InstallFields(&$frm)
@@ -82,9 +73,17 @@ EOF;
 	{
 		global $_d;
 
-		$this->lm = new LoginManager('lm');
-		$this->lm->AddDataSet($_d['user.ds'], 'usr_pass', 'usr_user');
-		$_d['cl'] = $this->lm->Prepare();
+		$this->CheckAuth($_d['user.ds'], 'usr_user', 'usr_pass', 'usr_access');
+
+		if (empty($_d['cl']) && !empty($_d['user.auth']))
+		{
+			foreach ($_d['user.auth'] as $a)
+			{
+				if ($this->CheckAuth($a['ds'], $a['user'], $a['pass'],
+					$a['access']))
+					break;
+			}
+		}
 	}
 
 	function Prepare()
@@ -94,15 +93,7 @@ EOF;
 		global $_d;
 
 		if (!empty($_d['cl']))
-		{
-			$ds = $_d['user.ds'];
-
-			$m = array('usr_id' => $_d['cl']['usr_id']);
-			$_d['cl'] = $ds->GetOne(array('match' => $m,
-				'joins' => @$_d['user.ds.joins']));
-
 			$_d['page.links']['Log Out'] = $_d['app_abs'].'/lm/logout';
-		}
 
 		if (@$_d['q'][0] != 'user') return;
 
@@ -117,9 +108,9 @@ EOF;
 
 		$out = null;
 
-		if (isset($_d['cl']) && $_d['cl']['usr_access'] > 0)
+		if (ModUser::RequestAccess(1))
 		{
-			$out .= "Welcome, {$_d['cl']['usr_user']}<br/>\n";
+			$out .= "Welcome, {$_d['cl']['user']}<br/>\n";
 		}
 		else
 		{
@@ -127,6 +118,30 @@ EOF;
 			$out .= RunCallbacks(@$_d['user.callbacks.knee']);
 			return GetBox('box_user', 'Login', $out);
 		}
+	}
+
+	function CheckAuth($ds, $user, $pass, $access)
+	{
+		$this->lm = $lm = new LoginManager('lm');
+		$lm->AddDataset($ds, $pass, $user);
+		$cl = $lm->Prepare();
+		if (!empty($cl))
+		{
+			global $_d;
+
+			$_d['cl'] = $cl;
+			$_d['cl']['id'] = $cl[$ds->id];
+			$_d['cl']['user'] = $cl[$user];
+			$_d['cl']['access'] = $cl[$access];
+			return true;
+		}
+	}
+
+	static function RequestAccess($acc)
+	{
+		global $_d;
+		if (@$_d['cl']['access'] >= $acc) return true;
+		return false;
 	}
 
 	static function Validate($data)
@@ -151,6 +166,7 @@ EOF;
 				return array('usr_email' => 'Invalid address.');
 		}
 	}
+
 }
 
 Module::Register('ModUser');
@@ -161,7 +177,7 @@ class ModUserAdmin extends Module
 	{
 		global $_d;
 
-		if ($_d['cl']['usr_access'] > 500)
+		if (ModUser::RequestAccess(500))
 		{
 			$_d['page.links']['Admin']['Users'] = '{{app_abs}}/user';
 
