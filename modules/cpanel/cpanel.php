@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModCPanel');
+Module::Register('ModCPanel');
 
 class ModCPanel extends Module
 {

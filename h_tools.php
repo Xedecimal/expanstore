@@ -22,7 +22,7 @@ class CFormulaParser
 	{
 		if (empty($formula)) return 0;
 		$this->prod = $prod;
-		$ret = preg_replace_callback("/{(.*?)}/", array(&$this, "FormulaReplaceCallback"), $formula);
+		$ret = preg_replace_callback("/{{(.*?)}}/", array(&$this, "FormulaReplaceCallback"), $formula);
 		$ret2 = @number_format(eval("return floatval($ret);"), 2);
 		return $ret2;
 	}
@@ -35,6 +35,7 @@ class CFormulaParser
 	function FormulaReplaceCallback($match)
 	{
 		if ($match[1] == "price") return $this->prod->price;
+		if (isset($this->prod[$match[1]])) return $this->prod[$match[1]];
 		return null;
 	}
 }

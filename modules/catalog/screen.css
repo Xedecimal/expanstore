@@ -31,12 +31,13 @@ a img { border: 0px; }
 {
 	width: 175px;
 	padding: 5px;
-	height: 250px;
-	border-bottom: 1px solid #000;
+	height: 350px;
+	border-top: 1px solid #000;
 	float: left;
 }
 
 .product ul { margin: 0; padding: 0; list-style: none; }
+.product_value { width: 5em; }
 
 #left { float: left; width: 200px; }
 #middle { padding-left: 200px; }

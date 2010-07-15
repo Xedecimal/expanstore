@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModPage');
+Module::Register('ModPage');
 
 class ModPage extends Module
 {

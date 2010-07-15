@@ -154,13 +154,13 @@ EOF;
 
 		// Connect to Product.
 
-		$_d['product.ds.columns'][] = 'comp_id';
-		$_d['product.ds.columns'][] = 'comp_name';
+		$_d['product.ds.query']['columns'][] = 'comp_id';
+		$_d['product.ds.query']['columns'][] = 'comp_name';
 
-		$_d['product.ds.joins']['compprod'] =
+		$_d['product.ds.query']['joins']['compprod'] =
 			new Join($_d['compprod.ds'], 'cp_prod = prod_id', 'LEFT JOIN');
 
-		$_d['product.ds.joins']['company'] =
+		$_d['product.ds.query']['joins']['company'] =
 			new Join($_d['company.ds'], 'cp_comp = comp_id', 'LEFT JOIN');
 
 		$_d['product.callbacks.props']['company'] = array(&$this, 'product_props');
@@ -252,7 +252,7 @@ EOF;
 	}
 }
 
-Module::RegisterModule('ModCompany');
+Module::Register('ModCompany');
 
 class CompanyUserHandler extends EditorHandler
 {

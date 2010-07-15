@@ -8,6 +8,8 @@ class ModCart extends Module
 
 		if (!$installed) return;
 
+		$this->CheckActive('cart');
+
 		$dsCart = new DataSet($_d['db'], 'cart');
 		$dsCart->Shortcut = 'cart';
 		$_d['cart.ds'] = $dsCart;
@@ -24,6 +26,12 @@ class ModCart extends Module
 
 		$dsPProdOption = new DataSet($_d['db'], 'pack_prod_option');
 		$_d['packageprodoption.ds'] = $dsPProdOption;
+
+		$_d['cart.ds.query']['joins']['cartitem'] = new Join(
+			$_d['cartitem.ds'], 'ci_cart = cart_id', 'LEFT JOIN'
+		);
+
+		$_d['cart.query'] = array();
 	}
 
 	function Install()
@@ -111,12 +119,7 @@ EOF;
 
 		// Attach to Product
 
-		$_d['product.ds.joins']['cartitem'] =
-			new Join($_d['cartitem.ds'], 'ci_product = prod_id', 'LEFT JOIN');
-		$_d['product.ds.joins']['cart'] =
-			new Join($_d['cart.ds'], 'ci_cart = cart_id', 'LEFT JOIN');
-
-		$_d['product.ds.columns'][] = 'ci_id';
+		if ($this->Active) $_d['product.ds.query']['columns'][] = 'ci_id';
 
 		$_d['product.callbacks.knee']['cart'] = array(&$this, 'product_knee');
 	}
@@ -191,7 +194,12 @@ EOF;
 		if ($_d['q'][0] != 'cart') return;
 		if (empty($_d['cl'])) return;
 
-		$cart = QueryProductList(array('cart_user' => $_d['cl']['usr_id']));
+		$q['match']['cart_user'] = $_d['cl']['usr_id'];
+		$q['joins']['cart_item'] = new Join($_d['cartitem.ds'], 'ci_product = prod_id');
+		$q['joins']['cart'] = new Join($_d['cart.ds'], 'ci_cart = cart_id');
+
+		$cart = ModProduct::QueryProducts(array_merge_recursive($q, $_d['cart.query']));
+		//varinfo($cart);
 
 		$ca = GetVar('ca');
 
@@ -224,9 +232,14 @@ EOF;
 					if ($ciid != $citem['ci_id'])
 					{
 						$totalitems++;
-						$ciid = $citem['ci_id'];
+						if (!empty($_d['cart.callbacks.price']))
+							$citem['prod_price'] =
+								RunCallbacks($_d['cart.callbacks.price'],
+									$citem);
 						$totalprice += $citem['prod_price'];
 						$pt->prods[] = $citem;
+
+						$ciid = $citem['ci_id'];
 					}
 				}
 
@@ -234,7 +247,6 @@ EOF;
 				$t->Set('totalitems', $totalitems);
 				$t->Set('totalprice', $totalprice);
 				$t->ReWrite('cartknee', array(&$this, 'CartKnee'));
-
 				$body = $pt->ParseString($t->ParseFile(l('cart/product.xml')));
 			}
 			else
@@ -268,6 +280,6 @@ EOF;
 	}
 }
 
-Module::RegisterModule('ModCart');
+Module::Register('ModCart');
 
 ?>

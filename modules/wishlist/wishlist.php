@@ -42,7 +42,7 @@ EOF;
 
 		// Attach to Product.
 
-		$_d['product.ds.joins']['wishlist'] =
+		$_d['product.ds.query']['joins']['wishlist'] =
 			new Join($_d['wishlist.ds'], 'wl_prod = prod_id', 'LEFT JOIN');
 
 		$_d['product.callbacks.knee'][] = array(&$this, 'ProductFooter');
@@ -104,6 +104,6 @@ EOF;
 	}
 }
 
-Module::RegisterModule('ModWishlist');
+Module::Register('ModWishlist');
 
 ?>

@@ -153,7 +153,7 @@ EOF;
 	}
 }
 
-Module::RegisterModule('ModUser');
+Module::Register('ModUser');
 
 class ModUserAdmin extends Module
 {
@@ -202,7 +202,7 @@ class ModUserAdmin extends Module
 	}
 }
 
-Module::RegisterModule('ModUserAdmin');
+Module::Register('ModUserAdmin');
 
 function AccessRequire($access)
 {

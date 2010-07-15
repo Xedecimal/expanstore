@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModImportOsc');
+Module::Register('ModImportOsc');
 
 class ModImportOsc extends Module
 {

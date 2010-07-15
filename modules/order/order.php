@@ -2,7 +2,7 @@
 
 require_once('h_main.php');
 
-Module::RegisterModule('ModOrder');
+Module::Register('ModOrder');
 
 class ModOrder extends Module
 {

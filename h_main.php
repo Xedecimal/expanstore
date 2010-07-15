@@ -3,6 +3,7 @@
 session_start();
 
 require_once('xedlib/h_utility.php');
+HandleErrors();
 require_once('xedlib/h_display.php');
 require_once('xedlib/h_data.php');
 require_once('xedlib/h_template.php');

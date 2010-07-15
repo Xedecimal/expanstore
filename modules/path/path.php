@@ -3,7 +3,7 @@
 define('PATH_VIEWED', 0);
 define('PATH_PURCHASED', 1);
 
-Module::RegisterModule('ModPath');
+Module::Register('ModPath');
 
 function QueryPath($_d, $product)
 {
@@ -44,7 +44,7 @@ EOF;
 		global $_d;
 
 		$_d['product.callbacks.details'][] = array(&$this, 'cb_product_details');
-		$_d['product.ds.joins']['path'] =
+		$_d['product.ds.query']['joins']['path'] =
 			new Join($_d['path.ds'], 'path_target = prod_id', 'LEFT JOIN');
 		#$_d['product.ds']->AddChild($_d['path.ds'], 'id', 'target', 'id');
 	}

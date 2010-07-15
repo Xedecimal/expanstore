@@ -18,9 +18,9 @@
 		href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
 
 	<prodprops>
-	<ul>
-		<prodprop><li><b>{{field}}</b> {{value}}</li></prodprop>
-	</ul>
+	<table>
+		<prodprop><tr><th>{{field}}</th><td>{{value}}</td></tr></prodprop>
+	</table>
 	</prodprops>
 
 	<div class="divProdControls">

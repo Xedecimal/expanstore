@@ -4,7 +4,7 @@ $(function() {
 
 		var atrs = {};
 
-		$('.atrs-'+id).each(function () {
+		$('#divProd_'+id+' .product_value').each(function () {
 			atrs[$(this).attr('name')] = $(this).val();
 		});
 

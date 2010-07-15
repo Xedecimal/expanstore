@@ -9,14 +9,14 @@ class ModNarrow extends Module
 		$narrows = GetVar('narrows');
 		if (!empty($narrows))
 		{
-			$_d['product.ds.joins'][] =
+			$_d['product.ds.query']['joins'][] =
 				new Join($_d['category.ds'], 'cat.id = p.cat');
-			$_d['product.ds.joins'][] =
+			$_d['product.ds.query']['joins'][] =
 				new Join($_d['specprop.ds'], 'sprop.spec = cat.spec');
-			$_d['product.ds.joins'][] =
+			$_d['product.ds.query']['joins'][] =
 				new Join($_d['specpropprod.ds'], 'spp.product = p.id',
 				'LEFT JOIN');
-			$_d['product.ds.joins'][] =
+			$_d['product.ds.query']['joins'][] =
 				new Join($_d['specprod.ds'], 'spp.prod = sprod.id',
 				'LEFT JOIN');
 
@@ -97,6 +97,6 @@ class ModNarrow extends Module
 	}
 }
 
-Module::RegisterModule('ModNarrow', array('ModDetail'));
+Module::Register('ModNarrow', array('ModDetail'));
 
 ?>

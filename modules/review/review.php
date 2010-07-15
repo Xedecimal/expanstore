@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModReview');
+Module::Register('ModReview');
 
 function QueryReviews($_d, $id)
 {
@@ -56,8 +56,8 @@ EOF;
 
 		// Attach to Product.
 
-		$_d['product.ds.columns']['rating'] = SqlUnquote('AVG(rev_rating)');
-		$_d['product.ds.joins']['review'] =
+		$_d['product.ds.query']['columns']['rating'] = SqlUnquote('AVG(rev_rating)');
+		$_d['product.ds.query']['joins']['review'] =
 			new Join($_d['review.ds'], "rev_prod = prod_id", 'LEFT JOIN');
 		$_d['product.callbacks.details']['review'] = array(&$this, 'cb_product_details');
 		$_d['product.callbacks.props']['review'] = array(&$this, 'cb_product_props');

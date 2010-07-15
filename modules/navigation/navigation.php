@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModNav');
+Module::Register('ModNav');
 
 class ModNav extends Module
 {

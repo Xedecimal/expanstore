@@ -1,29 +1,29 @@
 <?php
 
-function QueryProductList($match = null, $sort = null, $limit = null)
+function QueryProductList($query)
 {
 	global $_d;
 
-	$columns = array('prod_id', 'prod_name', 'prod_price', 'prod_desc');
+	$q = array_merge_recursive($_d['product.ds.query'], $query);
 
-	if (!empty($_d['product.ds.columns']))
-		$q['columns'] = array_merge($_d['product.ds.columns'], $columns);
+	//$columns = array('prod_id', 'prod_name', 'prod_price', 'prod_desc');
 
-	if (!empty($_d['product.ds.order']))
-		$q['sort'] = $_d['product.ds.order'];
-	else $q['sort'] = array();
-	if (!empty($sort))
-		$q['sort'] += $sort;
+	//if (!empty($_d['product.ds.order'])) $q['sort'] = $_d['product.ds.order'];
+	//else $q['sort'] = array();
 
-	if (!empty($_d['product.ds.order']))
-		$q['order'] = $_d['product.ds.order'];
+	//if (!empty($sort)) $q['sort'] += $sort;
 
-	$q['match'] = $match;
-	$q['limit'] = isset($limit) ? $limit : $_d['product.ds.count'];
-	$q['joins'] = @$_d['product.ds.joins'];
-	$q['group'] = 'prod_id';
+	//if (!empty($_d['product.ds.order']))
+	//	$q['order'] = $_d['product.ds.order'];
 
-	return $_d['product.ds']->Get($q);
+	//$q['match'] = $match;
+	//$q['limit'] = isset($limit) ? $limit : $_d['product.ds.count'];
+	//$q['joins'] = @$_d['product.ds.joins'];
+	//$q['group'] = 'prod_id';
+
+	$items = $_d['product.ds']->Get($q);
+	$items = RunCallbacks($_d['product.cb.result'], $items);
+	return $items;
 }
 
 function QueryProductDetails($_d, $ci)
@@ -69,10 +69,13 @@ class ModProduct extends Module
 		$_d['product.ds'] = $ds;
 		$_d['product.ds.match'] = array();
 		$_d['product.ds.count'] = array();
+		$_d['product.ds.query']['columns'] = array('prod_id', 'prod_name',
+			'prod_price', 'prod_desc');
 
 		$_d['product.ds.admin.match'] = array();
 
 		$_d['product.title'] = 'Products';
+
 	}
 
 	function Install()
@@ -385,6 +388,18 @@ EOF;
 			$_d['product.ds.joins']);
 	}
 
+	# Data
+
+	static function QueryProducts($query)
+	{
+		global $_d;
+
+		$q = array_merge_recursive($_d['product.ds.query'], $query);
+		$items = $_d['product.ds']->Get($q);
+
+		return RunCallbacks($_d['product.cb.result'], $items);
+	}
+
 	# Display
 
 	function display_options()
@@ -425,7 +440,7 @@ EOF;
 	}
 }
 
-Module::RegisterModule('ModProduct');
+Module::Register('ModProduct');
 
 class ModProductList extends Module
 {
@@ -459,49 +474,7 @@ class ModProductList extends Module
 	}
 }
 
-Module::RegisterModule('ModProductList');
-
-class ModProdsLatest extends Module
-{
-	function __construct()
-	{
-		global $_d;
-
-		$_d['product.latest.hide'] = false;
-		$_d['product.latest.match'] = array();
-	}
-
-	function Link()
-	{
-		global $_d;
-
-		$_d['template.rewrites']['product_latest'] = array(&$this, 'tag_product_latest');
-	}
-
-	function Get()
-	{
-		global $_d;
-
-		if ($_d['product.latest.hide']) return;
-
-		$pt = new ProductTemplate('latest');
-
-		$sort = array('prod_date' => 'DESC');
-
-		$pt->prods = QueryProductList($_d['product.latest.match'], $sort,
-			array(0, 10));
-
-		if (empty($pt->prods)) return;
-		return $pt->ParseFile(l('product/fromCatalog.xml'));
-	}
-
-	function tag_product_latest($t, $g)
-	{
-		return $this->Get();
-	}
-}
-
-Module::RegisterModule('ModProdsLatest');
+Module::Register('ModProductList');
 
 class ProductTemplate
 {
@@ -590,7 +563,7 @@ class ProductTemplate
 
 		if (!@$_d['settings']['hideanonprice'] || !empty($_d['cl']))
 			$this->props['Price'] = "\$".$this->prod['prod_price']
-				.$_d['settings']['product_price_suffix'];
+				.@$_d['settings']['product_price_suffix'];
 		if (!empty($this->prod['model']))
 			$this->props['Model'] = $this->prod['model'];
 
@@ -734,5 +707,51 @@ function CreateProductThumbnails($file)
 	$img_small = ResizeImage($img, $ss, $ss);
 	$dst_func($img_small, $thumb_small);
 }
+
+# Organized
+
+/**
+* Presents a limited listing of products based on date.
+*/
+class ModProdsLatest extends Module
+{
+	function __construct()
+	{
+		global $_d;
+
+		$_d['product.latest.match'] = array();
+	}
+
+	function Link()
+	{
+		global $_d;
+
+		$_d['template.rewrites']['product_latest'] = array(&$this, 'tag_product_latest');
+	}
+
+	function Get()
+	{
+		global $_d;
+
+		if (@!empty($_d['product.latest.hide'])) return;
+
+		$pt = new ProductTemplate('latest');
+
+		$sort = array('prod_date' => 'DESC');
+
+		$pt->prods = QueryProductList($_d['product.latest.match'], $sort,
+			array(0, 10));
+
+		if (empty($pt->prods)) return;
+		return $pt->ParseFile(l('product/fromCatalog.xml'));
+	}
+
+	function tag_product_latest($t, $g)
+	{
+		return $this->Get();
+	}
+}
+
+Module::Register('ModProdsLatest');
 
 ?>
