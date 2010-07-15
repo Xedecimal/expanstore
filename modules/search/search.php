@@ -41,6 +41,6 @@ class ModSearch extends Module
 	}
 }
 
-Module::RegisterModule('ModSearch');
+Module::Register('ModSearch');
 
 ?>

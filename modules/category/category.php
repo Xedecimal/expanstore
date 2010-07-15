@@ -65,8 +65,8 @@ EOF;
 
 		// Attach to Product
 
-		$_d['product.ds.columns'][] = 'cat_id';
-		$_d['product.ds.columns'][] = 'catprod_cat';
+		$_d['product.ds.query']['columns'][] = 'cat_id';
+		$_d['product.ds.query']['columns'][] = 'catprod_cat';
 
 		$_d['product.callbacks.props']['category'] =
 			array(&$this, 'cb_product_props');
@@ -86,9 +86,9 @@ EOF;
 			$_d['product.ds.match']['cat_id'] = GetVar('cc', 0);
 		}
 
-		$_d['product.ds.joins']['cat_prod'] =
+		$_d['product.ds.query']['joins']['cat_prod'] =
 			new Join($_d['cat_prod.ds'], 'catprod_prod = prod_id', 'LEFT JOIN');
-		$_d['product.ds.joins']['category'] =
+		$_d['product.ds.query']['joins']['category'] =
 			new Join($_d['category.ds'], 'catprod_cat = cat_id', 'LEFT JOIN');
 
 		$_d['product.latest.match']['catprod_cat'] = SqlNot(0);
@@ -97,7 +97,7 @@ EOF;
 		$_d['template.rewrites']['showcat'] = array(&$this, 'TagShowCat');
 		$_d['template.rewrites']['category'] = array(&$this, 'TagCategory');
 
-		if ($_d['cl']['usr_access'] > 500)
+		if ($_d['cl']['usr_access'] >= 500)
 		{
 			$_d['page.links']['Admin']['Categories']['Listing'] =
 				'{{app_abs}}/category/list';
@@ -259,7 +259,7 @@ EOF;
 
 		return $_d['category.ds']->Get(array(
 			'match' => $m,
-			'order' => array('cat_order', 'cat_name'),
+			'order' => array('cat_name'),
 			'joins' => @$_d['category.ds.joins']
 		));
 	}
@@ -276,7 +276,7 @@ EOF;
 	}
 }
 
-Module::RegisterModule('ModCategory');
+Module::Register('ModCategory');
 
 class ModCategoryAdmin extends Module
 {
@@ -433,7 +433,7 @@ class ModCategoryAdmin extends Module
 	}
 }
 
-Module::RegisterModule('ModCategoryAdmin');
+Module::Register('ModCategoryAdmin');
 
 class ModCategoryLocation extends Module
 {
@@ -476,6 +476,6 @@ class ModCategoryLocation extends Module
 	}
 }
 
-Module::RegisterModule('ModCategoryLocation');
+Module::Register('ModCategoryLocation');
 
 ?>

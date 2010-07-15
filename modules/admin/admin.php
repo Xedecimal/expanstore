@@ -129,6 +129,6 @@ EOF;
 	}
 }
 
-Module::RegisterModule('ModAdmin');
+Module::Register('ModAdmin');
 
 ?>

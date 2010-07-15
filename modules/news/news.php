@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModNews');
+Module::Register('ModNews');
 
 function QueryNewsLatest(&$_d, $start = 0, $amount = 5)
 {

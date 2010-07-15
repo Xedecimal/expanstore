@@ -1,7 +1,5 @@
 <?php
 
-Module::RegisterModule('ModSale');
-
 define('SALE_STATE_ORDERED', 0);
 define('SALE_STATE_FAILED', 1);
 define('SALE_STATE_SHIPPED', 2);
@@ -127,5 +125,7 @@ class ModSale extends Module
 		return GetBox('box_details', 'Sales', $body);
 	}
 }
+
+Module::Register('ModSale');
 
 ?>

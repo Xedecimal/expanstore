@@ -160,6 +160,6 @@ class ModTemplate extends Module
 	}
 }
 
-Module::RegisterModule('ModTemplate');
+Module::Register('ModTemplate');
 
 ?>

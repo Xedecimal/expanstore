@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModPayment');
+Module::Register('ModPayment');
 
 class ModPayment extends Module
 {
@@ -32,7 +32,10 @@ class ModPayment extends Module
 
 		if ($ca == 'checkout')
 		{
-			$mod = GetVar('paytype');
+			global $_d;
+
+			if (count($_d['payment.mods']) > 1) $mod = GetVar('paytype');
+			else list($mod) = array_keys($_d['payment.mods']);
 			$mod = new $_d['payment.mods'][$mod];
 			return $mod->Checkout();
 		}
@@ -63,6 +66,13 @@ class ModPayment extends Module
 
 	# Tags
 
+	function TagMethods($t, $g)
+	{
+		global $_d;
+
+		if (count($_d['payment.mods']) > 1) return $g;
+	}
+
 	function TagMethod($t, $g)
 	{
 		global $_d;
@@ -87,6 +97,7 @@ class ModPayment extends Module
 		global $_d;
 
 		$t = new Template();
+		$t->ReWrite('methods', array(&$this, 'TagMethods'));
 		$t->ReWrite('method', array(&$this, 'TagMethod'));
 		return $t->ParseFile(l('payment/cart_knee.xml'));
 	}

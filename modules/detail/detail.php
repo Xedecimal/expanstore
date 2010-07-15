@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModDetail');
+Module::Register('ModDetail');
 
 global $prop_types;
 

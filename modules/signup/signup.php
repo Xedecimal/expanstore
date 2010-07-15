@@ -1,12 +1,14 @@
 <?php
 
-Module::RegisterModule('ModSignup');
+Module::Register('ModSignup');
 
 class ModSignup extends Module
 {
 	function __construct()
 	{
 		$this->errors = array();
+
+		$this->CheckActive('signup');
 	}
 
 	function Link()
@@ -22,7 +24,7 @@ class ModSignup extends Module
 	{
 		global $_d;
 
-		if (@$_d['q'][0] != 'signup') return;
+		if (!$this->Active) return;
 
 		if (@$_d['q'][1] == 'signup')
 		{
@@ -62,7 +64,7 @@ class ModSignup extends Module
 	{
 		global $_d;
 
-		if (@$_d['q'][0] != 'signup') return;
+		if (!$this->Active) return;
 
 		if (@$_d['q'][1] == 'signup' && @$this->success)
 		{

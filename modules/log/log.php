@@ -1,7 +1,5 @@
 <?php
 
-Module::RegisterModule('ModLog');
-
 $GLOBALS['log_types'] = array('Information');
 
 class ModLog extends Module
@@ -124,5 +122,7 @@ EOF;
 		$_d['log.ds']->Add($ins);
 	}
 }
+
+Module::Register('ModLog');
 
 ?>

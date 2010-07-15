@@ -1,6 +1,6 @@
 <?php
 
-Module::RegisterModule('ModView');
+Module::Register('ModView');
 
 /**
  * A view management box to allow configurable views.
