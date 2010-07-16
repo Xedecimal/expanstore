@@ -1,7 +1,7 @@
 <div class="product_details">
 
 <product>
-<div id="divProd.{{prod_id}}">
+<div id="divProd_{{prod_id}}">
 <prodhead />
 <span class="product_name"><a href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
 <prodneck />

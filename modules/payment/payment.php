@@ -1,7 +1,5 @@
 <?php
 
-Module::Register('ModPayment');
-
 class ModPayment extends Module
 {
 	function Prepare()
@@ -34,8 +32,31 @@ class ModPayment extends Module
 
 			if (count($_d['payment.mods']) > 1) $mod = GetVar('paytype');
 			else list($mod) = array_keys($_d['payment.mods']);
+
 			$mod = new $_d['payment.mods'][$mod];
-			return $mod->Checkout();
+			$items = ModCart::QueryCart();
+
+			$id = $_d['pack.ds']->Add(array(
+				'pkg_date' => SqlUnquote('NOW()'),
+				'pkg_user' => $_d['cl']['id']
+			));
+
+			foreach ($items as $i)
+			{
+				$pid = $_d['pack_prod.ds']->Add(array(
+					'pp_package' => $id,
+					'pp_name' => $i['prod_name'],
+					'pp_model' => $i['prod_model'],
+					'pp_price' => $i['prod_price']
+				));
+
+				RunCallbacks($_d['payment.cb.checkout.item'], $pid, $i);
+			}
+
+			$ret = $mod->Checkout($items);
+
+			RunCallbacks(@$_d['payment.cb.checkout'], $items);
+			return $ret;
 		}
 
 		if ($ca == "pay_check")
@@ -94,7 +115,7 @@ class ModPayment extends Module
 	{
 		global $_d;
 
-		$t = new Template();
+		$t = new Template($_d);
 		$t->ReWrite('methods', array(&$this, 'TagMethods'));
 		$t->ReWrite('method', array(&$this, 'TagMethod'));
 		return $t->ParseFile(l('payment/cart_knee.xml'));
@@ -130,5 +151,7 @@ class ModPayment extends Module
 		$_d['payment.mods'][$name] = $cname;
 	}
 }
+
+Module::Register('ModPayment', array('ModCart', 'ModSale'));
 
 ?>

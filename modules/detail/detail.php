@@ -238,7 +238,7 @@ EOF;
 
 		// Attach to Navigation.
 
-		if (!empty($_d['cl']) && $_d['cl']['usr_access'] >= 500)
+		if (ModUser::RequestAccess(500))
 		{
 			$_d['page.links']['Admin']['Product Details'] =
 				"{{app_abs}}/detail";

@@ -18,15 +18,6 @@ class ModCart extends Module
 		$dsCartItems->Shortcut = 'ci';
 		$_d['cartitem.ds'] = $dsCartItems;
 
-		$dsPackage = new DataSet($_d['db'], 'pack');
-		$_d['package.ds'] = $dsPackage;
-
-		$dsPackageProd = new DataSet($_d['db'], 'pack_prod');
-		$_d['packageprod.ds'] = $dsPackageProd;
-
-		$dsPProdOption = new DataSet($_d['db'], 'pack_prod_option');
-		$_d['packageprodoption.ds'] = $dsPProdOption;
-
 		$_d['cart.ds.query']['joins']['cartitem'] = new Join(
 			$_d['cartitem.ds'], 'ci_cart = cart_id', 'LEFT JOIN'
 		);
@@ -107,19 +98,17 @@ EOF;
 	{
 		global $_d;
 
-		// Attach to Navigation
+		# Attach to Navigation
 
 		if (!empty($_d['cl']))
 			$_d['page.links']['Personal']['View Cart'] = '{{app_abs}}/cart';
 
-		// Attach to User.
+		# Attach to User.
 
 		$_d['user.ds.joins']['cart'] = new Join($_d['cart.ds'],
 			'cart_user = usr_id', 'LEFT JOIN');
 
-		// Attach to Product
-
-		if ($this->Active) $_d['product.ds.query']['columns'][] = 'ci_id';
+		# Attach to Product
 
 		$_d['product.callbacks.knee']['cart'] = array(&$this, 'product_knee');
 	}
@@ -146,7 +135,7 @@ EOF;
 				$_d['cl']['cart_id'] = $_d['cart.ds']->Add(array(
 					'cart_date' => SqlUnquote('NOW()'),
 					'cart_user' => $_d['cl']['id']
-				));
+				), true);
 			}
 
 			$ci = $_d['q'][2];
@@ -194,18 +183,13 @@ EOF;
 		if ($_d['q'][0] != 'cart') return;
 		if (empty($_d['cl'])) return;
 
-		$q['match']['cart_user'] = $_d['cl']['id'];
-		$q['joins']['cart_item'] = new Join($_d['cartitem.ds'], 'ci_product = prod_id');
-		$q['joins']['cart'] = new Join($_d['cart.ds'], 'ci_cart = cart_id');
-
-		$cart = ModProduct::QueryProducts(array_merge_recursive($q, $_d['cart.query']));
-		//varinfo($cart);
+		$cart = ModCart::QueryCart();
 
 		$ca = GetVar('ca');
 
+		// TODO: Cart does not handle checkout!
 		if ($ca == 'checkout' || $ca == 'finish')
 		{
-			//if ($ca == 'checkout') SaveCart(GetVar('atrs'));
 			$paytype = GetVar('paytype');
 			require_once("modules/payment/pay_{$paytype}.php");
 			$objname = "Pay{$paytype}";
@@ -277,6 +261,18 @@ EOF;
 		return '<a class="ancAddCart" href="{{prod_id}}">'
 			.'<img src="'.p('cart/cart_add.png').'"'
 			." title=\"Add To Cart\" alt=\"Add To Cart\" /></a>\n";
+	}
+
+	static function QueryCart()
+	{
+		global $_d;
+
+		$q['columns'][] = 'ci_id';
+		$q['match']['cart_user'] = $_d['cl']['id'];
+		$q['joins']['cart_item'] = new Join($_d['cartitem.ds'], 'ci_product = prod_id');
+		$q['joins']['cart'] = new Join($_d['cart.ds'], 'ci_cart = cart_id');
+
+		return ModProduct::QueryProducts(array_merge_recursive($q, $_d['cart.query']));
 	}
 }
 

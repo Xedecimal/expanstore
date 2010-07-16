@@ -17,14 +17,24 @@ function GetStateName($id)
 
 class ModSale extends Module
 {
+	function __construct()
+	{
+		global $_d;
+
+		$_d['pack.ds'] = new DataSet($_d['db'], 'pack');
+		$_d['pack_prod.ds'] = new DataSet($_d['db'], 'pack_prod');
+	}
+
 	function Link()
 	{
+		global $_d;
+
 		// Attach to Navigation
 
-		if (isset($_d['cl']) && $_d['cl']['usr_access'] >= 500)
+		if (ModUser::RequestAccess(500))
 		{
 			$_d['page.links']['Admin']['Sales']
-				= htmlspecialchars("{{me}}?cs=sale");
+				= htmlspecialchars("{{app_abs}}/sale");
 		}
 	}
 
@@ -35,13 +45,13 @@ class ModSale extends Module
 		global $_d;
 		if (@$_d['q'][0] != 'sale') return;
 
-		if ($_d['ca'] == 'update')
+		if (@$_d['q'][1] == 'update')
 		{
 			$dsPackage = $_d['package.ds'];
 			$dsPackage->Update(array('id' => $_d['ci']),
 				array('state' => GetVar('state')));
 		}
-		if ($_d['ca'] == 'delete')
+		if (@$_d['q'][1] == 'delete')
 		{
 			$dsPackage = $_d['package.ds'];
 			$dsPackage->Remove(array('id' => $_d['ci']));
@@ -54,36 +64,30 @@ class ModSale extends Module
 
 		if ($_d['q'][0] != 'sale') return;
 
-		$GLOBALS["page_section"] = 'Sales';
-
-		$ca = $_d['ca'];
-
-		$dsPackage = $_d['package.ds'];
-		$dsPackageProd = $_d['packageprod.ds'];
+		$dsPackage = $_d['pack.ds'];
+		$dsPackageProd = $_d['pack_prod.ds'];
 		$dsUsers = $_d['user.ds'];
 
-		$packs = $dsPackage->GetCustom("SELECT
-			pkg_id, pkg_date, SUM(pp_price) price, pkg_state,
-			pkg_ship_name, pkg_ship_address, pkg_ship_city, pkg_ship_state,
-			pkg_ship_zip, usr_name, usr_id
-			FROM {$dsPackage->table} p
-			LEFT JOIN {$dsPackageProd->table} pp ON (pp_package = pkg_id)
-			LEFT JOIN {$dsUsers->table} u ON(pkg_user = usr_id)
-			GROUP BY pkg_id"
+		$q['columns'] = array('pkg_id', 'pkg_date', 'price' =>
+			SqlUnquote('SUM(pp_price)'), 'pkg_state', 'usr_name', 'usr_id');
+
+		$q['joins'] = array(
+			new Join($dsPackageProd, 'pp_package = pkg_id', 'LEFT JOIN'),
+			new Join($dsUsers, 'pkg_user = usr_id', 'LEFT JOIN')
 		);
+		$q['group'] = 'pkg_id';
+
+		$packs = $dsPackage->Get($q);
 		if (!empty($packs))
 		{
-			$tblSales = new Table('sales', array(null, null, '<b>Price</b>', '<b>Destination</b>', '<b>User</b>'), array('valign="top"'));
+			$tblSales = new Table('sales', array(null, null, '<b>Price</b>', '<b>User</b>'), array('valign="top"'));
 			foreach ($packs as $pack)
 			{
-				$linkDetails = "<a href=\"{{me}}?cs={{cs}}&amp;ca=details&amp;ci={$pack['pkg_id']}#box_details\">Details</a>";
+				$linkDetails = "<a href=\"{{app_abs}}/sale/detail/{$pack['pkg_id']}#box_details\">Details</a>";
 				$tblSales->AddRow(array(
 					$linkDetails,
 					GetStateName($pack['pkg_state']).'<br/>'.$pack['pkg_date'],
 					'$'.$pack['price'],
-					$pack['pkg_ship_name'].'<br/>'.
-					$pack['pkg_ship_address'].'<br/>'.
-					$pack['pkg_ship_city'].', '.$pack['pkg_ship_state'].' '.$pack['pkg_ship_zip'],
 					"<a href=\"{{me}}?cs=sale&amp;ca=view_user&amp;ci={$pack['usr_id']}\">{$pack['usr_name']}</a>"
 				));
 			}
@@ -94,33 +98,33 @@ class ModSale extends Module
 			$body = 'No sales yet, sorry.';
 		}
 
-		if ($ca == 'details')
+		if (@$_d['q'][1] == 'detail')
 		{
-			$pack = $dsPackage->GetOne(array('id' => $_d['ci']));
-			$pprods = $dsPackageProd->Get(array('package' => $_d['ci']));
+			$pack = $dsPackage->GetOne(array('id' => $_d['q'][1]));
+			$pprods = $dsPackageProd->Get(array('package' => $_d['q'][1]));
 			$t = new Template();
 			$packages = null;
-			$dsppo = $_d['packageprodoption.ds'];
+			$dsppo = $_d['pack_prod_option.ds'];
 			if (!empty($pprods))
 			foreach ($pprods as $pprod)
 			{
-				$pprodopts = $dsppo->Get(array('pproduct' => $pprod['id']));
+				$pprodopts = $dsppo->Get(array('pproduct' => $pprod['pp_id']));
 				$opts = null;
 				if (!empty($pprodopts))
 				{
 					foreach ($pprodopts as $pprodopt)
 					{
 						$t->Set($pprodopt);
-						$opts .= $t->ParseFile($_d['tempath'].'admin/sales/package_option.html');
+						$opts .= $t->ParseFile(l('sale/package_option.xml'));
 					}
 				}
 				$t->set('opts', $opts);
 				$t->Set($pprod);
-				$packages .= $t->ParseFile($_d['tempath'].'admin/sales/package.html');
+				$packages .= $t->ParseFile(l('sale/package.xml'));
 			}
 			$t->Set('packages', $packages);
 			$t->Set($pack);
-			$body .= $t->ParseFile($_d['tempath'].'admin/sales/main.html');
+			$body .= $t->ParseFile(l('sale/main.xml'));
 		}
 		return GetBox('box_details', 'Sales', $body);
 	}

@@ -6,29 +6,9 @@ function QueryProductList($query)
 
 	$q = array_merge_recursive($_d['product.ds.query'], $query);
 
-	//$columns = array('prod_id', 'prod_name', 'prod_price', 'prod_desc');
-
-	//if (!empty($_d['product.ds.order'])) $q['sort'] = $_d['product.ds.order'];
-	//else $q['sort'] = array();
-
-	//if (!empty($sort)) $q['sort'] += $sort;
-
-	//if (!empty($_d['product.ds.order']))
-	//	$q['order'] = $_d['product.ds.order'];
-
-	//$q['match'] = $match;
-	//$q['limit'] = isset($limit) ? $limit : $_d['product.ds.count'];
-	//$q['joins'] = @$_d['product.ds.joins'];
-	//$q['group'] = 'prod_id';
-
 	$items = $_d['product.ds']->Get($q);
 	$items = RunCallbacks($_d['product.cb.result'], $items);
 	return $items;
-}
-
-function QueryProductDetails($_d, $ci)
-{
-	return QueryProductList(array('prod_id' => $ci));
 }
 
 function QueryProductCount($_d, $cat)
@@ -69,8 +49,8 @@ class ModProduct extends Module
 		$_d['product.ds'] = $ds;
 		$_d['product.ds.match'] = array();
 		$_d['product.ds.count'] = array();
-		$_d['product.ds.query']['columns'] = array('prod_id', 'prod_name',
-			'prod_price', 'prod_desc');
+		$_d['product.ds.query']['columns'] = array('prod_id', 'prod_model',
+			'prod_name', 'prod_price', 'prod_desc');
 
 		$_d['product.ds.admin.match'] = array();
 
@@ -240,8 +220,9 @@ EOF;
 
 			$ret = null;
 
-			$pt = new ProductTemplate('admin');
-			$pt->prods = QueryProductDetails($_d, $ci);
+			$pt = new ProductTemplate('details');
+
+			$pt->prods = ModProduct::QueryProducts(array('match' => array('prod_id' => $ci)));
 
 			if (!empty($_d['product.callbacks.details']))
 			$ret .= RunCallbacks($_d['product.callbacks.details'], $_d,
@@ -478,10 +459,11 @@ Module::Register('ModProductList');
 
 class ProductTemplate
 {
+	public $admin = false;
+
 	function __construct($name)
 	{
 		$this->Name = $name;
-		$this->admin = false;
 	}
 
 	function TagProduct($t, $g)
@@ -536,7 +518,7 @@ class ProductTemplate
 			foreach ($_d['product.callbacks.props'] as $cb)
 			{
 				$rv = call_user_func($cb, $this->prod);
-				if (is_array($rv)) $this->props = array_merge($this->props, $rv);
+				if (is_array($rv)) $this->props = array_merge($this->props, $rv['props']);
 			}
 		}
 

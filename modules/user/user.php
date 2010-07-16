@@ -166,7 +166,6 @@ EOF;
 				return array('usr_email' => 'Invalid address.');
 		}
 	}
-
 }
 
 Module::Register('ModUser');

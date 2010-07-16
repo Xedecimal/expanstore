@@ -12,7 +12,7 @@ class ModAttribute extends Module
 
 		$_d['a2p.ds'] = new DataSet($_d['db'], 'attribute_product', 'a2p_id');
 
-		# dsAttrib
+		# attribute
 
 		$dsAttrib = new DataSet($_d['db'], 'attribute', 'atr_id');
 		$dsAttrib->Shortcut = 'attrib';
@@ -29,7 +29,7 @@ class ModAttribute extends Module
 		);
 		$_d['attribute.ds'] = $dsAttrib;
 
-		# dsOption
+		# option
 
 		$dsOption = new DataSet($_d['db'], 'option', 'opt_id');
 		$dsOption->Shortcut = 'o';
@@ -46,11 +46,15 @@ class ModAttribute extends Module
 		);
 		$_d['option.ds'] = $dsOption;
 
-		# dsCartOption
+		# cart_option
 
 		$dsCartOption = new DataSet($_d['db'], "cart_option");
 		$dsCartOption->Shortcut = 'co';
 		$_d['cartoption.ds'] = $dsCartOption;
+
+		# pack_prod_option
+
+		$_d['pack_prod_option.ds'] = new DataSet($_d['db'], 'pack_prod_option');
 	}
 
 	function Link()
@@ -94,29 +98,21 @@ class ModAttribute extends Module
 
 		$_d['product.cb.result'][] = array(&$this, 'cb_product_result');
 
-		if ($_d['q'][0] == 'cart')
-		{
-			$_d['cart.query']['joins']['cartoption'] =
-				new Join($_d['cartoption.ds'], 'carto_cart = cart_id
-					AND carto_item = ci_id
-					AND carto_attribute = atr_id');
-
-			$_d['product.ds.query']['columns'][] = 'cart_id';
-			$_d['product.ds.query']['columns']['selected'] = 'carto_option';
-		}
+		$_d['cart.query']['columns']['selected'] = 'carto_option';
 
 		# Attach to Cart.
 
+		$_d['cart.query']['joins']['cartoption'] =
+			new Join($_d['cartoption.ds'], 'carto_cart = cart_id
+				AND carto_item = ci_id
+				AND carto_attribute = atr_id', 'LEFT JOIN');
+
 		$_d['cart.callbacks.add'][] = array(&$this, 'cart_add');
-		$_d['cart.callbacks.price'][] = array(&$this, 'cart_price');
+		//$_d['cart.callbacks.price'][] = array(&$this, 'cart_price');
 		$_d['cart.callbacks.update'][] = array(&$this, 'cart_update');
 		$_d['cart.callbacks.remove'][] = array(&$this, 'cart_remove');
 
 		$dsCartOption = &$_d['cartoption.ds'];
-
-		$_d['cart.ds.query']['joins'][$dsCartOption->table] =
-			new Join($dsCartOption, 'carto_item = ci_id', 'LEFT JOIN');
-
 		$dsOption = &$_d['option.ds'];
 
 		$_d['cart.ds.query']['joins'][$dsOption->table] =
@@ -127,6 +123,10 @@ class ModAttribute extends Module
 
 		$_d['cart.columns'][] = 'opt_formula';
 		$_d['cart.columns'][] = 'carto_option';
+
+		# Attach to Payment
+
+		$_d['payment.cb.checkout.item'][] = array(&$this, 'cb_payment_checkout_item');
 	}
 
 	function Prepare()
@@ -337,7 +337,7 @@ class ModAttribute extends Module
 					$ed = new EditorData('opts', $_d['option.ds'],
 						array('opt_attrib' => $ci));
 					$ed->Behavior->Search = false;
-					$ed->Behavior->Target = $_d['app_abs'].'/attribute/view/'.$ci;
+					$ed->Behavior->Target = "{$_d['app_abs']}/attribute/view/$ci" ;
 					$ed->Prepare();
 					$ret .= $ed->GetUI();
 				}
@@ -371,6 +371,7 @@ class ModAttribute extends Module
 
 	# Queries
 
+	// TODO: Get rid of these queries, they should be incorporated in products.
 	static function QueryAttribute($aid)
 	{
 		global $_d;
@@ -483,8 +484,10 @@ class ModAttribute extends Module
 
 			if (empty($ret[$i['prod_id']]['atrs'][$i['atr_id']]['opts'][$i['opt_id']]))
 				$ret[$i['prod_id']]['atrs'][$i['atr_id']]['opts'][$i['opt_id']] = $i;
-
 		}
+
+		foreach ($ret as &$v)
+			$v = $this->product_props($v);
 
 		return $ret;
 	}
@@ -517,8 +520,6 @@ class ModAttribute extends Module
 		global $_d;
 
 		$price_offset = 0;
-
-		$outprops = null;
 
 		if (!empty($prod['atr_id']))
 		{
@@ -555,7 +556,7 @@ class ModAttribute extends Module
 					}
 
 					$options .= "</select>\n";
-					$outprops[$atr['atr_text']] = $options;
+					$prod['props'][$atr['atr_text']] = $options;
 				}
 				else if ($atr['atr_type'] == 1) // Numeric
 				{
@@ -570,20 +571,17 @@ class ModAttribute extends Module
 					if (!empty($atr['selected'])) $val = ' value="'.$atr['selected'].'"';
 					if (!empty($result)) $price_offset += $result;
 
-					$outprops[$atr['atr_name']] = '<input type="text" name="atrs['.$atr['atr_id'].']" class="product_value"'.$val.' />';
+					$prod['props'][$atr['atr_name']] = '<input type="text" name="atrs['.$atr['atr_id'].']" class="product_value"'.$val.' />';
 				}
 			}
 
-			if (!isset($_d['product.totalprice']))
-				$_d['product.totalprice'] = $price_offset;
+			if (!isset($_d['product.totalprice'])) $_d['product.totalprice'] = $price_offset;
 			else $_d['product.totalprice'] += $prod['prod_price']+$price_offset;
+			if (empty($price_offset)) $price_offset = $prod['prod_price'];
 
-			if ($_d['q'][0] == 'cart')
-			{
-				$outprops['Price'] = $price_offset;
-			}
+			$prod['prod_price'] = number_format($price_offset, 2);
 		}
-		return $outprops;
+		return $prod;
 	}
 
 	### Cart
@@ -638,10 +636,23 @@ class ModAttribute extends Module
 		$_d['cartoption.ds']->Remove(array('carto_item' => $id));
 	}
 
-	function cart_price($ci)
+	### Payment
+
+	function cb_payment_checkout_item($pid, $item)
 	{
-		$arg = $this->product_props($ci);
-		return $arg['Price'];
+		global $_d;
+
+		foreach ($item['atrs'] as $atr)
+		{
+			foreach ($atr['opts'] as $opt)
+			{
+				$_d['pack_prod_option.ds']->Add(array(
+					'ppo_pprod' => $pid,
+					'ppo_attribute' => $opt['atr_text'],
+					'ppo_value' => $opt['selected']
+				));
+			}
+		}
 	}
 
 	function AttributesToTree($atrs)
