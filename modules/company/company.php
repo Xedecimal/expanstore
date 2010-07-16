@@ -127,7 +127,7 @@ EOF;
 
 		// Attach to Navigation.
 
-		if (isset($_d['cl']) && $_d['cl']['usr_access'] >= 500)
+		if (ModUser::RequestAccess(500))
 		{
 			$_d['page.links']['Admin']['Companies'] =
 				'{{app_abs}}/company';
@@ -144,7 +144,7 @@ EOF;
 		$_d['user.ds.joins']['compuser'] =
 			new Join($_d['compuser.ds'], 'c2u_user = usr_id', 'LEFT JOIN');
 
-		/*if ($_d['cl']['usr_access'] > 500)
+		/*if (ModUser::RequestAccess(500))
 		{
 			$_d['user.ds.handlers']['company'] = new CompanyUserHandler();
 			$sels = DataToSel(QueryCompanies(), 'comp_name', 'comp_id', 0, 'None');
@@ -237,7 +237,7 @@ EOF;
 	{
 		global $_d;
 
-		if ($_d['cl']['usr_access'] > 500) return 1;
+		if (ModUser::RequestAccess(500)) return 1;
 		if ($prod['comp_id'] == $_d['cl']['comp_id']) return 1;
 	}
 

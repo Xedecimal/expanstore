@@ -122,7 +122,7 @@ EOF;
 				align="middle" /> ', number_format($rev['rev_rating']))));
 			$tblReviews->AddRow(array(null, $rev['rev_review']));
 			$title = $rev['rev_subject'];
-			if ($cl['usr_access'] > 500)
+			if (ModUser::RequestAccess(500))
 			{
 				$title .= " <a href=\"".URL($_d['me'],
 					array('ca' => 'delete_review', 'ci' => $rev['rev_id'],
@@ -134,7 +134,7 @@ EOF;
 			$ret .= '<br/>';
 		}
 
-		if (isset($cl) && $cl['usr_access'] > 0)
+		if (ModUser::RequestAccess(1))
 		{
 			$ratings = array(
 				1 => new SelOption('1', false),

@@ -150,8 +150,8 @@ EOF;
 
 		if ($_d['q'][0] == 'catalog' && empty($_d['category.show'])) return;
 
-		return array('Category' =>
-			ModCategoryLocation::GetBreadcrumb($prod['cat_id']));
+		$prod['props']['Category'] = ModCategoryLocation::GetBreadcrumb($prod['cat_id']);
+		return $prod;
 	}
 
 	function cb_product_fields($form, $prod = null)

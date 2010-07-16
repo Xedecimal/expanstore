@@ -84,7 +84,7 @@ class ModAdmin extends Module
 	{
 		global $_d;
 
-		if ($_d['cl']['usr_access'] > 500)
+		if (ModUser::RequestAccess(500))
 			return '<script type="text/javascript" src="{{app_abs}}/modules/admin/admin.js"></script>';
 	}
 
@@ -92,7 +92,7 @@ class ModAdmin extends Module
 	{
 		global $_d;
 
-		if (ModUser::RequestAccess(500)) return;
+		if (!ModUser::RequestAccess(500)) return;
 
 		$eb = 'admin/edit.png';
 		$db = 'admin/delete.png';
