@@ -47,14 +47,14 @@ class ModSale extends Module
 
 		if (@$_d['q'][1] == 'update')
 		{
-			$dsPackage = $_d['package.ds'];
+			$dsPackage = $_d['pack.ds'];
 			$dsPackage->Update(array('id' => $_d['ci']),
 				array('state' => GetVar('state')));
 		}
 		if (@$_d['q'][1] == 'delete')
 		{
-			$dsPackage = $_d['package.ds'];
-			$dsPackage->Remove(array('id' => $_d['ci']));
+			$dsPackage = $_d['pack.ds'];
+			$dsPackage->Remove(array('pkg_id' => $_d['q'][2]));
 		}
 	}
 

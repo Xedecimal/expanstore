@@ -168,6 +168,15 @@ $(function () {
 		if (confirm('Are you sure?')) sendDelete('Opt', id);
 		return false;
 	});
+
+	// When updating a cart item attribute
+	$('.cart-item').find('.product_value').live('change', function () {
+		form = $(this).closest('.form');
+		id = form.attr('id').match(/frmCart_(\d+)/)[1];
+		$.post('cart/update/'+id, form.serialize(), function () {
+			$('#divCart').load('cart/part')
+		});
+	});
 });
 
 function hideEdit()

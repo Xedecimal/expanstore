@@ -1,12 +1,14 @@
 <div>
 
 <product>
-	<div id="divCartProd.{{ci_id}}" class="cart-item">
+	<div id="divCartProd_{{ci_id}}" class="cart-item">
 
+	<callback ds="_d" name="cart.cb.product.head"/>
 	<prodhead />
 	<span class="product_name">
 		<a href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
 
+	<callback ds="_d" name="cart.cb.product.neck"/>
 	<prodneck />
 		<prodprops>
 		<table>
@@ -18,8 +20,11 @@
 	<a href="{{ci_id}}" class="ancCartRemove">
 		<img src="cart/cart_remove.png" alt="Remove Item"
 		title="Remove Item" /></a>
+
+	<callback ds="_d" name="cart.cb.product.knee"/>
 	<prodfoot/>
 
+	<callback ds="_d" name="cart.cb.product.foot"/>
 	</div> <!-- product -->
 
 </product>

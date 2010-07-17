@@ -69,6 +69,10 @@ class ModAttribute extends Module
 				'{{app_abs}}/attribute';
 		}
 
+		# Attach to template
+
+		$_d['template.cb.head'][] = array(&$this, 'cb_template_head');
+
 		# Attach to Product.
 
 		$_d['product.ds.query']['joins']['a2p'] = new Join(
@@ -108,9 +112,11 @@ class ModAttribute extends Module
 				AND carto_attribute = atr_id', 'LEFT JOIN');
 
 		$_d['cart.callbacks.add'][] = array(&$this, 'cart_add');
-		//$_d['cart.callbacks.price'][] = array(&$this, 'cart_price');
 		$_d['cart.callbacks.update'][] = array(&$this, 'cart_update');
 		$_d['cart.callbacks.remove'][] = array(&$this, 'cart_remove');
+
+		$_d['cart.cb.product.head'][] = array(&$this, 'cb_cart_product_head');
+		$_d['cart.cb.product.foot'][] = array(&$this, 'cb_cart_product_foot');
 
 		$dsCartOption = &$_d['cartoption.ds'];
 		$dsOption = &$_d['option.ds'];
@@ -371,7 +377,6 @@ class ModAttribute extends Module
 
 	# Queries
 
-	// TODO: Get rid of these queries, they should be incorporated in products.
 	static function QueryAttribute($aid)
 	{
 		global $_d;
@@ -464,6 +469,13 @@ class ModAttribute extends Module
 	{
 		if ($this->atr->data['atr_type'] == 1) return;
 		return $g;
+	}
+
+	### Template
+
+	function cb_template_head()
+	{
+		return '<script type="text/javascript" src="'.p('attribute/js.js').'"></script>';
 	}
 
 	### Product
@@ -586,6 +598,20 @@ class ModAttribute extends Module
 
 	### Cart
 
+	function cb_cart_product_head()
+	{
+		global $_d;
+
+		$id = $_d['cart.item']['ci_id'];
+		return '<form method="post" action="{{app_abs}}/cart/update/'.$id
+			.'" id="frmCart_'.$id.'" class="form">';
+	}
+
+	function cb_cart_product_foot()
+	{
+		return '</form>';
+	}
+
 	function cart_add($cid, $ciid)
 	{
 		global $_d;
@@ -607,14 +633,16 @@ class ModAttribute extends Module
 		}
 	}
 
-	function cart_update(&$_d)
+	function cart_update()
 	{
+		global $_d;
+
 		$atrs = GetVar('atrs');
 
 		if (!empty($atrs))
 		{
 			$dsCartOptions = $_d['cartoption.ds'];
-			$ci = $_d['ci'];
+			$ci = $_d['q'][2];
 
 			foreach ($atrs as $atr => $opt)
 			{
@@ -623,7 +651,7 @@ class ModAttribute extends Module
 						'carto_item' => $ci,
 						'carto_attribute' => $atr
 					),
-					array('option' => $opt)
+					array('carto_option' => $opt)
 				);
 			}
 		}
@@ -644,14 +672,16 @@ class ModAttribute extends Module
 
 		foreach ($item['atrs'] as $atr)
 		{
-			foreach ($atr['opts'] as $opt)
-			{
-				$_d['pack_prod_option.ds']->Add(array(
-					'ppo_pprod' => $pid,
-					'ppo_attribute' => $opt['atr_text'],
-					'ppo_value' => $opt['selected']
-				));
-			}
+			if ($atr['atr_type'] == 0) # Select
+				$val = $atr['opts'][$atr['selected']]['opt_name'];
+			else
+				$val = $atr['selected'];
+
+			$_d['pack_prod_option.ds']->Add(array(
+				'ppo_pprod' => $pid,
+				'ppo_attribute' => $atr['atr_text'],
+				'ppo_value' => $val
+			));
 		}
 	}
 

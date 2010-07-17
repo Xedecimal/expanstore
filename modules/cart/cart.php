@@ -152,7 +152,7 @@ EOF;
 		}
 		if ($ca == 'update')
 		{
-			RunCallbacks($_d['cart.callbacks.update'], $_d);
+			RunCallbacks($_d['cart.callbacks.update']);
 		}
 		if ($ca == 'remove')
 		{
@@ -212,6 +212,7 @@ EOF;
 
 				foreach ($cart as $citem)
 				{
+					$_d['cart.item'] = $citem;
 					if (empty($citem['prod_id'])) continue;
 					if ($ciid != $citem['ci_id'])
 					{
