@@ -33,6 +33,6 @@
 		<option value="2"> Shipped </option>
 	</select>
 	<input type="submit" value="Update" />
-	<a href="{{me}}?cs=admin&amp;amp;editor=sales&amp;amp;ca=delete&amp;amp;ci={{ci}}" onclick="return confirm('Are you sure?');"> Delete </a>
+	<a href="{{app_abs}}/sale/delete/{{pkg_id}}" class="delete">Delete</a>
 </form>
 </null>
