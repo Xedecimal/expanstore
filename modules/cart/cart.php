@@ -23,6 +23,11 @@ class ModCart extends Module
 		);
 
 		$_d['cart.query'] = array();
+
+		# Attach to User. (Before PreLink)
+
+		$_d['user.ds.query']['joins']['cart'] = new Join($_d['cart.ds'],
+			'cart_user = usr_id', 'LEFT JOIN');
 	}
 
 	function Install()
@@ -103,11 +108,6 @@ EOF;
 		if (!empty($_d['cl']))
 			$_d['page.links']['Personal']['View Cart'] = '{{app_abs}}/cart';
 
-		# Attach to User.
-
-		$_d['user.ds.joins']['cart'] = new Join($_d['cart.ds'],
-			'cart_user = usr_id', 'LEFT JOIN');
-
 		# Attach to Product
 
 		$_d['product.callbacks.knee']['cart'] = array(&$this, 'product_knee');
@@ -152,7 +152,7 @@ EOF;
 		}
 		if ($ca == 'update')
 		{
-			RunCallbacks($_d['cart.callbacks.update']);
+			RunCallbacks($_d['cart.callbacks.update'], $_d['cl']['cart_id'], $_d['q'][2]);
 		}
 		if ($ca == 'remove')
 		{

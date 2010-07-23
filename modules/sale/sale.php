@@ -42,14 +42,16 @@ class ModSale extends Module
 	{
 		parent::Prepare();
 
+		if (!ModUser::RequestAccess(500)) return;
+
 		global $_d;
 		if (@$_d['q'][0] != 'sale') return;
 
 		if (@$_d['q'][1] == 'update')
 		{
 			$dsPackage = $_d['pack.ds'];
-			$dsPackage->Update(array('id' => $_d['ci']),
-				array('state' => GetVar('state')));
+			$dsPackage->Update(array('pkg_id' => $_d['q'][2]),
+				array('pkg_state' => GetVar('state')));
 		}
 		if (@$_d['q'][1] == 'delete')
 		{
@@ -63,6 +65,7 @@ class ModSale extends Module
 		global $_d;
 
 		if ($_d['q'][0] != 'sale') return;
+		if (!ModUser::RequestAccess(500)) return;
 
 		$dsPackage = $_d['pack.ds'];
 		$dsPackageProd = $_d['pack_prod.ds'];
@@ -80,15 +83,14 @@ class ModSale extends Module
 		$packs = $dsPackage->Get($q);
 		if (!empty($packs))
 		{
-			$tblSales = new Table('sales', array(null, null, '<b>Price</b>', '<b>User</b>'), array('valign="top"'));
+			$tblSales = new Table('sales', array(null, null, '<b>Price</b>'), array('valign="top"'));
 			foreach ($packs as $pack)
 			{
 				$linkDetails = "<a href=\"{{app_abs}}/sale/detail/{$pack['pkg_id']}#box_details\">Details</a>";
 				$tblSales->AddRow(array(
 					$linkDetails,
 					GetStateName($pack['pkg_state']).'<br/>'.$pack['pkg_date'],
-					'$'.$pack['price'],
-					"<a href=\"{{me}}?cs=sale&amp;ca=view_user&amp;ci={$pack['usr_id']}\">{$pack['usr_name']}</a>"
+					'$'.$pack['price']
 				));
 			}
 			$body = $tblSales->Get();
@@ -100,15 +102,19 @@ class ModSale extends Module
 
 		if (@$_d['q'][1] == 'detail')
 		{
-			$pack = $dsPackage->GetOne(array('id' => $_d['q'][1]));
-			$pprods = $dsPackageProd->Get(array('package' => $_d['q'][1]));
+			$pack = $dsPackage->GetOne(array('match' => array('pkg_id' => $_d['q'][2])));
+			$pprods = $dsPackageProd->Get(array('match' => array('pp_package' => $_d['q'][2])));
 			$t = new Template();
 			$packages = null;
 			$dsppo = $_d['pack_prod_option.ds'];
 			if (!empty($pprods))
 			foreach ($pprods as $pprod)
 			{
-				$pprodopts = $dsppo->Get(array('pproduct' => $pprod['pp_id']));
+				$pprodopts = $dsppo->Get(array(
+					'match' => array(
+						'ppo_pprod' => $pprod['pp_id']
+					)
+				));
 				$opts = null;
 				if (!empty($pprodopts))
 				{

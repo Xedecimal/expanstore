@@ -111,9 +111,9 @@ class ModAttribute extends Module
 				AND carto_item = ci_id
 				AND carto_attribute = atr_id', 'LEFT JOIN');
 
-		$_d['cart.callbacks.add'][] = array(&$this, 'cart_add');
-		$_d['cart.callbacks.update'][] = array(&$this, 'cart_update');
-		$_d['cart.callbacks.remove'][] = array(&$this, 'cart_remove');
+		$_d['cart.callbacks.add'][] = array(&$this, 'cb_cart_add');
+		$_d['cart.callbacks.update'][] = array(&$this, 'cb_cart_update');
+		$_d['cart.callbacks.remove'][] = array(&$this, 'cb_cart_remove');
 
 		$_d['cart.cb.product.head'][] = array(&$this, 'cb_cart_product_head');
 		$_d['cart.cb.product.foot'][] = array(&$this, 'cb_cart_product_foot');
@@ -612,7 +612,7 @@ class ModAttribute extends Module
 		return '</form>';
 	}
 
-	function cart_add($cid, $ciid)
+	function cb_cart_add($cid, $ciid)
 	{
 		global $_d;
 
@@ -633,7 +633,7 @@ class ModAttribute extends Module
 		}
 	}
 
-	function cart_update()
+	function cb_cart_update($cid, $ciid)
 	{
 		global $_d;
 
@@ -646,18 +646,17 @@ class ModAttribute extends Module
 
 			foreach ($atrs as $atr => $opt)
 			{
-				$dsCartOptions->Update(
-					array(
-						'carto_item' => $ci,
-						'carto_attribute' => $atr
-					),
-					array('carto_option' => $opt)
-				);
+				$dsCartOptions->Add(array(
+					'carto_cart' => $cid,
+					'carto_option' => $opt,
+					'carto_item' => $ci,
+					'carto_attribute' => $atr
+				), true);
 			}
 		}
 	}
 
-	function cart_remove($id)
+	function cb_cart_remove($id)
 	{
 		global $_d;
 
