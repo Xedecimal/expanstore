@@ -4,7 +4,7 @@ $(function() {
 		id = $(this).attr('href');
 		$.post(app_abs+'/cart/remove/'+id, function (res) {
 			// Remove this cart item.
-			if (res.res) $('#divCartProd\\.'+id).hide(500, function () {
+			if (res.res) $('#divCartProd_'+id).hide(500, function () {
 				$(this).remove();
 
 				// Cart is empty, get it out of the way.

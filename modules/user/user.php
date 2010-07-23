@@ -21,7 +21,6 @@ class ModUser extends Module
 		$this->sql = 'user.sql';
 		$ds = new DataSet($_d['db'], 'user', 'usr_id');
 		$ds->ErrorHandler = array(&$this, 'DataError');
-		$ds->Shortcut = 'u';
 		$ds->Description = 'User';
 		$_d['user.ds'] = $ds;
 	}
@@ -122,9 +121,11 @@ EOF;
 
 	function CheckAuth($ds, $user, $pass, $access)
 	{
+		global $_d;
+
 		$this->lm = $lm = new LoginManager('lm');
 		$lm->AddDataset($ds, $pass, $user);
-		$cl = $lm->Prepare();
+		$cl = $lm->Prepare(null, @$_d['user.ds.query']);
 		if (!empty($cl))
 		{
 			global $_d;

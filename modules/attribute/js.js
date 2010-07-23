@@ -173,8 +173,8 @@ $(function () {
 	$('.cart-item').find('.product_value').live('change', function () {
 		form = $(this).closest('.form');
 		id = form.attr('id').match(/frmCart_(\d+)/)[1];
-		$.post('cart/update/'+id, form.serialize(), function () {
-			$('#divCart').load('cart/part')
+		$.post(app_abs+'/cart/update/'+id, form.serialize(), function () {
+			$('#divCart').load(app_abs+'/cart/part')
 		});
 	});
 });
