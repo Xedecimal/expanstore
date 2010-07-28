@@ -23,6 +23,12 @@ class ModUser extends Module
 		$ds->ErrorHandler = array(&$this, 'DataError');
 		$ds->Description = 'User';
 		$_d['user.ds'] = $ds;
+		$_d['user.auth.id'] = 'usr_id';
+		$_d['user.auth.pass'] = 'usr_pass';
+		$_d['user.auth.user'] = 'usr_user';
+		$_d['user.auth.access'] = 'usr_access';
+
+		$this->CheckAuth();
 	}
 
 	function InstallFields(&$frm)
@@ -32,49 +38,11 @@ class ModUser extends Module
 		$frm->AddInput(new FormInput('Admin Password', 'password', 'user_pass'));
 	}
 
-	function Install()
-	{
-		$user = GetVar('install_user_name');
-		$pass = MD5(GetVar('install_user_pass'));
-
-		$data = <<<EOF
-CREATE TABLE IF NOT EXISTS `user` (
-  `usr_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `usr_date` datetime DEFAULT NULL,
-  `usr_lastseen` datetime DEFAULT NULL,
-  `usr_access` int(10) unsigned NOT NULL DEFAULT '0',
-  `usr_user` varchar(100) NOT NULL,
-  `usr_pass` char(32) NOT NULL,
-  `usr_email` varchar(100) NOT NULL,
-  `usr_name` varchar(100) NOT NULL,
-  `usr_address` varchar(100) NOT NULL,
-  `usr_city` varchar(100) NOT NULL,
-  `usr_state` varchar(100) NOT NULL,
-  `usr_zip` varchar(100) NOT NULL,
-  `usr_phone` varchar(100) NOT NULL,
-  PRIMARY KEY (`usr_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED;
-
-INSERT INTO `user` (`usr_id`, `usr_date`, `usr_access`, `usr_user`, `usr_pass`)
-VALUES (0, NOW(), 1000, '$user', '$pass');
-
-INSERT INTO `company` (comp_name) VALUES ('Default Company');
-
-INSERT INTO `comp_user` (c2u_company, c2u_user)
-VALUES(@@LAST_INSERT_ID, 0);
-EOF;
-
-		global $_d;
-		$_d['db']->Queries($data);
-	}
-
 	function PreLink()
 	{
 		global $_d;
 
-		$this->CheckAuth($_d['user.ds'], 'usr_user', 'usr_pass', 'usr_access');
-
-		if (empty($_d['cl']) && !empty($_d['user.auth']))
+		if (empty($_d['cl']))
 		{
 			foreach ($_d['user.auth'] as $a)
 			{
@@ -109,7 +77,7 @@ EOF;
 
 		if (ModUser::RequestAccess(1))
 		{
-			$out .= "Welcome, {$_d['cl']['user']}<br/>\n";
+			$out .= "Welcome, {$_d['cl'][$_d['user.auth.user']]}<br/>\n";
 		}
 		else
 		{
@@ -119,29 +87,19 @@ EOF;
 		}
 	}
 
-	function CheckAuth($ds, $user, $pass, $access)
+	function CheckAuth()
 	{
 		global $_d;
 
-		$this->lm = $lm = new LoginManager('lm');
-		$lm->AddDataset($ds, $pass, $user);
-		$cl = $lm->Prepare(null, @$_d['user.ds.query']);
-		if (!empty($cl))
-		{
-			global $_d;
-
-			$_d['cl'] = $cl;
-			$_d['cl']['id'] = $cl[$ds->id];
-			$_d['cl']['user'] = $cl[$user];
-			$_d['cl']['access'] = $cl[$access];
-			return true;
-		}
+		$this->lm = new LoginManager('lm');
+		$this->lm->AddDataset($_d['user.ds'], $_d['user.auth.pass'], $_d['user.auth.user']);
+		$_d['cl'] = $this->lm->Prepare(null, @$_d['user.ds.query']);
 	}
 
 	static function RequestAccess($acc)
 	{
 		global $_d;
-		if (@$_d['cl']['access'] >= $acc) return true;
+		if (@$_d['cl'][$_d['user.auth.access']] >= $acc) return true;
 		return false;
 	}
 
@@ -155,8 +113,9 @@ EOF;
 			if (strlen($data['usr_user']) < 3) return array('usr_user' => 'Username is too short.');
 			else // On to data validation
 			{
-				$item = $_d['user.ds']->GetOne(array('match' => array(
-					'usr_user' => $data['usr_user'])));
+				$q['match'] = array('usr_user' => $data['usr_user']);
+
+				$item = $_d['user.ds']->GetOne($q);
 				if (!empty($item)) return
 					array('usr_user' => 'Username is already taken.');
 			}

@@ -41,9 +41,7 @@ class ModCompany extends Module
 		if (!$inst) return;
 
 		$dsCompany = new DataSet($_d['db'], 'company', 'comp_id');
-		$dsCompany->Shortcut = 'c';
 		$dsCompany->Description = 'Company';
-		$dsCompany->ErrorHandler = array(&$this, 'DataError');
 
 		$dsCompany->DisplayColumns = array(
 			'comp_name' => new DisplayColumn('Name'),
@@ -76,50 +74,6 @@ class ModCompany extends Module
 	}
 
 	# Module
-
-	function Install()
-	{
-		$data = <<<EOF
-CREATE TABLE IF NOT EXISTS `company` (
-  `comp_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `comp_name` varchar(100) NOT NULL,
-  `comp_email` varchar(100) NOT NULL,
-  `comp_contact` varchar(100) NOT NULL,
-  `comp_address` varchar(100) NOT NULL,
-  `comp_city` varchar(100) NOT NULL,
-  `comp_state` varchar(100) NOT NULL,
-  `comp_zip` varchar(100) NOT NULL,
-  `comp_phone` varchar(100) NOT NULL,
-  `comp_about` mediumtext NOT NULL,
-  PRIMARY KEY (`comp_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-
-CREATE TABLE IF NOT EXISTS `comp_prod` (
-  `cp_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `cp_comp` bigint(20) unsigned NOT NULL,
-  `cp_prod` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`cp_id`),
-  KEY `fk_cp_comp` (`cp_comp`),
-  KEY `fk_cp_prod` (`cp_prod`),
-  CONSTRAINT `fk_cp_comp` FOREIGN KEY (`cp_comp`) REFERENCES `company` (`comp_id`),
-  CONSTRAINT `fk_cp_prod` FOREIGN KEY (`cp_prod`) REFERENCES `product` (`prod_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE IF NOT EXISTS `comp_user` (
-  `c2u_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `c2u_company` bigint(20) unsigned NOT NULL,
-  `c2u_user` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`c2u_id`),
-  UNIQUE KEY `idxUnique` (`c2u_company`,`c2u_user`),
-  KEY `idxCompany` (`c2u_company`),
-  KEY `idxUser` (`c2u_user`),
-  CONSTRAINT `fk_c2u_company` FOREIGN KEY (`c2u_company`) REFERENCES `company` (`comp_id`),
-  CONSTRAINT `fk_c2u_user` FOREIGN KEY (`c2u_user`) REFERENCES `user` (`usr_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-EOF;
-		global $_d;
-		$_d['db']->Queries($data);
-	}
 
 	function Link()
 	{

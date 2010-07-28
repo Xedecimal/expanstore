@@ -24,79 +24,10 @@ class ModCart extends Module
 
 		$_d['cart.query'] = array();
 
-		# Attach to User. (Before PreLink)
+		# User
 
 		$_d['user.ds.query']['joins']['cart'] = new Join($_d['cart.ds'],
 			'cart_user = usr_id', 'LEFT JOIN');
-	}
-
-	function Install()
-	{
-		$data = <<<EOF
-CREATE TABLE IF NOT EXISTS `cart` (
-  `cart_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `cart_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `cart_user` bigint(20) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`cart_id`) USING BTREE,
-  UNIQUE KEY `idxUser` (`cart_user`) USING BTREE,
-  CONSTRAINT `fkUser` FOREIGN KEY (`cart_user`) REFERENCES `user` (`usr_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-
-CREATE TABLE IF NOT EXISTS `cart_item` (
-  `ci_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `ci_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `ci_cart` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `ci_product` bigint(20) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`ci_id`) USING BTREE,
-  KEY `idxCart` (`ci_cart`) USING BTREE,
-  KEY `idxProduct` (`ci_product`) USING BTREE,
-  CONSTRAINT `fkCart` FOREIGN KEY (`ci_cart`) REFERENCES `cart` (`cart_id`),
-  CONSTRAINT `fkProduct` FOREIGN KEY (`ci_product`) REFERENCES `product` (`prod_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-
-CREATE TABLE IF NOT EXISTS `pack` (
-  `pkg_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `pkg_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `pkg_card_num` varchar(255) NOT NULL,
-  `pkg_card_exp` varchar(45) NOT NULL,
-  `pkg_card_verify` varchar(45) NOT NULL,
-  `pkg_user` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `pkg_state` int(10) unsigned NOT NULL DEFAULT '0',
-  `pkg_ship_name` varchar(255) NOT NULL,
-  `pkg_ship_address` varchar(255) NOT NULL,
-  `pkg_ship_city` varchar(255) NOT NULL,
-  `pkg_ship_state` varchar(255) NOT NULL,
-  `pkg_ship_zip` varchar(255) NOT NULL,
-  `pkg_card_name` varchar(255) NOT NULL,
-  PRIMARY KEY (`pkg_id`) USING BTREE,
-  KEY `idxUser` (`pkg_user`) USING BTREE,
-  CONSTRAINT `fkPkgUser` FOREIGN KEY (`pkg_user`) REFERENCES `user` (`usr_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-
-CREATE TABLE IF NOT EXISTS `pack_prod` (
-  `pp_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `pp_name` varchar(255) NOT NULL,
-  `pp_model` varchar(255) NOT NULL,
-  `pp_price` float NOT NULL DEFAULT '0',
-  `pp_package` bigint(20) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`pp_id`) USING BTREE,
-  KEY `idxPackage` (`pp_package`) USING BTREE,
-  CONSTRAINT `fk_pkg2prod` FOREIGN KEY (`pp_package`) REFERENCES `pack` (`pkg_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-
-CREATE TABLE IF NOT EXISTS `pack_prod_option` (
-  `ppo_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `ppo_pprod` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `ppo_attribute` varchar(255) NOT NULL,
-  `ppo_value` varchar(255) NOT NULL,
-  PRIMARY KEY (`ppo_id`) USING BTREE,
-  KEY `idxPProduct` (`ppo_pprod`) USING BTREE,
-  CONSTRAINT `fkPPO_PProd` FOREIGN KEY (`ppo_pprod`) REFERENCES `pack_prod` (`pp_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-EOF;
-
-		global $_d;
-		$_d['db']->Queries($data);
 	}
 
 	function Link()
@@ -269,7 +200,7 @@ EOF;
 		global $_d;
 
 		$q['columns'][] = 'ci_id';
-		$q['match']['cart_user'] = $_d['cl']['id'];
+		$q['match']['cart_user'] = $_d['cl'][$_d['user.auth.id']];
 		$q['joins']['cart_item'] = new Join($_d['cartitem.ds'], 'ci_product = prod_id');
 		$q['joins']['cart'] = new Join($_d['cart.ds'], 'ci_cart = cart_id');
 
@@ -277,6 +208,6 @@ EOF;
 	}
 }
 
-Module::Register('ModCart');
+Module::Register('ModCart', array('ModUser'));
 
 ?>
