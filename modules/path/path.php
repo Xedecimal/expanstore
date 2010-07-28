@@ -21,24 +21,6 @@ class ModPath extends Module
 		$_d['path.ds'] = $dsPath;
 	}
 
-	function Install()
-	{
-		$data = <<<EOF
-CREATE TABLE IF NOT EXISTS `path` (
-  `path_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `path_date` datetime NOT NULL,
-  `path_user` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `path_type` int(10) unsigned NOT NULL DEFAULT '0',
-  `path_target` bigint(20) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`path_id`) USING BTREE,
-  UNIQUE KEY `idxUnique` (`path_user`,`path_target`) USING BTREE,
-  CONSTRAINT `fk_path_user` FOREIGN KEY (`path_user`) REFERENCES `user` (`usr_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-EOF;
-		global $_d;
-		$_d['db']->Queries($data);
-	}
-
 	function Link()
 	{
 		global $_d;

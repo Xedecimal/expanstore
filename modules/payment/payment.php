@@ -38,7 +38,7 @@ class ModPayment extends Module
 
 			$id = $_d['pack.ds']->Add(array(
 				'pkg_date' => SqlUnquote('NOW()'),
-				'pkg_user' => $_d['cl']['id']
+				'pkg_user' => $_d['cl']['usr_id']
 			));
 
 			foreach ($items as $i)

@@ -237,12 +237,11 @@ EOF;
 			if ($ca == 'edit')
 			{
 				$pid = $_d['q'][2];
-				$query = array(
-					'match' => array('prod_id' => $pid),
-					'sort' => @$_d['product.ds.sort'],
-					'limit' => @$_d['product.ds.limit'],
-					'joins' => @$_d['product.ds.joins']
-				);
+				$query = array_merge_recursive(array(
+					'match' => array(
+						'prod_id' => $pid
+					)
+				), $_d['product.ds.query']);
 				$data = $_d['product.ds']->GetOne($query);
 				$title = $data['prod_name'].' Properties';
 				$act = 'update/'.$pid;
@@ -363,10 +362,7 @@ EOF;
 	{
 		global $_d;
 
-		$ds = $_d['product.ds'];
-
-		return $ds->Get($_d['product.ds.admin.match'], null, array(0, 100),
-			$_d['product.ds.joins']);
+		return ModProduct::QueryProducts(array('limit' => array(0, 100)));
 	}
 
 	# Data
@@ -518,7 +514,8 @@ class ProductTemplate
 			foreach ($_d['product.callbacks.props'] as $cb)
 			{
 				$rv = call_user_func($cb, $this->prod);
-				if (is_array($rv)) $this->props = array_merge($this->props, $rv['props']);
+				if (!empty($rv['props']))
+					$this->props = array_merge($this->props, $rv['props']);
 			}
 		}
 

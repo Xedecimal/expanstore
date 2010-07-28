@@ -27,29 +27,6 @@ class ModReview extends Module
 		$_d['review.ds'] = $dsReviews;
 	}
 
-	function Install()
-	{
-		$data = <<<EOF
-CREATE TABLE IF NOT EXISTS `review` (
-  `rev_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `rev_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `rev_prod` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `rev_user` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `rev_rating` tinyint(4) NOT NULL DEFAULT '5',
-  `rev_subject` varchar(100) NOT NULL,
-  `rev_review` mediumtext NOT NULL,
-  PRIMARY KEY (`rev_id`) USING BTREE,
-  KEY `idxUser` (`rev_user`) USING BTREE,
-  KEY `idxProduct` (`rev_prod`) USING BTREE,
-  CONSTRAINT `fkRev_Prod` FOREIGN KEY (`rev_prod`) REFERENCES `product` (`prod_id`),
-  CONSTRAINT `fkRev_User` FOREIGN KEY (`rev_user`) REFERENCES `user` (`usr_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-EOF;
-
-		global $_d;
-		$_d['db']->Queries($data);
-	}
-
 	function Link()
 	{
 		global $_d;

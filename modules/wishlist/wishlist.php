@@ -13,24 +13,6 @@ class ModWishlist extends Module
 		$dsWL->Shortcut = 'wl';
 	}
 
-	function Install()
-	{
-		$data = <<<EOF
-		CREATE TABLE IF NOT EXISTS `wishlist` (
-  `wl_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `wl_prod` bigint(20) unsigned DEFAULT NULL,
-  `wl_user` bigint(20) unsigned DEFAULT NULL,
-  PRIMARY KEY (`wl_id`),
-  KEY `fk_wl_prod` (`wl_prod`),
-  KEY `fk_wl_user` (`wl_user`),
-  CONSTRAINT `fk_wl_prod` FOREIGN KEY (`wl_prod`) REFERENCES `product` (`prod_id`),
-  CONSTRAINT `fk_wl_user` FOREIGN KEY (`wl_user`) REFERENCES `user` (`usr_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED;
-EOF;
-		global $_d;
-		$_d['db']->Queries($data);
-	}
-
 	function Link()
 	{
 		global $_d;

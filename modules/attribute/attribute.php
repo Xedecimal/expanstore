@@ -15,7 +15,6 @@ class ModAttribute extends Module
 		# attribute
 
 		$dsAttrib = new DataSet($_d['db'], 'attribute', 'atr_id');
-		$dsAttrib->Shortcut = 'attrib';
 		$dsAttrib->Description = 'Attribute';
 		$dsAttrib->DisplayColumns = array(
 			'atr_name' => new DisplayColumn('Name'),
@@ -521,10 +520,12 @@ class ModAttribute extends Module
 		$_d['a2p.ds']->Remove(array('a2p_product' => $id));
 		if (!empty($atrs))
 		foreach ($atrs as $atr)
-		 $_d['a2p.ds']->Add(array(
-			'a2p_attribute' => $atr,
-			'a2p_product' => $id
-		), true);
+		{
+			$_d['a2p.ds']->Add(array(
+				'a2p_attribute' => $atr[0],
+				'a2p_product' => $id
+			), true);
+		}
 	}
 
 	function product_props($prod)
