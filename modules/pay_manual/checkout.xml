@@ -1,0 +1,63 @@
+<form action="{{app_abs}}/payment/checkout/finish" method="post">
+<script type="text/javascript" src="pay_manual/js.js"></script>
+<input type="hidden" name="paytype" value="manual"/>
+
+<empty var="no_payment">
+<fieldset>
+<legend>Payment</legend>
+
+<ul>
+	<li><label for="card_name">Card Holder's Name</label>
+		<input type="text" name="card_name" id="card_name" /></li>
+	<li><label for="card_num">Card Number</label>
+		<input type="text" name="card_num" id="card_num" /></li>
+	<li><label for="card_exp">Expiration Date</label>
+		<input type="text" name="card_exp" id="card_exp" /></li>
+	<li><label for="card_verify">Verification Number</label>
+		<input type="text" name="card_verify" id="card_verify" /></li>
+</ul>
+
+</fieldset>
+</empty> <!-- pay_manual.no_payment -->
+
+<fieldset>
+<legend>Billing / Shipping</legend>
+
+<fieldset>
+<legend>Use saved address?</legend>
+<ul>
+	<li><label><input name="saved" id="addy_save_yes" checked="checked"
+		type="radio" /> Yes</label>
+		<label><input name="saved" id="addy_save_no" type="radio" /> No
+		</label></li>
+</ul>
+
+</fieldset>
+
+<ul id="billing_custom">
+	<li><label for="ship_name">Name</label>
+		<input id="ship_name" name="ship_name" type="text" /></li>
+	<li><label for="ship_address">Address</label>
+		<input id="ship_address" name="ship_address" type="text" /></li>
+	<li><label for="ship_city">City</label>
+		<input id="ship_city" name="ship_city" type="text" /></li>
+	<li><label for="ship_state">State</label>
+		<input id="ship_state" name="ship_state" type="text" /></li>
+	<li><label for="ship_zip">Zip</label>
+		<input id="ship_zip" name="ship_zip" type="text" /></li>
+</ul>
+
+<ul id="billing_personal">
+	<li><label>Name</label> {{usr_name}}</li>
+	<li><label>Address</label> {{usr_address}}</li>
+	<li><label>City</label> {{usr_city}}</li>
+	<li><label>State</label> {{usr_state}}</li>
+	<li><label>Zip</label> {{usr_zip}}</li>
+</ul>
+
+</fieldset>
+
+<p>
+	<input id="butSubmit" name="butSubmit" value="Process Order" type="submit" />
+</p>
+</form>

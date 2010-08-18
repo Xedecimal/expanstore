@@ -86,7 +86,7 @@ class ModSale extends Module
 			$tblSales = new Table('sales', array(null, null, '<b>Price</b>'), array('valign="top"'));
 			foreach ($packs as $pack)
 			{
-				$linkDetails = "<a href=\"{{app_abs}}/sale/detail/{$pack['pkg_id']}#box_details\">Details</a>";
+				$linkDetails = "<a href=\"{{app_abs}}/sale/detail/{$pack['pkg_id']}#pack_details\">Details</a>";
 				$tblSales->AddRow(array(
 					$linkDetails,
 					GetStateName($pack['pkg_state']).'<br/>'.$pack['pkg_date'],
