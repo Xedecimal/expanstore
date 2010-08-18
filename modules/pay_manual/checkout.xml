@@ -57,6 +57,11 @@
 
 </fieldset>
 
+<fieldset>
+<legend>Additional Details</legend>
+<textarea name="additional" rows="10"></textarea>
+</fieldset>
+
 <p>
 	<input id="butSubmit" name="butSubmit" value="Process Order" type="submit" />
 </p>
