@@ -440,7 +440,7 @@ class ModProductList extends Module
 
 		$pt = new ProductTemplate($this->Name);
 
-		$pt->prods = QueryProductList($_d['product.ds.match']);
+		$pt->prods = ModProduct::QueryProducts(array('match' => $_d['product.ds.match']));
 
 		$ret .= $pt->ParseFile(l('product/fromCatalog.xml'));
 

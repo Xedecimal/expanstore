@@ -15,15 +15,6 @@ a img { border: 0px; }
 .error { color: #A00000; font-weight: bold; }
 .success { color: #00A000; font-weight: bold; }
 
-.form_separator
-{
-	border-bottom: 1px solid #000;
-	font-weight: bold;
-}
-
-.input_generic { width: 100%; }
-.form { width: 100%; }
-
 .category { padding: 5px; }
 
 .product_details { clear: both; }
@@ -48,10 +39,20 @@ a img { border: 0px; }
 
 /* Form Related */
 
+.form_separator
+{
+	border-bottom: 1px solid #000;
+	font-weight: bold;
+}
+
+.input_generic { width: 100%; }
+
 form ul { margin: 0; padding: 0; list-style: none; }
 form li { padding: 5px 0; }
-li label { float: left; width: 100px; padding: 0 5px; }
-fieldset li { float: left; }
+li label { display: block; padding: 0 5px; }
+fieldset {  }
+fieldset li { display: block; }
+fieldset textarea { width: 100%; }
 
 /* Debug */
 

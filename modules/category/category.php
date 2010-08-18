@@ -82,9 +82,7 @@ EOF;
 			array(&$this, 'cb_product_delete');
 
 		if (empty($_d['category.bypass']))
-		{
-			$_d['product.ds.match']['cat_id'] = GetVar('cc', 0);
-		}
+			$_d['product.ds.query']['match']['cat_id'] = GetVar('cc', 0);
 
 		$_d['product.ds.query']['joins']['cat_prod'] =
 			new Join($_d['cat_prod.ds'], 'catprod_prod = prod_id', 'LEFT JOIN');
@@ -156,9 +154,11 @@ EOF;
 
 	function cb_product_fields($form, $prod = null)
 	{
-		$cats = ModCategory::QueryAll();
+		global $_d;
+
 		$form->AddInput(new FormInput('Category', 'select', 'category',
-			DataToSel($cats, 'cat_name', 'cat_id', $prod['catprod_cat'])));
+			DataToSel($_d['category.all']->Collapse(), 'cat_name', 'cat_id',
+				$_d['category.current']['cat_id'], 'None')));
 	}
 
 	function cb_product_add($_d, $prod, $id)
@@ -367,7 +367,7 @@ class ModCategoryAdmin extends Module
 				array('STYLE' => 'width: 100%; height: 100px;')));
 			$formAddCat->AddInput(new FormInput('Parent Category', 'select',
 				'parent', DataToSel(ModCategory::QueryAll(), 'cat_name', 'cat_id',
-				@$_d['category.current']['cat_id'])));
+				@$_d['category.current']['cat_id'], 'None')));
 			$formAddCat->AddInput(new FormInput('Hide', 'checkbox', 'hidden'));
 			$formAddCat->AddInput(new FormInput('Image', 'file', 'image'));
 			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $formAddCat);
@@ -470,7 +470,7 @@ class ModCategoryLocation extends Module
 			if ($c->id) $ret = ' &raquo; '.$ret;
 		} while ($c = $c->parent);
 
-		#$ret = "<a href=\"{{app_abs}}/category/0\">Home</a>" . $ret;
+		$ret = "<a href=\"{{app_abs}}/category/0\">Catalog</a>" . $ret;
 		return $ret;
 	}
 }
