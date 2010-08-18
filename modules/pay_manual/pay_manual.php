@@ -126,8 +126,11 @@ class PayManual
 
 			if (!empty($_d['settings']['pay_manual.email']))
 			{
+				$add = GetVar('additional');
 				$body = <<<EOF
 {$_d['cl']['usr_name']} has placed an order. Login to http://{$_SERVER['HTTP_HOST']}{$_d['app_abs']} to manage it.
+
+$add
 EOF;
 				mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order',
 					$body);
