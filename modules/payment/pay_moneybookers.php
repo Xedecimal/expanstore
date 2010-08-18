@@ -2,9 +2,11 @@
 
 class PayMoneybookers
 {
-	function GetName() { return "MoneyBookers"; }
+	function GetName() { return "Moneybookers"; }
 	function GetSafe() { return true; }
 }
+
+ModPayment::RegisterPayMod('mb', 'PayMoneybookers');
 
 /*include_once("h_main.php");
 

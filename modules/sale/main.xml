@@ -1,5 +1,5 @@
 <null>
-<h3 class="box_title">Package Details</h3>
+<h3 class="box_title" id="pack_details">Package Details</h3>
 {{packages}}
 
 <h3 class="box_title">Actions</h3>

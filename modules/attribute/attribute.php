@@ -103,6 +103,9 @@ class ModAttribute extends Module
 
 		$_d['cart.query']['columns']['selected'] = 'carto_option';
 
+		$_d['product.callbacks.head']['attribute'] = array(&$this, 'cb_product_head');
+		$_d['product.callbacks.foot']['attribute'] = array(&$this, 'cb_product_foot');
+
 		# Attach to Cart.
 
 		$_d['cart.query']['joins']['cartoption'] =
@@ -113,9 +116,6 @@ class ModAttribute extends Module
 		$_d['cart.callbacks.add'][] = array(&$this, 'cb_cart_add');
 		$_d['cart.callbacks.update'][] = array(&$this, 'cb_cart_update');
 		$_d['cart.callbacks.remove'][] = array(&$this, 'cb_cart_remove');
-
-		$_d['cart.cb.product.head'][] = array(&$this, 'cb_cart_product_head');
-		$_d['cart.cb.product.foot'][] = array(&$this, 'cb_cart_product_foot');
 
 		$dsCartOption = &$_d['cartoption.ds'];
 		$dsOption = &$_d['option.ds'];
@@ -480,6 +480,7 @@ class ModAttribute extends Module
 	### Product
 
 	# Collapse all attributes to avoid duplicate products due to left joins.
+
 	function cb_product_result($items)
 	{
 		$ret = array();
@@ -557,7 +558,7 @@ class ModAttribute extends Module
 							if ($opt['selected'] == $opt['opt_id'])
 							{
 								$price_offset += $result;
-								$selected = ' selected="true"';
+								$selected = ' selected="selected"';
 							}
 						}
 
@@ -597,21 +598,27 @@ class ModAttribute extends Module
 		return $prod;
 	}
 
-	### Cart
-
-	function cb_cart_product_head()
+	function cb_product_head($d, $prod)
 	{
 		global $_d;
 
-		$id = $_d['cart.item']['ci_id'];
-		return '<form method="post" action="{{app_abs}}/cart/update/'.$id
+		if (@$_d['q'][0] == 'cart')
+		{
+			$id = $prod['ci_id'];
+			return '<form method="post" action="{{app_abs}}/cart/update/'.$id
 			.'" id="frmCart_'.$id.'" class="form">';
+		}
 	}
 
-	function cb_cart_product_foot()
+	function cb_product_foot()
 	{
-		return '</form>';
+		global $_d;
+
+		if (@$_d['q'][0] == 'cart')
+			return '</form>';
 	}
+
+	# Cart
 
 	function cb_cart_add($cid, $ciid)
 	{

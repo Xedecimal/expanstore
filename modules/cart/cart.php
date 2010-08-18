@@ -65,7 +65,7 @@ class ModCart extends Module
 			{
 				$_d['cl']['cart_id'] = $_d['cart.ds']->Add(array(
 					'cart_date' => SqlUnquote('NOW()'),
-					'cart_user' => $_d['cl']['id']
+					'cart_user' => $_d['cl']['usr_id']
 				), true);
 			}
 
@@ -84,6 +84,7 @@ class ModCart extends Module
 		if ($ca == 'update')
 		{
 			RunCallbacks($_d['cart.callbacks.update'], $_d['cl']['cart_id'], $_d['q'][2]);
+			die();
 		}
 		if ($ca == 'remove')
 		{
@@ -143,7 +144,6 @@ class ModCart extends Module
 
 				foreach ($cart as $citem)
 				{
-					$_d['cart.item'] = $citem;
 					if (empty($citem['prod_id'])) continue;
 					if ($ciid != $citem['ci_id'])
 					{

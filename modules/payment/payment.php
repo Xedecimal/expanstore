@@ -2,6 +2,13 @@
 
 class ModPayment extends Module
 {
+	function __construct()
+	{
+		global $_d;
+
+		$_d['payment.mods'] = array();
+	}
+
 	function Prepare()
 	{
 		global $_d;
@@ -147,6 +154,16 @@ class ModPayment extends Module
 	static function RegisterPayMod($name, $cname)
 	{
 		global $_d;
+
+		$enabled = explode(',', @$_d['settings']['pay.enable']);
+		if (!empty($enabled[0]))
+			if (!in_array($cname, $enabled))
+				return;
+
+		$disabled = explode(',', @$_d['settings']['pay.disable']);
+		if (!empty($disabled[0]))
+			if (in_array($cname, $disabled))
+				return;
 
 		$_d['payment.mods'][$name] = $cname;
 	}
