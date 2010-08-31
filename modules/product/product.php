@@ -519,8 +519,12 @@ class ProductTemplate
 			}
 		}
 
+		$this->prod['prod_price'] = (double)$this->prod['prod_price'];
 		if (!@$_d['settings']['hideanonprice'] || !empty($_d['cl']))
-			$this->props['Price'] = "\$".$this->prod['prod_price'];
+		if (!empty($this->prod['prod_price']))
+			$this->props['Price'] = "\$".$this->prod['prod_price']
+			.@$_d['settings']['product_price_suffix'];
+
 		if (!empty($this->prod['model']))
 			$this->props['Model'] = $this->prod['model'];
 
@@ -539,12 +543,6 @@ class ProductTemplate
 	function TagProp($t, $guts)
 	{
 		global $_d;
-
-		if (!@$_d['settings']['hideanonprice'] || !empty($_d['cl']))
-			$this->props['Price'] = "\$".$this->prod['prod_price']
-				.@$_d['settings']['product_price_suffix'];
-		if (!empty($this->prod['model']))
-			$this->props['Model'] = $this->prod['model'];
 
 		$ret = null;
 

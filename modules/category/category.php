@@ -17,8 +17,8 @@ class ModCategory extends Module
 		if ($_d['q'][0] == 'category' && is_numeric(@$_d['q'][1]))
 			$_SESSION['cc'] = $_d['q'][1];
 
-		$_d['category.all'] = DataToTree($_d['category.ds']->Get(), 'cat_id',
-			'cat_parent');
+		$_d['category.all'] = DataToTree($_d['category.ds']->Get(),
+			array('cat_id' => array('cat_id', 'cat_parent')), 0);
 	}
 
 	function Install()
@@ -441,6 +441,7 @@ class ModCategoryLocation extends Module
 		global $_d;
 		$t = new Template($_d);
 		if (@$_d['category.current']['cat_hidden']) return;
+		$t->Behavior->Bleed = false;
 		$t->Set($_d['category.current']);
 		$t->ReWrite('path', array($this, 'TagPath'));
 		return $t->ParseFile(l('category/location.xml'));

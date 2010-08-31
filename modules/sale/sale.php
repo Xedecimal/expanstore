@@ -83,7 +83,7 @@ class ModSale extends Module
 		$packs = $dsPackage->Get($q);
 		if (!empty($packs))
 		{
-			$tblSales = new Table('sales', array(null, null, '<b>Price</b>'), array('valign="top"'));
+			$tblSales = new Table('sales', array(null, '<b>Status</b>', '<b>Total</b>'), array('valign="top"'));
 			foreach ($packs as $pack)
 			{
 				$linkDetails = "<a href=\"{{app_abs}}/sale/detail/{$pack['pkg_id']}#pack_details\">Details</a>";
@@ -102,37 +102,58 @@ class ModSale extends Module
 
 		if (@$_d['q'][1] == 'detail')
 		{
-			$pack = $dsPackage->GetOne(array('match' => array('pkg_id' => $_d['q'][2])));
-			$pprods = $dsPackageProd->Get(array('match' => array('pp_package' => $_d['q'][2])));
+			$qd['joins'] = array(
+				new Join($_d['pack_prod.ds'], 'pp_package = pkg_id',
+					'LEFT JOIN'),
+				new Join($_d['pack_prod_option.ds'], 'ppo_pprod = pp_id',
+					'LEFT JOIN'),
+				new Join($_d['user.ds'], 'pkg_user = usr_id'),
+			);
+			$qd['match'] = array('pkg_id' => $_d['q'][2]);
+
+			$rows = $dsPackage->Get($qd);
+			$this->prods = DataToTree($rows, array(
+				'pkg_id' => array('pp_id', 'pp_package'),
+				'pp_id' => array('ppo_id', 'ppo_pprod')
+			))->children[$_d['q'][2]];
+
 			$t = new Template();
-			$packages = null;
-			$dsppo = $_d['pack_prod_option.ds'];
-			if (!empty($pprods))
-			foreach ($pprods as $pprod)
-			{
-				$pprodopts = $dsppo->Get(array(
-					'match' => array(
-						'ppo_pprod' => $pprod['pp_id']
-					)
-				));
-				$opts = null;
-				if (!empty($pprodopts))
-				{
-					foreach ($pprodopts as $pprodopt)
-					{
-						$t->Set($pprodopt);
-						$opts .= $t->ParseFile(l('sale/package_option.xml'));
-					}
-				}
-				$t->set('opts', $opts);
-				$t->Set($pprod);
-				$packages .= $t->ParseFile(l('sale/package.xml'));
-			}
-			$t->Set('packages', $packages);
-			$t->Set($pack);
+			$t->ReWrite('package', array(&$this, 'TagPackage'));
+			$t->Set($rows[0]);
 			$body .= $t->ParseFile(l('sale/main.xml'));
 		}
 		return GetBox('box_details', 'Sales', $body);
+	}
+
+	function TagPackage($t, $g)
+	{
+		global $_d;
+
+		$t2 = new Template();
+		$t2->ReWrite('poption', array(&$this, 'TagPOption'));
+		$ret = '';
+		foreach ($this->prods->children as $p)
+		{
+			$this->prod = $p;
+			$t2->Set($p->data);
+			$ret .= $t2->GetString($g);
+		}
+
+		return $ret;
+	}
+
+	function TagPOption($t, $g)
+	{
+		$opts = null;
+		if (!empty($this->prod))
+		{
+			$vp = new VarParser();
+			foreach ($this->prod->children as $ppo)
+			{
+				$opts .= $vp->ParseVars($g, $ppo->data);
+			}
+		}
+		return $opts;
 	}
 }
 
