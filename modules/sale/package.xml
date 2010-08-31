@@ -1,8 +1,0 @@
-<null>
-<table>
-	<tr><td align="right"><b>Name</b>:</td><td>{{pp_name}}</td></tr>
-	<tr><td align="right"><b>Model</b>:</td><td>{{pp_model}}</td></tr>
-	{{opts}}
-	<tr><td align="right"><b>Total Price</b>:</td><td>${{pp_price}}</td></tr>
-</table>
-</null>

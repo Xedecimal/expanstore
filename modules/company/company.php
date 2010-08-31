@@ -313,7 +313,6 @@ class ModCompanyDisplay extends DisplayObject
 					$tblNews->AddRow(array("Subject: {$nws['subject']}"));
 					$tblNews->AddRow(array($nws['body']));
 					$tblNews->AddRow(array("<a href=\"{{me}}?cs=cpanel&amp;ca=delete_news&amp;ci={$nws['id']}\" OnClick=\"return confirm('Are you sure?')\"> Remove </a><br /><br />"));
-					//print_r($nws);
 				}
 				$body .= GetBox("box_news", "Your Latest News", $tblNews->Get());
 			}

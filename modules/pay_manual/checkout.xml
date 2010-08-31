@@ -27,8 +27,8 @@
 <legend>Use saved address?</legend>
 <ul>
 	<li><label><input name="saved" id="addy_save_yes" checked="checked"
-		type="radio" /> Yes</label>
-		<label><input name="saved" id="addy_save_no" type="radio" /> No
+		type="radio" value="yes" /> Yes</label>
+		<label><input name="saved" id="addy_save_no" type="radio" value="no" /> No
 		</label></li>
 </ul>
 

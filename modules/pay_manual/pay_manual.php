@@ -58,7 +58,7 @@ class PayManual
 		return "All done.";
 	}
 
-	function Checkout()
+	function Checkout($items)
 	{
 		global $_d;
 
@@ -66,6 +66,8 @@ class PayManual
 
 		if ($ca == 'finish')
 		{
+			if (empty($items)) return;
+
 			$add_pack['pkg_date'] = SqlUnquote('NOW()');
 			$add_pack['pkg_user'] = $_d['cl']['usr_id'];
 			$id = $_d['package.ds']->Add($add_pack);
@@ -80,9 +82,10 @@ class PayManual
 
 			$add_ship['ps_package'] = $id;
 
-			if (GetVar('saved') == 'on')
+			if (GetVar('saved') == 'yes')
 			{
-				$add_ship['ps_name'] = $_d['cl']['usr_name'];
+				$name = $_d['cl']['usr_name'];
+				$add_ship['ps_name'] = $name;
 				$add_ship['ps_address'] = $_d['cl']['usr_address'];
 				$add_ship['ps_city'] = $_d['cl']['usr_city'];
 				$add_ship['ps_state'] = $_d['cl']['usr_state'];
@@ -90,7 +93,8 @@ class PayManual
 			}
 			else
 			{
-				$add_ship['ps_name'] = GetVar('ship_name');
+				$name = GetVar('ship_name');
+				$add_ship['ps_name'] = $name;
 				$add_ship['ps_address'] = GetVar('ship_address');
 				$add_ship['ps_city'] = GetVar('ship_city');
 				$add_ship['ps_state'] = GetVar('ship_state');
@@ -99,28 +103,7 @@ class PayManual
 
 			$_d['pack_ship.ds']->Add($add_ship);
 
-			if (!empty($cart))
-			{
-				$formCart = new Form("formCart");
-
-				$formCart->AddHidden("ca", "checkout");
-				$formCart->AddHidden("cs", "cart");
-
-				//Selected options
-				$totalprice = 0;
-
-				foreach ($cart as $citem)
-				{
-					$totalprice = $prodprice = $citem['price'];
-
-					$pprodid = $data['packageprod.ds']->Add(array(
-						'package' => $id,
-						'name' => $citem['prod_name'],
-						'model' => $citem['model'],
-						'price' => $totalprice
-					));
-				}
-			}
+			$_d['cart.ds']->Remove(array('cart_user' => $_d['cl']['usr_id']));
 
 			# Mail the owner if wanted
 
@@ -128,12 +111,12 @@ class PayManual
 			{
 				$add = GetVar('additional');
 				$body = <<<EOF
-{$_d['cl']['usr_name']} has placed an order. Login to http://{$_SERVER['HTTP_HOST']}{$_d['app_abs']} to manage it.
+{$name} has placed an order. Login to http://{$_SERVER['HTTP_HOST']}{$_d['app_abs']} to manage it.
 
 $add
 EOF;
-				mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order',
-					$body);
+				varinfo($body);
+				//mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order', $body);
 			}
 		}
 		else
