@@ -458,7 +458,7 @@ class ModCategoryLocation extends Module
 	{
 		global $_d;
 
-		if (empty($cat)) return 'Home';
+		if (empty($cat)) return 'Catalog';
 
 		$c = $_d['category.all']->Find($cat);
 		$ret = null;

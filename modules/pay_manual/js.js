@@ -1,8 +1,8 @@
 $(function () {
-	$('#billing_custom').hide();
+	$('#billing_personal').hide();
 	$('#addy_save_yes,#addy_save_no').change(function () {
-		$('#billing_personal').ct($('#addy_save_yes').attr('checked'));
-		$('#billing_custom').ct($('#addy_save_no').attr('checked'));
+		$('#billing_personal').ct($('#addy_save_yes:checked').val());
+		$('#billing_custom').ct($('#addy_save_no:checked').val());
 	});
 });
 
