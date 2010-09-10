@@ -23,16 +23,19 @@
 <fieldset>
 <legend>Billing / Shipping</legend>
 
+<nempty var="">
 <fieldset>
 <legend>Use saved address?</legend>
 <ul>
-	<li><label><input name="saved" id="addy_save_yes" checked="checked"
+	<li><label><input name="saved" id="addy_save_yes"
 		type="radio" value="yes" /> Yes</label>
-		<label><input name="saved" id="addy_save_no" type="radio" value="no" /> No
+		<label><input name="saved" id="addy_save_no"
+		type="radio" value="no" checked="checked" /> No
 		</label></li>
 </ul>
-
 </fieldset>
+
+</nempty>
 
 <ul id="billing_custom">
 	<li><label for="ship_name">Name</label>

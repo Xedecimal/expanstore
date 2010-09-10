@@ -125,6 +125,7 @@ EOF;
 			$t->Set($_d['cl']);
 			$t->Set('no_payment', @$_d['settings']['pay_manual.no_payment']);
 			$t->ReWrite('empty', 'TagEmpty');
+			$t->ReWrite('nempty', 'TagNEmpty');
 			$body = $t->ParseFile(l('pay_manual/checkout.xml'));
 			return GetBox('box_shipping', 'Shipping', $body);
 		}
