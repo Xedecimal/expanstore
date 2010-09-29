@@ -115,8 +115,8 @@ class PayManual
 
 $add
 EOF;
-				varinfo($body);
-				//mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order', $body);
+				mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order',
+					$body);
 			}
 		}
 		else
