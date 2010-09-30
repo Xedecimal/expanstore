@@ -21,53 +21,17 @@ class ModCategory extends Module
 			array('cat_id' => array('cat_id', 'cat_parent')), 0);
 	}
 
-	function Install()
-	{
-		$data = <<<EOF
-CREATE TABLE IF NOT EXISTS `category` (
-  `cat_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `cat_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `cat_parent` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `cat_name` varchar(100) NOT NULL,
-  `cat_desc` mediumtext NOT NULL,
-  PRIMARY KEY (`cat_id`) USING BTREE,
-  KEY `idxParent` (`cat_parent`) USING BTREE,
-  CONSTRAINT `fk_cat_cat` FOREIGN KEY (`cat_parent`) REFERENCES `category` (`cat_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
-
-CREATE TABLE IF NOT EXISTS `cat_prod` (
-  `catprod_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `catprod_prod` bigint(20) unsigned NOT NULL,
-  `catprod_cat` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`catprod_id`) USING BTREE,
-  UNIQUE KEY `idxUnique` (`catprod_prod`,`catprod_cat`),
-  KEY `fk_catprod_cat` (`catprod_cat`) USING BTREE,
-  KEY `fk_catprod_prod` (`catprod_prod`) USING BTREE,
-  CONSTRAINT `fk_catprod_cat` FOREIGN KEY (`catprod_cat`) REFERENCES `category` (`cat_id`),
-  CONSTRAINT `fk_catprod_prod` FOREIGN KEY (`catprod_prod`) REFERENCES `product` (`prod_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-SET FOREIGN_KEY_CHECKS = 0;
-
-INSERT IGNORE INTO `category` (`cat_id`, `cat_name`, `cat_desc`, `cat_parent`)
-VALUES(0, 'Home', 'Home Category', 0);
-
-SET FOREIGN_KEY_CHECKS = 1;
-EOF;
-
-		global $_d;
-		$_d['db']->Queries($data);
-	}
-
 	function Link()
  	{
 		global $_d;
 
-		// Attach to Product
+		# Attach to Product
 
 		$_d['product.ds.query']['columns'][] = 'cat_id';
 		$_d['product.ds.query']['columns'][] = 'catprod_cat';
 
+		$_d['product.cb.template']['category'] =
+			array(&$this, 'cb_product_template');
 		$_d['product.callbacks.props']['category'] =
 			array(&$this, 'cb_product_props');
 		$_d['product.callbacks.addfields']['category'] =
@@ -91,9 +55,11 @@ EOF;
 
 		$_d['product.latest.match']['catprod_cat'] = SqlNot(0);
 
-		// Globally available tags for templating
+		# Globally available tags for templates
+
 		$_d['template.rewrites']['showcat'] = array(&$this, 'TagShowCat');
 		$_d['template.rewrites']['category'] = array(&$this, 'TagCategory');
+		$_d['template.rewrites']['catselect'] = array(&$this, 'TagCategorySelect');
 
 		if (ModUser::RequestAccess(500))
 		{
@@ -142,6 +108,62 @@ EOF;
 			$_d['q'] = array('catalog');
 	}
 
+	function Get()
+	{
+		global $_d;
+
+		$breadcrumb = ModCategoryLocation::GetBreadcrumb(GetVar('cc'), 'FIXME', 'Nothing');
+		$_d['product.title'] = "Products in " . $breadcrumb;
+
+		$this->data = $_d;
+		$cc = GetVar('cc');
+
+		$t = new Template();
+		$t->Set('cats', $this->cats = ModCategory::QueryCats($cc, false));
+		$t->ReWrite('notempty', 'TagNotEmpty');
+		$t->ReWrite('category', array(&$this, 'TagCategory'));
+
+		return $t->ParseFile(l('category/fromCatalog.xml'));
+	}
+
+	static function QueryAll()
+	{
+		return $GLOBALS['_d']['category.ds']->Get();
+	}
+
+	static function QueryCats($parent, $include_hidden = true)
+	{
+		global $_d;
+
+		$m = array('cat_parent' => $parent);
+		if (!$include_hidden) $m['cat_hidden'] = 0;
+
+		return $_d['category.ds']->Get(array(
+			'match' => $m,
+			'order' => array('cat_name'),
+			'joins' => @$_d['category.ds.joins']
+		));
+	}
+
+	static function QueryCat($id)
+	{
+		global $_d;
+
+		$q = array(
+			'match' => array('cat_id' => $id),
+			'joins' => @$_d['category.ds.joins']
+		);
+		return $_d['category.ds']->GetOne($q);
+	}
+
+	# Callbacks
+
+	function cb_product_template()
+	{
+		global $_d;
+		return l(@$_d['category.current']['cat_template']);
+	}
+
 	function cb_product_props($prod)
 	{
 		global $_d;
@@ -184,11 +206,7 @@ EOF;
 		$_d['cat_prod.ds']->Remove(array('catprod_prod' => $_d['q'][2]));
 	}
 
-	function TagAdmin($t, $g)
-	{
-		global $_d;
-		if (ModUser::RequestAccess(500)) return $g;
-	}
+	# Globally Available Tags
 
 	function TagCategory($t, $g, $a)
 	{
@@ -196,7 +214,6 @@ EOF;
 			$this->cats = ModCategory::QueryCats($a['PARENT']);
 
 		$tt = new Template();
-		$tt->ReWrite('admin', array(&$this, 'TagAdmin'));
 		$gen = array('icon' => 'images/folder.png');
 		$ret = '';
 		if (!empty($this->cats))
@@ -210,7 +227,6 @@ EOF;
 		return $ret;
 	}
 
-	// Globally Available Tags
 	function TagShowCat($t, $g, $a)
 	{
 		$id = $a['ID'];
@@ -225,53 +241,14 @@ EOF;
 				href=\"{{app_abs}}/category/$id\">{$cat['cat_name']}</a></div>";
 	}
 
-	function Get()
+	function TagCategorySelect($t, $g, $a)
 	{
 		global $_d;
 
-		$breadcrumb = ModCategoryLocation::GetBreadcrumb(GetVar('cc'), 'FIXME', 'Nothing');
-		$_d['product.title'] = "Products in " . $breadcrumb;
-
-		$this->data = $_d;
-		$cc = GetVar('cc');
-
-		$t = new Template();
-		$t->Set('cats', $this->cats = ModCategory::QueryCats($cc, false));
-		$t->ReWrite('notempty', 'TagNotEmpty');
-		$t->ReWrite('admin', array(&$this, 'TagAdmin'));
-		$t->ReWrite('category', array(&$this, 'TagCategory'));
-
-		return $t->ParseFile(l('category/fromCatalog.xml'));
-	}
-
-	static function QueryAll()
-	{
-		return $GLOBALS['_d']['category.ds']->Get();
-	}
-
-	static function QueryCats($parent, $include_hidden = true)
-	{
-		global $_d;
-
-		$m = array('cat_parent' => $parent);
-		if (!$include_hidden) $m['cat_hidden'] = 0;
-
-		return $_d['category.ds']->Get(array(
-			'match' => $m,
-			'order' => array('cat_name'),
-			'joins' => @$_d['category.ds.joins']
-		));
-	}
-
-	static function QueryCat($id)
-	{
-		global $_d;
-
-		$q = array(
-			'match' => array('cat_id' => $id),
-			'joins' => @$_d['category.ds.joins']
-		);
-		return $_d['category.ds']->GetOne($q);
+		return MakeSelect($a, DataToSel(
+			ModCategory::QueryAll(),
+			'cat_name',
+			'cat_id', 0, 'Catalog'));
 	}
 }
 
@@ -323,8 +300,9 @@ class ModCategoryAdmin extends Module
 		{
 			$cid = $_d['q'][2];
 
-			$f = GetVar('image');
+			# Uploading a new category image.
 
+			$f = GetVar('image');
 			if (!empty($f))
 			{
 				// Get rid of the existing images.
@@ -339,12 +317,7 @@ class ModCategoryAdmin extends Module
 				move_uploaded_file($f['tmp_name'], "catimages/{$cid}.{$ext}");
 			}
 
-			$_d['category.ds']->Update(array('cat_id' => $cid), array(
-				'cat_parent' => GetVar('parent'),
-				'cat_name' => GetVar('name'),
-				'cat_desc' => GetVar('desc'),
-				'cat_hidden' => GetVar('hidden')
-			));
+			$_d['category.ds']->Update(array('cat_id' => $cid), GetVar('cat'));
 		}
 	}
 
@@ -384,14 +357,10 @@ class ModCategoryAdmin extends Module
 		else if ($ca == 'edit')
 		{
 			$cid = $_d['q'][2];
+			$cat = ModCategory::QueryCat($cid);
 
-			$dsCats = $_d['category.ds'];
-
-			$cat = $dsCats->GetOne(array(
-				'match' => array(
-					'cat_id' => $cid
-				)
-			));
+			$t = new Template($cat);
+			return $t->ParseFile(l('category/form.xml'));
 
 			$cats = $dsCats->Get();
 			$frmViewCat = new Form("formViewCat");
@@ -404,6 +373,7 @@ class ModCategoryAdmin extends Module
 			$frmViewCat->AddInput(new FormInput('Hide', 'checkbox', 'hidden',
 				$cat['cat_hidden']));
 			$frmViewCat->AddInput(new FormInput('Image','file','image'));
+			$frmViewCat->AddInput(new FormInput('Custom Template', 'text', 'template'));
 
 			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $frmViewCat, $cat);
 
@@ -419,8 +389,9 @@ class ModCategoryAdmin extends Module
 		{
 			$ret = null;
 
-			$items = ModCategory::QueryAll();
-			$tree = DataToTree($items, 'cat_id', 'cat_parent', 0);
+			#$items = ModCategory::QueryAll();
+			#$tree = DataToTree($items, array('cat_parent' => 'cat_id'), 0);
+			$tree = $_d['category.all'];
 
 			$ret = GetTree($tree,
 				'<a href="{{app_abs}}/category/{{cat_id}}">{{cat_name}}</a>
@@ -436,6 +407,8 @@ Module::Register('ModCategoryAdmin');
 
 class ModCategoryLocation extends Module
 {
+	public $Block = 'location';
+
 	function Get()
 	{
 		global $_d;

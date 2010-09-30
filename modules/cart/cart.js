@@ -1,6 +1,6 @@
 $(function() {
 	$('.ancAddCart').click(function () {
-		id = $(this).attr('href');
+		id = $(this).attr('rel');
 
 		var atrs = {};
 
@@ -9,8 +9,7 @@ $(function() {
 		});
 
 		$.post(app_abs+'/cart/add/'+id, atrs, function() {
-			$('#divCart').load(app_abs+'/cart/part')
+			$('#divCart').load(app_abs+'/cart/part');
 		});
-		return false;
 	});
 });
