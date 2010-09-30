@@ -1,15 +1,23 @@
 <html doctype="trans">
 <head>
-	<title> {{site_name}}{{page_title}} </title>
+	<title> {{settings.site_name}} </title>
 	<link href="catalog/screen.css" rel="stylesheet" type="text/css"/>
 	<script type="text/javascript" src="xedlib/js/jquery.js"></script>
-	<script type="text/javascript" src="xedlib/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="xedlib/js/jquery.ui.js"></script>
 </head>
 <body>
+
 <a href="index.php"><img src="{{app_abs}}/images/logo.png" alt="Logo"/></a>
 
-<div id="left"><block name="left" /></div>
-<div id="right"><block name="right">RIGHT BLOCK</block></div>
+<div class="clear"></div>
+
+<div id="left">
+	<block name="left" />
+	<block name="nav" />
+	<block name="view" />
+	<block name="search" />
+</div>
+<div id="right"><block name="right"></block></div>
 <div id="middle"><block name="default" /></div>
 
 <div id="foot">Copyright 2003 {{settings.site_name}} - New Template</div>

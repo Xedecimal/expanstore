@@ -81,7 +81,7 @@ class ModReview extends Module
 		}
 	}
 
-	function cb_product_details($_d, $prod)
+	function cb_product_details($prod)
 	{
 		$cl = $_d['cl'];
 
@@ -139,8 +139,10 @@ class ModReview extends Module
 		return $ret;
 	}
 
-	function cb_product_props($_d, $prod)
+	function cb_product_props($prod)
 	{
+		global $_d;
+
 		$t = new Template($_d);
 		if (!empty($prod['rating']))
 		{

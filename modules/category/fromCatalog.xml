@@ -9,12 +9,12 @@
 <a class="aCat" id="aCat_{{cat_id}}"
 	href="{{app_abs}}/category/{{cat_id}}">{{cat_name}}</a>
 
-<admin>
+<access require="500">
 <a class="aCatEdit" id="aCatEdit_{{cat_id}}"
 	href="{{app_abs}}/category/edit/{{cat_id}}" title="Edit">Edit</a>
 <a href="#" class="aCatDelete" id="aCatDelete_{{cat_id}}"
 	title="Delete">Delete</a>
-</admin>
+</access>
 
 </div>
 </li>
@@ -23,8 +23,8 @@
 
 </notempty>
 
-<admin>
+<access require="500">
 <a href="{{app_abs}}/category/prepare">Create Category</a>
-</admin>
+</access>
 
 </null>

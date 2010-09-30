@@ -15,9 +15,9 @@ class ModImportOsc extends Module
 
 	function Link()
 	{
-		#if (AccessRequire(500))
-		#	$_d['page.links']['Admin']['osCommerce Import'] =
-		#		'{{me}}?cs=oscimport&amp;class=oscimport&amp;ca=admin';
+		if (ModUser::RequireAccess(500))
+			$_d['nav.links']['Admin/osCommerce Import'] =
+				'{{me}}?cs=oscimport&amp;class=oscimport&amp;ca=admin';
 	}
 
 	function Get()

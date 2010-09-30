@@ -31,14 +31,13 @@ EOF;
 		$_d['log.ds']->Shortcut = 'log';
 	}
 
-	function Prepare()
+	function Link()
 	{
-		parent::Prepare();
+		global $_d;
 
 		if (ModUser::RequireAccess(500))
 		{
-			$_d['page.links']['Admin']['Logs'] =
-				htmlspecialchars("{{me}}?cs=log");
+			$_d['nav.links']['Admin/Logs'] = "{{app_abs}}/log";
 		}
 	}
 

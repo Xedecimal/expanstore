@@ -11,6 +11,8 @@ class ModWishlist extends Module
 		$dsWL = $_d['wishlist.ds'] = new DataSet($_d['db'], 'wishlist');
 		$dsWL->ErrorHandler = array(&$this, 'error_db');
 		$dsWL->Shortcut = 'wl';
+
+		$this->CheckActive('wishlist');
 	}
 
 	function Link()
@@ -20,7 +22,7 @@ class ModWishlist extends Module
 		// Attach to Navigation.
 
 		if (!empty($_d['cl']))
-			$_d['page.links']['Personal']['Wishlist'] = '{{me}}?cs=wishlist';
+			$_d['nav.links']['Personal/Wishlist'] = '{{me}}?cs=wishlist';
 
 		// Attach to Product.
 
@@ -32,7 +34,7 @@ class ModWishlist extends Module
 
 	function Prepare()
 	{
-		parent::Prepare();
+		if (!$this->Active) return;
 
 		global $_d;
 
@@ -70,16 +72,20 @@ class ModWishlist extends Module
 
 	function Get()
 	{
+		if (!$this->Active) return;
+
 		global $_d;
 
-		$items = QueryProductList(array('wl_user' => $_d['cl']['usr_id']));
+		if (!ModUser::RequireAccess(0)) return;
 
-		$out = null;
-		if (!empty($items))
-		foreach ($items as $i)
-		{
-			$out .= GetProduct($_d, $i);
-		}
+		$items = 
+
+		$pt = new ProductTemplate('wishlist');
+		$pt->prods = QueryProductList(array(
+			'match' => array(
+				'wl_user' => $_d['cl']['usr_id'])
+		));
+		$out = $pt->ParseFile(l('product/fromCatalog.xml'));
 		$out .= 'Incomplete.';
 
 		return GetBox('box_wishlist', 'Wishlist', $out);
