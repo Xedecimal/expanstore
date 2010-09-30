@@ -585,7 +585,7 @@ class ModAttribute extends Module
 					if (!empty($atr['selected'])) $val = ' value="'.$atr['selected'].'"';
 					if (!empty($result)) $price_offset += $result;
 
-					$prod['props'][$atr['atr_name']] = '<input type="text" name="atrs['.$atr['atr_id'].']" class="product_value"'.$val.' />';
+					$prod['props'][$atr['atr_name']] = '<input type="text" title="'.$atr['atr_name'].'" name="atrs['.$atr['atr_id'].']" class="product_value"'.$val.' />';
 				}
 			}
 

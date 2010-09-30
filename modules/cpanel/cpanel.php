@@ -4,6 +4,11 @@ Module::Register('ModCPanel');
 
 class ModCPanel extends Module
 {
+	function __construct()
+	{
+		$this->CheckActive('cpanel');
+	}
+
 	function QueryPackages($match)
 	{
 		global $_d;
@@ -38,6 +43,8 @@ class ModCPanel extends Module
 
 	function Prepare()
 	{
+		if (!$this->Active) return;
+
 		parent::Prepare();
 
 		global $_d;
@@ -150,6 +157,8 @@ class ModCPanel extends Module
 	function Get()
 	{
 		global $_d;
+
+		if (!$this->Active) return;
 
 		if (@$_d['cpanel.disable']) return;
 

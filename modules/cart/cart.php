@@ -2,11 +2,13 @@
 
 class ModCart extends Module
 {
+	public $Block = 'cart';
+
 	function __construct($installed)
 	{
-		global $_d;
-
 		if (!$installed) return;
+
+		global $_d;
 
 		$this->CheckActive('cart');
 
@@ -190,9 +192,11 @@ class ModCart extends Module
 
 		if (empty($_d['cl'])) return;
 
-		return '<a class="ancAddCart" href="{{prod_id}}">'
-			.'<img src="'.p('cart/cart_add.png').'"'
-			." title=\"Add To Cart\" alt=\"Add To Cart\" /></a>\n";
+		$img = p('cart/cart_add.png');
+		return <<<EOF
+<a class="ancAddCart" rel="{{prod_id}}" href="#divCart">
+<img src="$img" title="Add To Cart" alt="Add To Cart" /></a>
+EOF;
 	}
 
 	static function QueryCart()

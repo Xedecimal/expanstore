@@ -54,6 +54,7 @@ fieldset {  }
 fieldset li { display: block; }
 fieldset textarea { width: 100%; }
 
-/* Debug */
+/* Generic */
 
 .debug { background: #FFF; }
+.quiet { color: #888; }

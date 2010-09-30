@@ -442,7 +442,9 @@ class ModProductList extends Module
 
 		$pt->prods = ModProduct::QueryProducts(array('match' => $_d['product.ds.match']));
 
-		$ret .= $pt->ParseFile(l('product/fromCatalog.xml'));
+		$t = RunCallbacks(@$_d['product.cb.template']);
+		if (!is_file($t)) $t = l('product/fromCatalog.xml');
+		$ret .= $pt->ParseFile($t);
 
 		if (!empty($_d['products.callbacks.footer']))
 			$ret .= RunCallbacks($_d['products.callbacks.footer'], $_d);
@@ -560,9 +562,10 @@ class ProductTemplate
 			as $f => $sizes)
 		{
 			$d = $this->prod;
-			$d['large'] = $sizes['l'];
-			$d['medium'] = $sizes['m'];
-			$d['small'] = $sizes['s'];
+			$p = dirname($sizes['l']).'/';
+			$d['large'] = $p.rawurlencode(basename($sizes['l']));
+			$d['medium'] = $p.rawurlencode(basename($sizes['m']));
+			$d['small'] = $p.rawurlencode(basename($sizes['s']));
 			$imgout .= $vp->ParseVars($g, $d);
 		}
 		return $imgout;

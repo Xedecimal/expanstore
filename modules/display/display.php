@@ -18,21 +18,8 @@ class ModTemplate extends Module
 	{
 		global $_d;
 
-		$_d['index.cb.prelink']['template'] = array(&$this, 'cb_index_prelink');
 		$_d['index.cb.get']['template'] = array(&$this, 'cb_index_get');
 		$this->Load();
-	}
-
-	function cb_index_prelink()
-	{
-		global $_d, $mods;
-
-		foreach ($mods as $mod)
-		{
-			$modname = get_class($mod);
-			if (isset($_d['settings']['blocks'][$modname]))
-				$mod->Block = $_d['settings']['blocks'][$modname];
-		}
 	}
 
 	function cb_index_get($mod)
