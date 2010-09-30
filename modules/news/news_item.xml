@@ -1,0 +1,13 @@
+<tr>
+	<td width="150" valign="top">
+		<a href="{{me}}?cs=company&amp;ca=view&amp;ci={{cid}}">{{comp_name}}</a>
+		<admin><a href="{{me}}?ca=delete_news&amp;ci={{nid}}\">
+			<img src="template/new/catalog/news_delete.png" alt="Delete Item" title="Delete Item" /></a>
+		</admin>
+		<br/>
+		<relativedate>{{news_date}}</relativedate>
+	</td><td valign="top">
+		<b>{{news_subject}}</b><br/>
+		{{news_message}}
+	</td>
+</tr>

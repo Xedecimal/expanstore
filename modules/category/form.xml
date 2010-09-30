@@ -1,0 +1,28 @@
+<form action="{{action}}" method="post"
+	enctype="multipart/form-data">
+
+<fieldset>
+<legend>{{text}} Category</legend>
+<ul>
+	<li><label for="in-parent">Parent</label>
+		<catselect id="in-parent" name="cat[cat_parent]"
+		value="{{cat_parent}}" /></li>
+	<li><label for="in-name">Name</label>
+		<input type="text" id="in-name" name="cat[cat_name]"
+		value="{{cat_name}}" /></li>
+	<li><label  for="in-desc">Description</label>
+		<textarea id="in-desc" name="cat[cat_desc]" rows="10"
+		cols="25">{{cat_desc}}</textarea></li>
+	<li><label><input id="in-hide" type="checkbox" name="cat[cat_hidden]"
+		value="{{cat_hidden}}" /> Hide </label></li>
+	<li><label for="in-image">New Image</label>
+		<input type="file" id="in-image" name="image" /></li>
+	<li><label for="in-template">Custom Template</label>
+		<input type="text" id="in-template" name="cat[cat_template]"
+		value="{{cat_template}}" />
+	</li>
+	<callback ds="_d" name="category.callbacks.fields" />
+	<li><input  type="submit" name="butSubmit" value="Save" /></li>
+</ul>
+</fieldset>
+</form>

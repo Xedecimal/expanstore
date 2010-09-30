@@ -1,0 +1,41 @@
+<div>
+
+<product>
+	<div id="divCartProd_{{ci_id}}" class="cart-item">
+
+	<callback ds="_d" name="cart.cb.product.head"/>
+	<prodhead />
+	<span class="product_name">
+		<a href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
+
+	<callback ds="_d" name="cart.cb.product.neck"/>
+	<prodneck />
+		<prodprops>
+		<table>
+			<prodprop><tr><td><b>{{field}}</b></td><td>{{value}}</td></tr></prodprop>
+		</table>
+		</prodprops>
+		<prodimages/>
+	<proddesc/>
+	<a href="{{ci_id}}" class="ancCartRemove">
+		<img src="cart/cart_remove.png" alt="Remove Item"
+		title="Remove Item" /></a>
+
+	<callback ds="_d" name="cart.cb.product.knee"/>
+	<prodfoot/>
+
+	<callback ds="_d" name="cart.cb.product.foot"/>
+	</div> <!-- product -->
+
+</product>
+
+<div class="clear"></div>
+
+<p>Total items: {{totalitems}}</p>
+<p>Total price: <b>${{totalprice}}</b></p>
+
+<cartknee />
+
+<script type="text/javascript" src="cart/refresh.js"></script>
+
+</div>

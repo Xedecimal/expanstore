@@ -1,0 +1,10 @@
+<form action="{{app_abs}}/search" method="post" id="frmSearch">
+<fieldset>
+<legend>Search</legend>
+<ul>
+	<li><label for="txtSearch">Search</label>
+		<input type="text" id="txtSearch" name="query" /></li>
+	<li><input type="submit" value="Search" /></li>
+</ul>
+</fieldset>
+</form>
