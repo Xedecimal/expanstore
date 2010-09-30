@@ -1,1 +1,2 @@
 glob:prodimages/*
+glob:nbproject/private/*

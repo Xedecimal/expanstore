@@ -34,7 +34,7 @@ class ModTemplate extends Module
 		// Attach to Navigation
 
 		if (ModUser::RequireAccess(500))
-			$_d['page.links']['Admin']['Display'] = '{{app_abs}}/display';
+			$_d['nav.links']['Admin/Display'] = '{{app_abs}}/display';
 
 		// Attach to Administration
 

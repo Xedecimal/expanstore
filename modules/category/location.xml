@@ -1,4 +1,4 @@
 <div id="divCatLocation">Products in: <path sep="&raquo;"><a
 	href="{{app_abs}}/category/{{cat_id}}">{{cat_name}}</a></path>
-<p>{{cat_desc}}</p>
+<notempty var="{{cat_desc}}"><p>{{cat_desc}}</p></notempty>
 </div>

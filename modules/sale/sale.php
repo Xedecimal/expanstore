@@ -33,8 +33,7 @@ class ModSale extends Module
 
 		if (ModUser::RequireAccess(500))
 		{
-			$_d['page.links']['Admin']['Sales']
-				= htmlspecialchars("{{app_abs}}/sale");
+			$_d['nav.links']['Admin/Sales'] = "{{app_abs}}/sale";
 		}
 	}
 

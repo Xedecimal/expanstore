@@ -38,8 +38,8 @@ class ModCart extends Module
 
 		# Attach to Navigation
 
-		if (!empty($_d['cl']))
-			$_d['page.links']['Personal']['View Cart'] = '{{app_abs}}/cart';
+		if (ModUser::RequireAccess(0))
+			$_d['nav.links']['Personal/View Cart'] = '{{app_abs}}/cart';
 
 		# Attach to Product
 

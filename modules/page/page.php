@@ -19,7 +19,7 @@ class ModPage extends Module
 
 			$name = str_replace('.xml', '', basename($p));
 			$title = $this->GetTitle($name);
-			$_d['page.links'][$title] = "{{me}}?cs=page&amp;ci={$name}";
+			$_d['nav.links'][$title] = "{{me}}?cs=page&amp;ci={$name}";
 		}
 	}
 

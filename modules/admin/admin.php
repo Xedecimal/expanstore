@@ -14,9 +14,8 @@ class ModAdmin extends Module
 
 		if (ModUser::RequireAccess(500))
 		{
-			$_d['page.links']['Admin']['Settings'] =
-				'{{app_abs}}/admin';
-			$_d['page.links']['Admin']['Products']['Create'] =
+			$_d['nav.links']['Admin/Settings'] = '{{app_abs}}/admin';
+			$_d['nav.links']['Admin/Products/Create'] =
 				'{{app_abs}}/product/prepare';
 		}
 

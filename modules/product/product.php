@@ -7,6 +7,7 @@ function QueryProductList($query)
 	$q = array_merge_recursive($_d['product.ds.query'], $query);
 
 	$items = $_d['product.ds']->Get($q);
+	if (empty($items[0]['prod_id'])) return null;
 	$items = RunCallbacks($_d['product.cb.result'], $items);
 	return $items;
 }
@@ -85,7 +86,7 @@ EOF;
 
 		if (ModUser::RequireAccess(500))
 		{
-			$_d['page.links']['Admin']['Products']['Listing'] = '{{app_abs}}/product';
+			$_d['nav.links']['Admin/Products'] = '{{app_abs}}/product';
 		}
 
 		$_d['display.callbacks.options']['product'] = array(&$this,
@@ -717,10 +718,11 @@ class ModProdsLatest extends Module
 
 		$pt = new ProductTemplate('latest');
 
-		$sort = array('prod_date' => 'DESC');
+		$q['match'] = $_d['product.latest.match'];
+		$q['sort'] = array('prod_date' => 'DESC');
+		$q['limit'] = array(0, 10);
 
-		$pt->prods = QueryProductList($_d['product.latest.match'], $sort,
-			array(0, 10));
+		$pt->prods = QueryProductList($q);
 
 		if (empty($pt->prods)) return;
 		return $pt->ParseFile(l('product/fromCatalog.xml'));

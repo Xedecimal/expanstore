@@ -25,9 +25,8 @@ class ModCPanel extends Module
 
 		if (!empty($_d['cl']) && !@$_d['cpanel.disable'])
 		{
-
-			$_d['page.links']["Control Panel"]['Personal'] = '{{app_abs}}/cpanel';
-			//$_d['page.links']["Control Panel"]["Financial"] = '{{app_abs}}/cpanel/financial';
+			$_d['nav.links']['Control Panel/Personal'] = '{{app_abs}}/cpanel';
+			$_d['nav.links']['Control Panel/Financial'] = '{{app_abs}}/cpanel/financial';
 		}
 
 		if (isset($_d['package.ds']))

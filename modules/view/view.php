@@ -7,6 +7,8 @@ Module::Register('ModView');
  */
 class ModView extends Module
 {
+	public $Block = 'view';
+
 	function __construct()
 	{
 	}
@@ -67,9 +69,12 @@ class ModView extends Module
 			new SelOption("Company",   false, $sort == $i++)
 		);
 
+		$t = new Template();
+		return $t->ParseFile(l('view/view.xml'));
+
 		$formView = new Form("formView");
 		$formView->AddHidden("ca", "setview");
-		$formView->AddInput(new FormInput('Sort', 'select', 'sort', $sltView));
+		$formView->AddInput(new FormInput('Sort', 'select', 'sort', $sltView, 'id="view-sort"'));
 		$formView->AddInput(new FormInput('Show', 'text', 'amount', $amount, 'size="10"'));
 		$formView->AddInput(new FormInput(null, 'submit', 'butSubmit', 'Refresh'));
 		$out = $formView->Get('action="{{me}}" method="post"', 'class="form"');

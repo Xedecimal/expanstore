@@ -83,13 +83,13 @@ class ModCompany extends Module
 
 		if (ModUser::RequireAccess(500))
 		{
-			$_d['page.links']['Admin']['Companies'] =
+			$_d['nav.links']['Admin/Companies'] =
 				'{{app_abs}}/company';
 		}
 
 		if (isset($_d['cl']['company']))
 		{
-			$_d['page.links']["Control Panel"]["Company"] =
+			$_d['nav.links']['Control Panel/Company'] =
 				'{{me}}?cs=company&amp;ca=view_company';
 		}
 

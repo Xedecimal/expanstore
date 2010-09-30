@@ -240,8 +240,7 @@ EOF;
 
 		if (ModUser::RequireAccess(500))
 		{
-			$_d['page.links']['Admin']['Product Details'] =
-				"{{app_abs}}/detail";
+			$_d['nav.links']['Admin/Product Details'] = "{{app_abs}}/detail";
 		}
 
 		// Attach to Product.
@@ -340,8 +339,10 @@ EOF;
 			DataToSel($specs, 'spec_name', 'spec_id', $default, "None")));
 	}
 
-	function ProductProps($_d, $prod)
+	function ProductProps($prod)
 	{
+		global $_d;
+
 		$t = new Template($_d);
 		$ret = null;
 

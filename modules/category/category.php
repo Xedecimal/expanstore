@@ -63,10 +63,8 @@ class ModCategory extends Module
 
 		if (ModUser::RequireAccess(500))
 		{
-			$_d['page.links']['Admin']['Categories']['Listing'] =
-				'{{app_abs}}/category/list';
-			$_d['page.links']['Admin']['Categories']['Add'] =
-				'{{app_abs}}/category/prepare';
+			$_d['nav.links']['Admin/Categories'] = '{{app_abs}}/category/list';
+			$_d['nav.links']['Admin/Categories/Add'] = '{{app_abs}}/category/prepare';
 		}
  	}
 
@@ -385,6 +383,7 @@ class ModCategoryLocation extends Module
 		$t->Behavior->Bleed = false;
 		$t->Set($_d['category.current']);
 		$t->ReWrite('path', array($this, 'TagPath'));
+		$t->ReWrite('notempty', 'TagNotEmpty');
 		return $t->ParseFile(l('category/location.xml'));
 	}
 
