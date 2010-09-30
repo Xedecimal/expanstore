@@ -1,2 +1,3 @@
 glob:prodimages/*
 glob:nbproject/private/*
+glob:settings.ini
