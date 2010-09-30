@@ -62,7 +62,7 @@ class ModAttribute extends Module
 
 		# Attach to Navigation
 
-		if (ModUser::RequestAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['page.links']["Control Panel"]["Attributes"] =
 				'{{app_abs}}/attribute';

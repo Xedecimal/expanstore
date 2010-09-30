@@ -99,7 +99,7 @@ class ModReview extends Module
 				align="middle" /> ', number_format($rev['rev_rating']))));
 			$tblReviews->AddRow(array(null, $rev['rev_review']));
 			$title = $rev['rev_subject'];
-			if (ModUser::RequestAccess(500))
+			if (ModUser::RequireAccess(500))
 			{
 				$title .= " <a href=\"".URL($_d['me'],
 					array('ca' => 'delete_review', 'ci' => $rev['rev_id'],
@@ -111,7 +111,7 @@ class ModReview extends Module
 			$ret .= '<br/>';
 		}
 
-		if (ModUser::RequestAccess(1))
+		if (ModUser::RequireAccess(1))
 		{
 			$ratings = array(
 				1 => new SelOption('1', false),

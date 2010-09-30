@@ -1,8 +1,8 @@
-<form action="{{app_abs}}/category/update/7" method="post"
+<form action="{{action}}" method="post"
 	enctype="multipart/form-data">
 
 <fieldset>
-<legend>Category Properties</legend>
+<legend>{{text}} Category</legend>
 <ul>
 	<li><label for="in-parent">Parent</label>
 		<catselect id="in-parent" name="cat[cat_parent]"
@@ -21,6 +21,7 @@
 		<input type="text" id="in-template" name="cat[cat_template]"
 		value="{{cat_template}}" />
 	</li>
+	<callback ds="_d" name="category.callbacks.fields" />
 	<li><input  type="submit" name="butSubmit" value="Save" /></li>
 </ul>
 </fieldset>

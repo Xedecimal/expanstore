@@ -31,7 +31,7 @@ class ModSale extends Module
 
 		// Attach to Navigation
 
-		if (ModUser::RequestAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['page.links']['Admin']['Sales']
 				= htmlspecialchars("{{app_abs}}/sale");
@@ -42,7 +42,7 @@ class ModSale extends Module
 	{
 		parent::Prepare();
 
-		if (!ModUser::RequestAccess(500)) return;
+		if (!ModUser::RequireAccess(500)) return;
 
 		global $_d;
 		if (@$_d['q'][0] != 'sale') return;
@@ -65,7 +65,7 @@ class ModSale extends Module
 		global $_d;
 
 		if ($_d['q'][0] != 'sale') return;
-		if (!ModUser::RequestAccess(500)) return;
+		if (!ModUser::RequireAccess(500)) return;
 
 		$dsPackage = $_d['pack.ds'];
 		$dsPackageProd = $_d['pack_prod.ds'];

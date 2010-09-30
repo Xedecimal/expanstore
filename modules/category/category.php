@@ -61,7 +61,7 @@ class ModCategory extends Module
 		$_d['template.rewrites']['category'] = array(&$this, 'TagCategory');
 		$_d['template.rewrites']['catselect'] = array(&$this, 'TagCategorySelect');
 
-		if (ModUser::RequestAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['page.links']['Admin']['Categories']['Listing'] =
 				'{{app_abs}}/category/list';
@@ -327,31 +327,18 @@ class ModCategoryAdmin extends Module
 
 		if (@$_d['q'][0] != 'category') return;
 
-		if (!ModUser::RequestAccess(500)) return;
+		if (!ModUser::RequireAccess(500)) return;
 
 		$ca = @$_d['q'][1];
 
 		if ($ca == 'prepare')
 		{
-			$formAddCat = new Form("formAddCat");
-			$formAddCat->AddInput(new FormInput('Name', 'text', 'name', null,
-				array('STYLE' => 'width: 100%')));
-			$formAddCat->AddInput(new FormInput('Description', 'area', 'desc', null,
-				array('STYLE' => 'width: 100%; height: 100px;')));
-			$formAddCat->AddInput(new FormInput('Parent Category', 'select',
-				'parent', DataToSel(ModCategory::QueryAll(), 'cat_name', 'cat_id',
-				@$_d['category.current']['cat_id'], 'None')));
-			$formAddCat->AddInput(new FormInput('Hide', 'checkbox', 'hidden'));
-			$formAddCat->AddInput(new FormInput('Image', 'file', 'image'));
-			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $formAddCat);
-			$formAddCat->AddInput(new FormInput(null, 'submit', 'butSubmit',
-				'Add'));
-
-			return GetBox('box_create',
-				'Create Category',
-				$formAddCat->Get('action="{{app_abs}}/category/add"
-					method="post" enctype="multipart/form-data"',
-					array('STYLE' => 'width: 100%')));
+			$dat = array(
+				'action' => '{{app_abs}}/category/create',
+				'text' => 'Create');
+			$t = new Template($dat);
+			$t->Behavior->Bleed = false;
+			return $t->ParseFile(l('category/form.xml'));
 		}
 
 		else if ($ca == 'edit')
@@ -360,29 +347,10 @@ class ModCategoryAdmin extends Module
 			$cat = ModCategory::QueryCat($cid);
 
 			$t = new Template($cat);
+			$t->Set(array(
+				'action' => '{{app_abs}}/category/update/'.$cid,
+				'text' => 'Update'));
 			return $t->ParseFile(l('category/form.xml'));
-
-			$cats = $dsCats->Get();
-			$frmViewCat = new Form("formViewCat");
-			$frmViewCat->AddInput(new FormInput('Parent', 'select', 'parent',
-				DataToSel($cats, 'cat_name', 'cat_id', $cat['cat_parent'], "Home")));
-			$frmViewCat->AddInput(new FormInput('Name', 'text', 'name',
-				$cat['cat_name'], 'size="50"'));
-			$frmViewCat->AddInput(new FormInput('Description', 'area', 'desc',
-				$cat['cat_desc'], 'style="width: 100%; height: 100px;"'));
-			$frmViewCat->AddInput(new FormInput('Hide', 'checkbox', 'hidden',
-				$cat['cat_hidden']));
-			$frmViewCat->AddInput(new FormInput('Image','file','image'));
-			$frmViewCat->AddInput(new FormInput('Custom Template', 'text', 'template'));
-
-			RunCallbacks(@$_d['category.callbacks.fields'], $_d, $frmViewCat, $cat);
-
-			$frmViewCat->AddInput(new FormInput(null, 'submit', 'butSubmit',
-				'Save'));
-
-			return GetBox("box_category", "Category Properties",
-				$frmViewCat->Get('action="{{app_abs}}/category/update/'.$cid
-					.'" method="post" enctype="multipart/form-data"'));
 		}
 
 		else if ($ca == 'list') // Category listing.

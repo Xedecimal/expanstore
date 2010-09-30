@@ -83,7 +83,7 @@ EOF;
 
 		// Attach to Navigation.
 
-		if (ModUser::RequestAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['page.links']['Admin']['Products']['Listing'] = '{{app_abs}}/product';
 		}
@@ -319,7 +319,7 @@ EOF;
 		{
 			$pid = $_d['q'][2];
 
-			if (!ModUser::RequestAccess(500))
+			if (!ModUser::RequireAccess(500))
 				if (!RequestCompany($prod['comp_id'])) return;
 
 			$frmViewProd = new Form('formProdProps',

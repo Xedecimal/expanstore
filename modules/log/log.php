@@ -35,7 +35,7 @@ EOF;
 	{
 		parent::Prepare();
 
-		if (ModUser::RequestAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['page.links']['Admin']['Logs'] =
 				htmlspecialchars("{{me}}?cs=log");

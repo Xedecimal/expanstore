@@ -238,7 +238,7 @@ EOF;
 
 		// Attach to Navigation.
 
-		if (ModUser::RequestAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['page.links']['Admin']['Product Details'] =
 				"{{app_abs}}/detail";
@@ -333,6 +333,7 @@ EOF;
 
 	function CategoryFields($_d, $form, $cat = null)
 	{
+		return 'Hello!';
 		$specs = $_d['spec.ds']->Get();
 		$default = isset($cat['spec']) ? $cat['spec'] : 0;
 		$form->AddInput(new FormInput("Details", "select", "spec",

@@ -81,7 +81,7 @@ class ModCompany extends Module
 
 		// Attach to Navigation.
 
-		if (ModUser::RequestAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['page.links']['Admin']['Companies'] =
 				'{{app_abs}}/company';
@@ -98,7 +98,7 @@ class ModCompany extends Module
 		$_d['user.ds.joins']['compuser'] =
 			new Join($_d['compuser.ds'], 'c2u_user = usr_id', 'LEFT JOIN');
 
-		/*if (ModUser::RequestAccess(500))
+		/*if (ModUser::RequireAccess(500))
 		{
 			$_d['user.ds.handlers']['company'] = new CompanyUserHandler();
 			$sels = DataToSel(QueryCompanies(), 'comp_name', 'comp_id', 0, 'None');
@@ -191,7 +191,7 @@ class ModCompany extends Module
 	{
 		global $_d;
 
-		if (ModUser::RequestAccess(500)) return 1;
+		if (ModUser::RequireAccess(500)) return 1;
 		if ($prod['comp_id'] == $_d['cl']['comp_id']) return 1;
 	}
 
