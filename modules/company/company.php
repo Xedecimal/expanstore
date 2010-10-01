@@ -38,6 +38,8 @@ class ModCompany extends Module
 	{
 		global $_d;
 
+		$this->CheckActive('company');
+
 		if (!$inst) return;
 
 		$dsCompany = new DataSet($_d['db'], 'company', 'comp_id');
@@ -62,15 +64,19 @@ class ModCompany extends Module
 
 		$_d['company.ds'] = $dsCompany;
 
-		// dsCompProd
+		# dsCompProd
 
 		$dsCompProd = new DataSet($_d['db'], 'comp_prod');
 		$_d['compprod.ds'] = $dsCompProd;
 
-		// dsC2U
+		# dsC2U
 
 		$dsCompUser = new DataSet($_d['db'], 'comp_user');
 		$_d['compuser.ds'] = $dsCompUser;
+
+		# Attach to user (before link because authentication comes early)
+
+		$_d['user.ds']->AddJoin(new Join($_d['compuser.ds'], 'c2u_user = usr_id', 'LEFT JOIN'));
 	}
 
 	# Module
@@ -79,7 +85,7 @@ class ModCompany extends Module
 	{
 		global $_d;
 
-		// Attach to Navigation.
+		# Attach to Navigation.
 
 		if (ModUser::RequireAccess(500))
 		{
@@ -93,20 +99,17 @@ class ModCompany extends Module
 				'{{me}}?cs=company&amp;ca=view_company';
 		}
 
-		// Connect to User.
+		# Connect to User.
 
-		$_d['user.ds.joins']['compuser'] =
-			new Join($_d['compuser.ds'], 'c2u_user = usr_id', 'LEFT JOIN');
-
-		/*if (ModUser::RequireAccess(500))
+		if (ModUser::RequireAccess(500))
 		{
 			$_d['user.ds.handlers']['company'] = new CompanyUserHandler();
 			$sels = DataToSel(QueryCompanies(), 'comp_name', 'comp_id', 0, 'None');
 			$_d['user.ds']->FieldInputs['c2u_company'] =
 				new FormInput('Company', 'select', null, $sels);
-		}*/
+		}
 
-		// Connect to Product.
+		# Connect to Product.
 
 		$_d['product.ds.query']['columns'][] = 'comp_id';
 		$_d['product.ds.query']['columns'][] = 'comp_name';
@@ -123,7 +126,7 @@ class ModCompany extends Module
 
 	function Prepare()
 	{
-		parent::Prepare();
+		if (!$this->Active) return;
 		global $_d;
 	}
 
@@ -131,7 +134,7 @@ class ModCompany extends Module
 	{
 		global $_d;
 
-		if ($_d['q'][0] != 'company') return;
+		if (!$this->Active) return;
 
 		$ca = GetVar('ca');
 

@@ -64,8 +64,10 @@ function QueryProps(&$_d, $spec)
 	return $_d['specprop.ds']->Get(array('sprop_spec' => $spec));
 }
 
-function QueryPropsByCat(&$_d, $cat)
+function QueryPropsByCat(&$_d2, $cat)
 {
+	global $_d;
+
 	$dsSpec = $_d['spec.ds'];
 	$dsProp = $_d['specprop.ds'];
 	$dsProd = $_d['specprod.ds'];
@@ -88,11 +90,13 @@ function QueryPropsByCat(&$_d, $cat)
 		'sprod_value'
 	);
 
-	return $dsProp->Get($q);
+	//return $dsProp->Get($q);
 }
 
-function QuerySPP(&$_d)
+function QuerySPP()
 {
+	global $_d;
+
 	$spec = isset($_d['category.current']['sc_spec']) ?
 		$_d['category.current']['sc_spec'] : 0;
 
@@ -115,8 +119,8 @@ function QuerySPP(&$_d)
 
 	$dp = $_d['specprop.ds'];
 
-	return $dp->Get($match, array('sprop_id' => 'ASC', 'sprod_id' => 'ASC'), null,
-		$joins, $cols);
+	/*return $dp->Get($match, array('sprop_id' => 'ASC', 'sprod_id' => 'ASC'), null,
+		$joins, $cols);*/
 }
 
 function QueryUnusedSPP(&$_d, $spec)
@@ -139,31 +143,31 @@ function QueryUnusedSPP(&$_d, $spec)
 
 class ModDetail extends Module
 {
-	function __construct($inst)
+	function __construct()
 	{
 		global $_d;
 
-		if (!$inst) return;
+		$this->CheckActive('detail');
 
-		$dsSpecs = new DataSet($_d['db'], "spec");
-		$dsSpecs->Shortcut = 's';
-		$_d['spec.ds'] = $dsSpecs;
+		$this->dsSpec = new DataSet($_d['db'], 'spec');
+		$this->dsSpec->Shortcut = 's';
+		$_d['spec.ds'] = $this->dsSpec;
 
-		$dsSpecProd = new DataSet($_d['db'], 'spec_prod');
-		$dsSpecProd->Shortcut = 'sprod';
-		$_d['specprod.ds'] = $dsSpecProd;
+		$this->dsSpecProd = new DataSet($_d['db'], 'spec_prod');
+		$this->dsSpecProd->Shortcut = 'sprod';
+		$_d['specprod.ds'] = $this->dsSpecProd;
 
-		$dsSpecProp = new DataSet($_d['db'], "spec_prop");
-		$dsSpecProp->Shortcut = 'sprop';
-		$_d['specprop.ds'] = $dsSpecProp;
+		$this->dsSpecProp = new DataSet($_d['db'], 'spec_prop');
+		$this->dsSpecProp->Shortcut = 'sprop';
+		$_d['specprop.ds'] = $this->dsSpecProp;
 
-		$dsSPP = new DataSet($_d['db'], 'spec_prop_prod');
-		$dsSPP->Shortcut = 'spp';
-		$_d['specpropprod.ds'] = $dsSPP;
+		$this->dsSPP = new DataSet($_d['db'], 'spec_prop_prod');
+		$this->dsSPP->Shortcut = 'spp';
+		$_d['specpropprod.ds'] = $this->dsSPP;
 
-		$dsSC = new DataSet($_d['db'], 'spec_cat');
-		$dsSC->Shortcut = 'sc';
-		$_d['spec_cat.ds'] = $dsSC;
+		$this->dsSC = new DataSet($_d['db'], 'spec_cat');
+		$this->dsSC->Shortcut = 'sc';
+		$_d['spec_cat.ds'] = $this->dsSC;
 	}
 
 	function Install()
@@ -257,20 +261,20 @@ EOF;
 		$_d['category.ds.columns'][] = 'sc_spec';
 
 		$_d['category.ds.joins']['sc'] =
-			new Join($_d['spec_cat.ds'], 'sc_cat = cat_id', 'LEFT JOIN');
+			new Join($this->dsSC, 'sc_cat = cat_id', 'LEFT JOIN');
 
 		$_d['category.callbacks.fields'][] = array(&$this, 'CategoryFields');
 	}
 
 	function Prepare()
 	{
-		parent::Prepare();
-
 		global $_d;
 
-		$ca = $_d['q'][0];
+		if (!$this->Active) return;
 
-		if ($ca == 'update_spec')
+		$action = @$_d['q'][1];
+
+		if ($action == 'update_spec')
 		{
 			$dsSpecs->Update(array('id' => GetVar('ci')),
 			array(
@@ -280,7 +284,7 @@ EOF;
 			$_d['ca'] = 'view_spec';
 		}
 
-		else if ($ca == 'update_spec_prop')
+		else if ($action == 'update_spec_prop')
 		{
 			$dsSpecProp->Update(array('id' => GetVar('ci')),
 			array(
@@ -290,13 +294,13 @@ EOF;
 			$_d['ca'] = 'view_spec';
 		}
 
-		else if ($ca == 'del_spec_prop')
+		else if ($action == 'del_spec_prop')
 		{
 			$dsSpecProp->Remove(array('id' => GetVar('ci')));
 			$_d['ca'] = 'view_spec';
 		}
 
-		else if ($ca == 'create_spec')
+		else if ($action == 'create-spec')
 		{
 			$_d['spec.ds']->Add(array(
 				'spec_date' => SqlUnquote('NOW()'),
@@ -306,7 +310,7 @@ EOF;
 			$ca = 'view_specs';
 		}
 
-		else if ($ca == 'create_spec_prop')
+		else if ($action == 'create_spec_prop')
 		{
 			$dsSpecProp->Add(array(
 				'date' => SqlUnquote('NOW()'),
@@ -317,123 +321,24 @@ EOF;
 			$_d['ca'] = 'view_spec';
 		}
 
-		else if ($ca == "del_spec")
+		else if ($action == "del_spec")
 		{
 			$dsSpecs->Remove(array('id' => GetVar('ci')));
 			$ca = 'view_specs';
 		}
 
-		else if ($ca == 'del_sprod')
+		else if ($action == 'del_sprod')
 		{
 			$_d['specprod.ds']->Remove(array('id' => GetVar('ci')));
 			$_d['ca'] = 'view_spec';
 		}
 	}
 
-	function CategoryFields($_d, $form, $cat = null)
-	{
-		return 'Hello!';
-		$specs = $_d['spec.ds']->Get();
-		$default = isset($cat['spec']) ? $cat['spec'] : 0;
-		$form->AddInput(new FormInput("Details", "select", "spec",
-			DataToSel($specs, 'spec_name', 'spec_id', $default, "None")));
-	}
-
-	function ProductProps($prod)
-	{
-		global $_d;
-
-		$t = new Template($_d);
-		$ret = null;
-
-		$props = QuerySpecProps($_d, $prod['prod_id']);
-		if (!empty($props))
-		foreach ($props as $prop)
-		{
-			$t->Set(array(
-				'prop' => htmlspecialchars($prop['name']),
-				'value' => htmlspecialchars($prop['value'])
-			));
-			$ret .= $t->ParseFile($_d['tempath'].'catalog/product_property.html');
-		}
-		return $ret;
-	}
-
-	function ProductAddFields($_d, $form)
-	{
-		$sprops = QueryPropsByCat($_d, @$_SESSION['category']);
-
-		$props = GetVar('props');
-		if (!empty($sprops))
-		{
-			foreach ($sprops as $sprop)
-				$newprops[$sprop['pid']][$sprop['did']] = $sprop;
-
-			$form->AddRow(array('<div class="form_separator">Details Related</div>'));
-			AddSpecProps($form, $newprops);
-		}
-	}
-
-	function ProductEditFields($_d, $prod, $form)
-	{
-		#$sprops = QueryPropsByProd($_d, $prod['prod_id']);
-
-		if (!empty($sprops))
-		{
-			//Build array of specprops...
-			foreach ($sprops as $sprop)
-				$newprops[$sprop['pid']][$sprop['did']] = $sprop;
-
-			$form->AddInput('Details Related');
-			AddSpecProps($form, $newprops);
-		}
-	}
-
-	function ProductAddUpdate($_d, $prod, $newid = null)
-	{
-		$props = GetVar('props');
-		$newprops = GetVar('props_new');
-
-		//Remove old properties (update)
-		if (isset($newid))
-			$_d['specpropprod.ds']->Remove(array('spp_prod' => $newid));
-
-		//Create new properties (add/update)
-		if (!empty($props))
-		{
-			foreach ($props as $propid => $prop)
-			{
-				// Create a new property.
-				if (strlen($newprops[$propid]) > 0)
-				{
-					$insid = $_d['specprod.ds']->Add(array(
-						'prop' => $propid,
-						'value' => $newprops[$propid]
-					));
-				}
-				else $insid = $prop;
-
-				if ($insid != -1)
-				$_d['specpropprod.ds']->Add(array(
-					'prop' => $propid,
-					'prod' => $insid,
-					'product' => $newid,
-				), true);
-			}
-		}
-	}
-
-	function ProductDelete()
-	{
-		global $_d;
-		$_d['specpropprod.ds']->Remove(array('spp_prod' => $_d['q'][2]));
-	}
-
 	function Get()
 	{
-		global $me, $_d;
+		global $_d;
 
-		if ($_d['q'][0] != 'detail') return;
+		if (!$this->Active) return;
 
 		if (@$_d['q'][1] == "view_spec")
 		{
@@ -539,11 +444,7 @@ EOF;
 		{
 			$dsSpecs = $_d['spec.ds'];
 
-			$q = array(
-				'match' => array(
-					'spec_company' => $_d['cl']['c2u_company']
-				)
-			);
+			$q['match']['spec_company'] = $_d['cl']['c2u_company'];
 
 			$specs = $dsSpecs->Get($q);
 			$out = "";
@@ -573,18 +474,110 @@ EOF;
 					$tblSpecs->Get());
 			}
 
-			//Create attribute group.
-			$frmCreateDetail = new Form("formCreateDetail");
-			$frmCreateDetail->AddHidden("cs", GetVar('cs'));
-			$frmCreateDetail->AddHidden("ca", "create_spec");
-			$frmCreateDetail->AddInput(new FormInput("Name", "text", "name", null, 'size="50"'));
-			$frmCreateDetail->AddInput(new FormInput("", "submit", "butSubmit", "Create"));
-			$out .= GetBox("box_create",
-				'Create Detail',
-				$frmCreateDetail->Get('action="{{me}}" method="post"'));
+			$t = new Template();
+			$out .= $t->ParseFile(l('detail/spec_create.xml'));
 
 			return $out;
 		}
+	}
+
+	function CategoryFields($t)
+	{
+		$specs = $this->dsSpec->Get();
+		$default = isset($cat['spec']) ? $cat['spec'] : 0;
+		$sel = MakeSelect('name="spec_name"',
+			DataToSel($specs, 'spec_name', 'spec_id', $default, "None"));
+		return '<li><label>Detail</label>'.$sel.'</li>';
+	}
+
+	function ProductProps($prod)
+	{
+		global $_d;
+
+		$t = new Template($_d);
+		$ret = null;
+
+		$props = QuerySpecProps($_d, $prod['prod_id']);
+		if (!empty($props))
+		foreach ($props as $prop)
+		{
+			$t->Set(array(
+				'prop' => htmlspecialchars($prop['name']),
+				'value' => htmlspecialchars($prop['value'])
+			));
+			$ret .= $t->ParseFile($_d['tempath'].'catalog/product_property.html');
+		}
+		return $ret;
+	}
+
+	function ProductAddFields($t)
+	{
+		$sprops = QueryPropsByCat($_d, @$_SESSION['category']);
+
+		$props = GetVar('props');
+		if (!empty($sprops))
+		{
+			foreach ($sprops as $sprop)
+				$newprops[$sprop['pid']][$sprop['did']] = $sprop;
+
+			$form->AddRow(array('<div class="form_separator">Details Related</div>'));
+			AddSpecProps($form, $newprops);
+		}
+	}
+
+	function ProductEditFields($_d, $prod, $form)
+	{
+		#$sprops = QueryPropsByProd($_d, $prod['prod_id']);
+
+		if (!empty($sprops))
+		{
+			//Build array of specprops...
+			foreach ($sprops as $sprop)
+				$newprops[$sprop['pid']][$sprop['did']] = $sprop;
+
+			$form->AddInput('Details Related');
+			AddSpecProps($form, $newprops);
+		}
+	}
+
+	function ProductAddUpdate($_d, $prod, $newid = null)
+	{
+		$props = GetVar('props');
+		$newprops = GetVar('props_new');
+
+		//Remove old properties (update)
+		if (isset($newid))
+			$_d['specpropprod.ds']->Remove(array('spp_prod' => $newid));
+
+		//Create new properties (add/update)
+		if (!empty($props))
+		{
+			foreach ($props as $propid => $prop)
+			{
+				// Create a new property.
+				if (strlen($newprops[$propid]) > 0)
+				{
+					$insid = $_d['specprod.ds']->Add(array(
+						'prop' => $propid,
+						'value' => $newprops[$propid]
+					));
+				}
+				else $insid = $prop;
+
+				if ($insid != -1)
+				$_d['specpropprod.ds']->Add(array(
+					'prop' => $propid,
+					'prod' => $insid,
+					'product' => $newid,
+				), true);
+			}
+		}
+	}
+
+	function ProductDelete()
+	{
+		global $_d;
+		$_d['specpropprod.ds']->Remove(array('spp_prod' => $_d['q'][2]));
 	}
 }
 
