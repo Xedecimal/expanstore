@@ -17,8 +17,7 @@ class ModCategory extends Module
 		if ($_d['q'][0] == 'category' && is_numeric(@$_d['q'][1]))
 			$_SESSION['cc'] = $_d['q'][1];
 
-		$_d['category.all'] = DataToTree($_d['category.ds']->Get(),
-			array('cat_id' => array('cat_id', 'cat_parent')), 0);
+		$_d['category.all'] = $_d['category.ds']->Get();
 	}
 
 	function Link()
@@ -172,13 +171,14 @@ class ModCategory extends Module
 		return $prod;
 	}
 
-	function cb_product_fields($form, $prod = null)
+	function cb_product_fields($prod = null)
 	{
 		global $_d;
 
-		$form->AddInput(new FormInput('Category', 'select', 'category',
-			DataToSel($_d['category.all']->Collapse(), 'cat_name', 'cat_id',
-				$_d['category.current']['cat_id'], 'None')));
+		/*$sel = MakeSelect('name="category"', DataToSel($_d['category.all'],
+			'cat_name', 'cat_id', $_d['category.current']['cat_id'], 'None'));*/
+		$sel = '';
+		return "<li><label>Category</label>$sel</li>";
 	}
 
 	function cb_product_add($_d, $prod, $id)

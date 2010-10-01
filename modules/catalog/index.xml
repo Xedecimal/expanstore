@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<a href="index.php"><img src="{{app_abs}}/images/logo.png" alt="Logo"/></a>
+<a href="{{app_abs}}/"><img src="{{app_abs}}/images/logo.png" alt="Logo"/></a>
 
 <div class="clear"></div>
 
