@@ -41,7 +41,7 @@ class ModNews extends Module
 
 		global $_d;
 
-		$ca = GetVar('ca');
+		$ca = Server::GetVar('ca');
 
 		if ($ca == 'delete_news')
 		{
@@ -52,8 +52,8 @@ class ModNews extends Module
 			$_d['news.ds']->Add(array(
 				'news_company' => $_d['cl']['company'],
 				'news_date' => SqlUnquote('NOW()'),
-				'news_subject' => GetVar("subject"),
-				'news_message' => GetVar("body")
+				'news_subject' => Server::GetVar("subject"),
+				'news_message' => Server::GetVar("body")
 			));
 			xslog($_d, 'Posted news.');
 		}
@@ -90,7 +90,7 @@ class ModNews extends Module
 	}
 }
 
-class ModNewsLatest extends DisplayObject
+class ModNewsLatest extends Module
 {
 	function Prepare()
 	{
@@ -98,7 +98,7 @@ class ModNewsLatest extends DisplayObject
 
 		global $_d;
 
-		$ca = GetVar('ca');
+		$ca = Server::GetVar('ca');
 
 		if ($ca == 'news_del')
 		{
@@ -110,10 +110,10 @@ class ModNewsLatest extends DisplayObject
 	{
 		global $_d;
 
-		if (GetVar('cc') != 0) return;
+		if (Server::GetVar('cc') != 0) return;
 
 		$rnews = QueryNewsLatest($_d);
-		$news = GetFlatPage($rnews, GetVar('cp'), 10);
+		$news = GetFlatPage($rnews, Server::GetVar('cp'), 10);
 		$pages = GetPages(count($rnews), 10, array('ix' => 'test'));
 		if (empty($news)) return null;
 

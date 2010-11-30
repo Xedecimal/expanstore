@@ -20,7 +20,7 @@ class ModOrder extends Module
 		{
 			$this->success = array();
 
-			$cons = GetVar('con');
+			$cons = Server::GetVar('con');
 			if (empty($cons['email']) && empty($cons['phone']))
 				$this->vals['con[email]'] =
 				$this->vals['con[phone]'] =

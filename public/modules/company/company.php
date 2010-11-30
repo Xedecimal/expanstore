@@ -136,11 +136,11 @@ class ModCompany extends Module
 
 		if (!$this->Active) return;
 
-		$ca = GetVar('ca');
+		$ca = Server::GetVar('ca');
 
 		if ($ca == 'view')
 		{
-			$ci = GetVar('ci');
+			$ci = Server::GetVar('ci');
 
 			$comp = QueryCompany($_d, $ci);
 
@@ -224,7 +224,7 @@ class CompanyUserHandler extends EditorHandler
 	}
 }
 
-class ModCompanyDisplay extends DisplayObject
+class ModCompanyDisplay extends Module
 {
 	function Get()
 	{

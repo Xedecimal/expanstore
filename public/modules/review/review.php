@@ -33,7 +33,8 @@ class ModReview extends Module
 
 		// Attach to Product.
 
-		$_d['product.ds.query']['columns']['rating'] = SqlUnquote('AVG(rev_rating)');
+		$_d['product.ds.query']['columns']['rating'] =
+			Database::SqlUnquote('AVG(rev_rating)');
 		$_d['product.ds.query']['joins']['review'] =
 			new Join($_d['review.ds'], "rev_prod = prod_id", 'LEFT JOIN');
 		$_d['product.callbacks.details']['review'] = array(&$this, 'cb_product_details');
@@ -50,7 +51,7 @@ class ModReview extends Module
 
 		if (@$_d['q'][1] == 'add_review')
 		{
-			$rating = GetVar("formReview_rating");
+			$rating = Server::GetVar("formReview_rating");
 			if ($rating < 0 || $rating > 5)
 			{
 				xslog($_d, "Review hack attempt!");
@@ -62,8 +63,8 @@ class ModReview extends Module
 				'rev_prod' => $_d['ci'],
 				'rev_user' => $_d['cl']['usr_id'],
 				'rev_rating' => $rating,
-				'rev_subject' => GetVar("formReview_subject"),
-				'rev_review' => GetVar("formReview_review")));
+				'rev_subject' => Server::GetVar("formReview_subject"),
+				'rev_review' => Server::GetVar("formReview_review")));
 
 			xslog($_d, "Added review to {$_d['ci']}, rating it $rating");
 
@@ -77,7 +78,7 @@ class ModReview extends Module
 
 			$_d['cs'] = 'product';
 			$_d['ca'] = 'view';
-			$_d['ci'] = GetVar('prod');
+			$_d['ci'] = Server::GetVar('prod');
 		}
 	}
 
@@ -114,11 +115,11 @@ class ModReview extends Module
 		if (ModUser::RequireAccess(1))
 		{
 			$ratings = array(
-				1 => new SelOption('1', false),
-				2 => new SelOption('2', false),
-				3 => new SelOption('3', false, 1),
-				4 => new SelOption('4', false),
-				5 => new SelOption('5', false)
+				1 => new FormOption('1', false),
+				2 => new FormOption('2', false),
+				3 => new FormOption('3', false, 1),
+				4 => new FormOption('4', false),
+				5 => new FormOption('5', false)
 			);
 			$formReview = new Form('formReview');
 			$formReview->AddHidden('ca', 'add_review');

@@ -23,7 +23,7 @@ class ModAttribute extends Module
 		$dsAttrib->FieldInputs = array(
 			'atr_name' => new FormInput('Name'),
 			'atr_type' => new FormInput('Type', 'select', 'type',
-				ArrayToSelOptions(ModAttribute::GetTypes(), @$a['atr_type'])),
+				FormOption::FromArray(ModAttribute::GetTypes(), @$a['atr_type'])),
 			'atr_text' => new FormInput('Text')
 		);
 		$_d['attribute.ds'] = $dsAttrib;
@@ -149,7 +149,7 @@ class ModAttribute extends Module
 
 			if ($type == 'Atrg')
 			{
-				$insert['atrg_name'] = GetVar('atrg_name');
+				$insert['atrg_name'] = Server::GetVar('atrg_name');
 				$res['name'] = $insert['atrg_name'];
 				$matchcol = 'atrg_id';
 				$dsname = 'atrg.ds';
@@ -157,19 +157,19 @@ class ModAttribute extends Module
 			if ($type == 'attribute')
 			{
 				$insert['atr_date'] = SqlUnquote('NOW()');
-				$insert['atr_name'] = GetVar('name');
-				$insert['atr_type'] = GetVar('type');
+				$insert['atr_name'] = Server::GetVar('name');
+				$insert['atr_type'] = Server::GetVar('type');
 				$res['name'] = $insert['atr_name'];
-				if ($ca == 'create') $insert['atr_atrg'] = GetVar('parent');
+				if ($ca == 'create') $insert['atr_atrg'] = Server::GetVar('parent');
 				$matchcol = 'atr_id';
 				$dsname = 'attribute.ds';
 			}
 			if ($type == 'Opt')
 			{
-				$insert['opt_name'] = GetVar('name');
-				$insert['opt_formula'] = GetVar('formula');
+				$insert['opt_name'] = Server::GetVar('name');
+				$insert['opt_formula'] = Server::GetVar('formula');
 				if ($ca == 'create')
-					$insert['opt_attrib'] = GetVar('parent');
+					$insert['opt_attrib'] = Server::GetVar('parent');
 				$matchcol = 'opt_id';
 				$dsname = 'option.ds';
 			}
@@ -187,7 +187,7 @@ class ModAttribute extends Module
 			}
 			if ($ca == 'delete')
 			{
-				$id = GetVar('id');
+				$id = Server::GetVar('id');
 				$_d[$dsname]->Remove(array($matchcol => $id));
 			}
 		}
@@ -199,7 +199,7 @@ class ModAttribute extends Module
 			$dsAtrgs->Add(array(
 				'date' => SqlUnquote("NOW()"),
 				'company' => $_d['cl']['company'],
-				'name' => GetVar("name")
+				'name' => Server::GetVar("name")
 			));
 			$_d['ca'] = 'view_atrgs';
 		}
@@ -212,8 +212,8 @@ class ModAttribute extends Module
 				$dsAttribs->Add(array(
 					'date' => SqlUnquote('NOW()'),
 					'atrg' => $sel[1],
-					'name' => GetVar("name")));
-				xslog($_d, "Added attribute " . GetVar("name") . " to {$sel[1]}");
+					'name' => Server::GetVar("name")));
+				xslog($_d, "Added attribute " . Server::GetVar("name") . " to {$sel[1]}");
 				$_d['ca'] = 'view_atrgs';
 			}
 			else if ($sel[0] == "attrib")
@@ -221,13 +221,13 @@ class ModAttribute extends Module
 				$dsOptions->Add(array(
 					'date' => SqlUnquote('NOW()'),
 					'attrib' => $sel[1],
-					'name' => GetVar("name"),
-					'formula' => GetVar("formula")));
-				xslog($_d, "Added option " . GetVar("name") . " to {$sel[1]}");
+					'name' => Server::GetVar("name"),
+					'formula' => Server::GetVar("formula")));
+				xslog($_d, "Added option " . Server::GetVar("name") . " to {$sel[1]}");
 			}
 			else
 			{
-				$name = GetVar("name");
+				$name = Server::GetVar("name");
 				$dsAtrgs->Add(array(SqlUnquote("NULL"), $name, $cl->company->id));
 				xslog($_d, "Added attribute group $name");
 			}
@@ -243,38 +243,38 @@ class ModAttribute extends Module
 
 				xslog($_d, "Removed attribute group {$_d['ci']} and all"
 					." children.");
-				$ret = GetVar("ret");
+				$ret = Server::GetVar("ret");
 			}
 
 			if ($sel[0] == "attrib")
 			{
 				$dsAttribs->Remove(array('id' => $sel[1]));
 				xslog($_d, "Removed attribute {$_d['ci']} and all children.");
-				$ret = GetVar("ret");
+				$ret = Server::GetVar("ret");
 			}
 
 			if ($sel[0] == "option")
 			{
 				$dsOptions->Remove(array('id' => $sel[1]));
 				xslog($_d, "Removed option {$sel[1]}.");
-				$ret = GetVar("ret");
+				$ret = Server::GetVar("ret");
 			}
 			$_d['ca'] = 'view_atrgs';
 		}
 		else if ($ca == 'atrg_swap')
 		{
-			$dsAtrgs->Swap(array('id' => GetVar('csrc')), array('id' => GetVar('ctgt')), 'id');
+			$dsAtrgs->Swap(array('id' => Server::GetVar('csrc')), array('id' => Server::GetVar('ctgt')), 'id');
 			$_d['ca'] = 'view_atrgs';
 		}
 		else if ($ca == 'attrib_swap')
 		{
 			$dsAttribs = $_d['attribute.ds'];
-			$dsAttribs->Swap(array('id' => GetVar('csrc')), array('id' => GetVar('ctgt')), 'id');
+			$dsAttribs->Swap(array('id' => Server::GetVar('csrc')), array('id' => Server::GetVar('ctgt')), 'id');
 			$_d['ca'] = 'view_atrgs';
 		}
 		else if ($ca == 'opt_swap')
 		{
-			$dsOptions->Swap(array('id' => GetVar('csrc')), array('id' => GetVar('ctgt')), 'id');
+			$dsOptions->Swap(array('id' => Server::GetVar('csrc')), array('id' => Server::GetVar('ctgt')), 'id');
 			$_d['ca'] = 'view_atrgs';
 		}
 		else if ($ca == "update_atrg")
@@ -283,22 +283,22 @@ class ModAttribute extends Module
 
 			if ($sel[0] == "atrg")
 			{
-				$dsAtrgs->Update(array('id' => $sel[1]), array("name" => GetVar("name")));
-				xslog($_d, "Updated attribute group {$_d['ci']} to " . GetVar("name"));
+				$dsAtrgs->Update(array('id' => $sel[1]), array("name" => Server::GetVar("name")));
+				xslog($_d, "Updated attribute group {$_d['ci']} to " . Server::GetVar("name"));
 			}
 
 			if ($sel[0] == "attrib")
 			{
 				$dsAttribs->Update(array('id' => $sel[1]), array(
-					"name" => GetVar("name")
+					"name" => Server::GetVar("name")
 				));
-				xslog($_d, "Updated attribute {$_d['ci']} to " . GetVar("name"));
+				xslog($_d, "Updated attribute {$_d['ci']} to " . Server::GetVar("name"));
 			}
 
 			if ($sel[0] == "option")
 			{
-				$name = GetVar("name");
-				$cols = array("name" => $name, "formula" => GetVar("formula"));
+				$name = Server::GetVar("name");
+				$cols = array("name" => $name, "formula" => Server::GetVar("formula"));
 				$dsOptions->Update(array("id" => $sel[1]), $cols);
 				xslog($_d, "Updated option {$_d['ci']} to $name");
 			}
@@ -322,7 +322,7 @@ class ModAttribute extends Module
 		{
 			$ret = null;
 
-			$atrs_action = GetVar('atrs_action');
+			$atrs_action = Server::GetVar('atrs_action');
 
 			$edAtrs = new EditorData('atrs', $_d['attribute.ds']);
 			$edAtrs->AddHandler(new EdAtrHandler);
@@ -332,7 +332,7 @@ class ModAttribute extends Module
 
 			if ($atrs_action == 'edit')
 			{
-				$ci = GetVar('atrs_ci');
+				$ci = Server::GetVar('atrs_ci');
 				$item = $_d['attribute.ds']->Get(array('match' => array(
 					'atr_id' => $ci
 				)));
@@ -364,7 +364,7 @@ class ModAttribute extends Module
 		$frm = new Form('frmCreateAttrib');
 		$frm->AddInput(new FormInput('Name', 'text', 'name', @$a['atr_name']));
 		$frm->AddInput(new FormInput('Type', 'select', 'type',
-			ArrayToSelOptions(ModAttribute::GetTypes(), @$a['atr_type'])));
+			FormOption::FromArray(ModAttribute::GetTypes(), @$a['atr_type'])));
 		$frm->AddInput(new FormInput(null, 'submit', null, $sub_text));
 		return $frm;
 	}
@@ -517,7 +517,7 @@ class ModAttribute extends Module
 
 	function ProductUpdate($_d, $prod, $id)
 	{
-		$atrs = GetVar('atr');
+		$atrs = Server::GetVar('atr');
 		$_d['a2p.ds']->Remove(array('a2p_product' => $id));
 		if (!empty($atrs))
 		foreach ($atrs as $atr)
@@ -624,7 +624,7 @@ class ModAttribute extends Module
 	{
 		global $_d;
 
-		$atrs = GetVar("atrs");
+		$atrs = Server::GetVar("atrs");
 
 		if (!empty($atrs))
 		{
@@ -645,7 +645,7 @@ class ModAttribute extends Module
 	{
 		global $_d;
 
-		$atrs = GetVar('atrs');
+		$atrs = Server::GetVar('atrs');
 
 		if (!empty($atrs))
 		{
@@ -728,7 +728,7 @@ class EdAtrHandler extends EditorHandler
 			$_d['option.ds']->Add(array(
 				'opt_date' => SqlUnquote('NOW()'),
 				'opt_attrib' => $id,
-				'opt_formula' => GetVar('formula')
+				'opt_formula' => Server::GetVar('formula')
 			), true);
 		}
 	}

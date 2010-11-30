@@ -74,15 +74,15 @@ class PayManual
 
 			if (empty($_d['settings']['pay_manual.no_payment']))
 			{
-				$adding['card_name'] = GetVar('card_name');
-				$adding['card_num'] = GetVar('card_num');
-				$adding['card_exp'] = GetVar('card_exp');
-				$adding['card_verify'] = GetVar('card_verify');
+				$adding['card_name'] = Server::GetVar('card_name');
+				$adding['card_num'] = Server::GetVar('card_num');
+				$adding['card_exp'] = Server::GetVar('card_exp');
+				$adding['card_verify'] = Server::GetVar('card_verify');
 			}
 
 			$add_ship['ps_package'] = $id;
 
-			if (GetVar('saved') == 'yes')
+			if (Server::GetVar('saved') == 'yes')
 			{
 				$name = $_d['cl']['usr_name'];
 				$add_ship['ps_name'] = $name;
@@ -93,12 +93,12 @@ class PayManual
 			}
 			else
 			{
-				$name = GetVar('ship_name');
+				$name = Server::GetVar('ship_name');
 				$add_ship['ps_name'] = $name;
-				$add_ship['ps_address'] = GetVar('ship_address');
-				$add_ship['ps_city'] = GetVar('ship_city');
-				$add_ship['ps_state'] = GetVar('ship_state');
-				$add_ship['ps_zip'] = GetVar('ship_zip');
+				$add_ship['ps_address'] = Server::GetVar('ship_address');
+				$add_ship['ps_city'] = Server::GetVar('ship_city');
+				$add_ship['ps_state'] = Server::GetVar('ship_state');
+				$add_ship['ps_zip'] = Server::GetVar('ship_zip');
 			}
 
 			$_d['pack_ship.ds']->Add($add_ship);
@@ -109,7 +109,7 @@ class PayManual
 
 			if (!empty($_d['settings']['pay_manual.email']))
 			{
-				$add = GetVar('additional');
+				$add = Server::GetVar('additional');
 				$body = <<<EOF
 {$name} has placed an order. Login to http://{$_SERVER['HTTP_HOST']}{$_d['app_abs']} to manage it.
 
@@ -126,7 +126,7 @@ EOF;
 			$t->Set('no_payment', @$_d['settings']['pay_manual.no_payment']);
 			$t->ReWrite('empty', 'TagEmpty');
 			$t->ReWrite('nempty', 'TagNEmpty');
-			$body = $t->ParseFile(l('pay_manual/checkout.xml'));
+			$body = $t->ParseFile(Module::L('pay_manual/checkout.xml'));
 			return GetBox('box_shipping', 'Shipping', $body);
 		}
 		return true;

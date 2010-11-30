@@ -50,7 +50,7 @@ class ModSale extends Module
 		{
 			$dsPackage = $_d['pack.ds'];
 			$dsPackage->Update(array('pkg_id' => $_d['q'][2]),
-				array('pkg_state' => GetVar('state')));
+				array('pkg_state' => Server::GetVar('state')));
 		}
 		if (@$_d['q'][1] == 'delete')
 		{
@@ -119,7 +119,7 @@ class ModSale extends Module
 			$t = new Template();
 			$t->ReWrite('package', array(&$this, 'TagPackage'));
 			$t->Set($rows[0]);
-			$body .= $t->ParseFile(l('sale/main.xml'));
+			$body .= $t->ParseFile(Module::L('sale/main.xml'));
 		}
 		return GetBox('box_details', 'Sales', $body);
 	}

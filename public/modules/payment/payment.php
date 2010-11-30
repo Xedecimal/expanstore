@@ -37,7 +37,7 @@ class ModPayment extends Module
 		{
 			global $_d;
 
-			if (count($_d['payment.mods']) > 1) $mod = GetVar('paytype');
+			if (count($_d['payment.mods']) > 1) $mod = Server::GetVar('paytype');
 			else list($mod) = array_keys($_d['payment.mods']);
 
 			$mod = new $_d['payment.mods'][$mod];
@@ -68,7 +68,7 @@ class ModPayment extends Module
 
 		if ($ca == "pay_check")
 		{
-			$pt = GetVar("modules/payment/pay_{$pt}.php");
+			$pt = Server::GetVar("modules/payment/pay_{$pt}.php");
 
 			$cname = "Pay{$pt}";
 			$mod = new $cname;
@@ -79,7 +79,7 @@ class ModPayment extends Module
 
 		if ($ca == "pay_repair")
 		{
-			$pt = GetVar('paytype');
+			$pt = Server::GetVar('paytype');
 			require_once("pay_{$pt}.php");
 
 			$cname = "Pay{$pt}";
@@ -125,7 +125,7 @@ class ModPayment extends Module
 		$t = new Template($_d);
 		$t->ReWrite('methods', array(&$this, 'TagMethods'));
 		$t->ReWrite('method', array(&$this, 'TagMethod'));
-		return $t->ParseFile(l('payment/cart_knee.xml'));
+		return $t->ParseFile(Module::L('payment/cart_knee.xml'));
 	}
 
 	# Admin
@@ -138,8 +138,8 @@ class ModPayment extends Module
 		#$formPayMods->AddInput(PaymentModule::GetSelect());
 
 		$options = array(
-			'pay_check' => new SelOption("Check"),
-			'pay_repair' => new SelOption("Repair")
+			'pay_check' => new FormOption("Check"),
+			'pay_repair' => new FormOption("Repair")
 		);
 		$formPayMods->AddInput(new FormInput('Action:', 'select', 'ca', $options));
 		$formPayMods->AddInput(new FormInput(null, 'submit', 'butSubmit',

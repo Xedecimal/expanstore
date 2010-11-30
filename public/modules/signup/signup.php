@@ -28,7 +28,7 @@ class ModSignup extends Module
 
 		if (@$_d['q'][1] == 'signup')
 		{
-			$this->user = GetVar('user');
+			$this->user = Server::GetVar('user');
 
 			$this->errors = ModUser::Validate($this->user);
 			if (empty($this->errors))
@@ -81,7 +81,7 @@ class ModSignup extends Module
 			if (!empty($this->user)) $t->Set($this->user);
 			$t->Set('errors', $this->errors);
 			$t->Behavior->Bleed = false;
-			return $t->ParseFile(l('signup/signup.xml'));
+			return $t->ParseFile(Module::L('signup/signup.xml'));
 		}
 	}
 

@@ -52,8 +52,8 @@ class ModTemplate extends Module
 
 		if (@$_d['q'][1] == 'update')
 		{
-			file_put_contents('config/blocks.dat', serialize(GetVar('blocks')));
-			file_put_contents('config/order.dat', serialize(GetVar('order')));
+			file_put_contents('config/blocks.dat', serialize(Server::GetVar('blocks')));
+			file_put_contents('config/order.dat', serialize(Server::GetVar('order')));
 			RunCallbacks($_d['display.callbacks.update']);
 			$this->Load();
 			ModAdmin::SaveSettings();
@@ -68,7 +68,7 @@ class ModTemplate extends Module
 
 		$t = new Template();
 		$t->ReWrite('modules', array(&$this, 'TagModules'));
-		return $t->ParseFile(l('display/display.xml'));
+		return $t->ParseFile(Module::L('display/display.xml'));
 	}
 
 	function TagModules($t, $g)
@@ -81,7 +81,7 @@ class ModTemplate extends Module
 	{
 		global $_d, $mods;
 
-		$bnames = ArrayToSelOptions(array_keys($_d['blocks']), null, false);
+		$bnames = FormOption::FromArray(array_keys($_d['blocks']), null, false);
 
 		$ret = null;
 		foreach ($mods as $mod)
@@ -111,7 +111,7 @@ class ModTemplate extends Module
 	function AdminSetup()
 	{
 		global $_d;
-		$_d['settings']['site_template'] = GetVar('template');
+		$_d['settings']['site_template'] = Server::GetVar('template');
 	}
 
 	function GetTemps()
@@ -125,7 +125,8 @@ class ModTemplate extends Module
 			if ($f[0] == '.') continue;
 			if ($_d['settings']['site_template'] == $f) $sel = true;
 			else $sel = false;
-			if (is_dir("template/{$f}")) $temps[$f] = new SelOption($f, false, $sel);
+			if (is_dir("template/{$f}")) $temps[$f] =
+				new FormOption($f, false, $sel);
 		}
 		return $temps;
 	}

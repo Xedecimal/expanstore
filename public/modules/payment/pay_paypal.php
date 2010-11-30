@@ -79,7 +79,7 @@ else if ($ca == "configure")
 
 else if ($ca == "update")
 {
-	$vals = getVar("vals");
+	$vals = Server::GetVar("vals");
 
 	for ($x = 0; $x < count($vals); $x++)
 	{

@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__.'/../../h_main.php');
+
 class ModAdmin extends Module
 {
 	function __construct()
@@ -40,8 +42,8 @@ class ModAdmin extends Module
 
 		if ($ca == 'save')
 		{
-			$_d['settings']['data_location'] = GetVar('data');
-			$_d['settings']['site_name'] = GetVar('name');
+			$_d['settings']['data_location'] = Server::GetVar('data');
+			$_d['settings']['site_name'] = Server::GetVar('name');
 
 			RunCallbacks(@$_d['admin.callbacks.setup']);
 
