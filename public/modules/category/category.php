@@ -45,14 +45,15 @@ class ModCategory extends Module
 			array(&$this, 'cb_product_delete');
 
 		if (empty($_d['category.bypass']))
-			$_d['product.ds.query']['match']['cat_id'] = GetVar('cc', 0);
+			$_d['product.ds.query']['match']['cat_id'] =
+				Server::GetVar('cc', 0);
 
 		$_d['product.ds.query']['joins']['cat_prod'] =
 			new Join($_d['cat_prod.ds'], 'catprod_prod = prod_id', 'LEFT JOIN');
 		$_d['product.ds.query']['joins']['category'] =
 			new Join($_d['category.ds'], 'catprod_cat = cat_id', 'LEFT JOIN');
 
-		$_d['product.latest.match']['catprod_cat'] = SqlNot(0);
+		$_d['product.latest.match']['catprod_cat'] = Database::SqlNot(0);
 
 		# Globally available tags for templates
 
@@ -73,7 +74,7 @@ class ModCategory extends Module
 
 		global $_d;
 
- 		$_d['category.current'] = ModCategory::QueryCat(GetVar('cc'));
+ 		$_d['category.current'] = ModCategory::QueryCat(Server::GetVar('cc'));
 
 		$cs = $_d['q'][0];
 
@@ -109,18 +110,18 @@ class ModCategory extends Module
 	{
 		global $_d;
 
-		$breadcrumb = ModCategoryLocation::GetBreadcrumb(GetVar('cc'), 'FIXME', 'Nothing');
+		$breadcrumb = ModCategoryLocation::GetBreadcrumb(Server::GetVar('cc'), 'FIXME', 'Nothing');
 		$_d['product.title'] = "Products in " . $breadcrumb;
 
 		$this->data = $_d;
-		$cc = GetVar('cc');
+		$cc = Server::GetVar('cc');
 
 		$t = new Template();
 		$t->Set('cats', $this->cats = ModCategory::QueryCats($cc, false));
-		$t->ReWrite('notempty', 'TagNotEmpty');
+		$t->ReWrite('notempty', array('Template', 'TagNEmpty'));
 		$t->ReWrite('category', array(&$this, 'TagCategory'));
 
-		return $t->ParseFile(l('category/fromCatalog.xml'));
+		return $t->ParseFile(Module::L('category/fromCatalog.xml'));
 	}
 
 	static function QueryAll()
@@ -158,7 +159,7 @@ class ModCategory extends Module
 	function cb_product_template()
 	{
 		global $_d;
-		return l(@$_d['category.current']['cat_template']);
+		return Module::L(@$_d['category.current']['cat_template']);
 	}
 
 	function cb_product_props($prod)
@@ -184,7 +185,7 @@ class ModCategory extends Module
 	function cb_product_add($_d, $prod, $id)
 	{
 		$_d['cat_prod.ds']->Add(array(
-			'catprod_cat' => GetVar('category'),
+			'catprod_cat' => Server::GetVar('category'),
 			'catprod_prod' => $id
 		));
 	}
@@ -192,7 +193,7 @@ class ModCategory extends Module
 	function cb_product_update($_d, $prod, $pid)
 	{
 		$_d['cat_prod.ds']->Add(array(
-			'catprod_cat' => GetVar('category'),
+			'catprod_cat' => Server::GetVar('category'),
 			'catprod_prod' => $pid
 		), true);
 	}
@@ -270,12 +271,12 @@ class ModCategoryAdmin extends Module
 			$dsCats = $_d['category.ds'];
 			$ci = $dsCats->Add(array(
 				'cat_date' => SqlUnquote('NOW()'),
-				'cat_parent' => GetVar('parent'),
-				'cat_name' => GetVar('name'),
-				'cat_desc' => GetVar('desc'),
-				'cat_hidden' => GetVar('hidden')));
+				'cat_parent' => Server::GetVar('parent'),
+				'cat_name' => Server::GetVar('name'),
+				'cat_desc' => Server::GetVar('desc'),
+				'cat_hidden' => Server::GetVar('hidden')));
 
-			$f = GetVar('formAddCat_image');
+			$f = Server::GetVar('formAddCat_image');
 			if (!empty($f))
 			{
 				// Get rid of the existing images.
@@ -300,7 +301,7 @@ class ModCategoryAdmin extends Module
 
 			# Uploading a new category image.
 
-			$f = GetVar('image');
+			$f = Server::GetVar('image');
 			if (!empty($f))
 			{
 				// Get rid of the existing images.
@@ -315,7 +316,7 @@ class ModCategoryAdmin extends Module
 				move_uploaded_file($f['tmp_name'], "catimages/{$cid}.{$ext}");
 			}
 
-			$_d['category.ds']->Update(array('cat_id' => $cid), GetVar('cat'));
+			$_d['category.ds']->Update(array('cat_id' => $cid), Server::GetVar('cat'));
 		}
 	}
 
@@ -336,7 +337,7 @@ class ModCategoryAdmin extends Module
 				'text' => 'Create');
 			$t = new Template($dat);
 			$t->Behavior->Bleed = false;
-			return $t->ParseFile(l('category/form.xml'));
+			return $t->ParseFile(Module::L('category/form.xml'));
 		}
 
 		else if ($ca == 'edit')
@@ -348,7 +349,7 @@ class ModCategoryAdmin extends Module
 			$t->Set(array(
 				'action' => '{{app_abs}}/category/update/'.$cid,
 				'text' => 'Update'));
-			return $t->ParseFile(l('category/form.xml'));
+			return $t->ParseFile(Module::L('category/form.xml'));
 		}
 
 		else if ($ca == 'list') // Category listing.
@@ -383,15 +384,15 @@ class ModCategoryLocation extends Module
 		$t->Behavior->Bleed = false;
 		$t->Set($_d['category.current']);
 		$t->ReWrite('path', array($this, 'TagPath'));
-		$t->ReWrite('notempty', 'TagNotEmpty');
-		return $t->ParseFile(l('category/location.xml'));
+		$t->ReWrite('notempty', array('Template', 'TagNEmpty'));
+		return $t->ParseFile(Module::L('category/location.xml'));
 	}
 
 	static function TagPath($t, $g, $a)
 	{
 		global $_d;
 
-		return ModCategoryLocation::GetBreadcrumb(GetVar('cc'));
+		return ModCategoryLocation::GetBreadcrumb(Server::GetVar('cc'));
 	}
 
 	static function GetBreadcrumb($cat, $sep = '/', $guts = null)

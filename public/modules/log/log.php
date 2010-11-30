@@ -47,8 +47,8 @@ EOF;
 
 		if ($_d['q'][0] != 'log') return;
 
-		$sort = GetVar("sort", "log_date");
-		$order = GetVar("order", "DESC");
+		$sort = Server::GetVar("sort", "log_date");
+		$order = Server::GetVar("order", "DESC");
 
 		$joins = array(
 			new Join($_d['user.ds'], 'log_user = usr_id', 'LEFT JOIN'),

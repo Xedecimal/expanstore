@@ -27,7 +27,7 @@ class ModSearch extends Module
 
 		if ($_d['q'][0] != 'search') return;
 
-		$query = GetVar('query');
+		$query = Server::GetVar('query');
 		$_d['product.ds.match'][] = "(prod_name LIKE '%{$query}%' OR
 			prod_desc LIKE '%{$query}%')";
 
@@ -37,7 +37,7 @@ class ModSearch extends Module
 	function Get()
 	{
 		$t = new Template($GLOBALS['_d']);
-		return $t->ParseFile(l('search/search.xml'));
+		return $t->ParseFile(Module::L('search/search.xml'));
 	}
 }
 

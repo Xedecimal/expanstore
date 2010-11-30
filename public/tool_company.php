@@ -2,8 +2,8 @@
 
 require_once('h_main.php');
 
-$hname = GetVar('hname');
-$aname = GetVar('aname');
+$hname = Server::GetVar('hname');
+$aname = Server::GetVar('aname');
 
 ?>
 
@@ -48,7 +48,7 @@ $results = null;
 $ca = $data['ca'];
 if ($ca == 'search')
 {
-	$comps = $data['company.ds']->GetSearch(array('id', 'name', 'contact'), GetVar('search'));
+	$comps = $data['company.ds']->GetSearch(array('id', 'name', 'contact'), Server::GetVar('search'));
 	foreach($comps as $comp)
 	{
 		$results .= "<a href=\"#\" onclick=\"javascript:selectCompany('{$comp['id']}', '".addslashes($comp['name'])."');\">{$comp['name']}</a><br/>\n";

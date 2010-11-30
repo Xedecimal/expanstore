@@ -113,7 +113,7 @@ EOF;
 			{
 				$pid = $_d['q'][3];
 
-				$file = GetVar("file");
+				$file = Server::GetVar("file");
 				if ($file["size"] > 1024*1024*5) die("Image size too large, must be less than 5mb");
 
 				$images = GetProductImages($pid);
@@ -145,7 +145,7 @@ EOF;
 		}
 		if ($ca == 'add')
 		{
-			$prod = GetVar('prod');
+			$prod = Server::GetVar('prod');
 
 			if (!preg_match('/([\d]+)/', $prod['prod_price'], $m))
 			{
@@ -170,7 +170,7 @@ EOF;
 		{
 			$pid = $_d['q'][2];
 
-			$prod = GetVar('prod');
+			$prod = Server::GetVar('prod');
 
 			RunCallbacks($_d['product.callbacks.update'], $_d, $prod,
 				$pid);
@@ -229,7 +229,7 @@ EOF;
 			$ret .= RunCallbacks($_d['product.callbacks.details'], $_d,
 				$pt->prods[0]);
 
-			$ret .= $pt->ParseFile(l('product/details.xml'));
+			$ret .= $pt->ParseFile(Module::L('product/details.xml'));
 
 			return $ret;
 		}
@@ -249,7 +249,7 @@ EOF;
 			}
 			else
 			{
-				$data = GetVar('prod');
+				$data = Server::GetVar('prod');
 				$title = 'Create Product';
 				$act = 'add';
 			}
@@ -303,7 +303,7 @@ EOF;
 				if (count($images) < 5)
 				{
 					$frmImages = new Form('frmImages');
-					$frmImages->AddHidden('ci', GetVar('ci'));
+					$frmImages->AddHidden('ci', Server::GetVar('ci'));
 					$frmImages->AddInput(new FormInput('File', 'file', 'file',
 						null, 'size="50"'));
 					$frmImages->AddInput(new FormInput(null, 'submit', 'butSubmit',
@@ -353,7 +353,7 @@ EOF;
 
 		$pt = new ProductTemplate('admin');
 		$pt->prods = $this->GetAdminProducts();
-		return $pt->ParseFile(l('product/listing.xml'));
+		return $pt->ParseFile(Module::L('product/listing.xml'));
 	}
 
 	/**
@@ -390,7 +390,7 @@ EOF;
 			@$_d['settings']['product_image_size_small']);
 		$t->Set('product_image_size_medium',
 			@$_d['settings']['product_image_size_medium']);
-		return $t->ParseFile(l('product/display_options.xml'));
+		return $t->ParseFile(Module::L('product/display_options.xml'));
 	}
 
 	function display_update()
@@ -402,15 +402,15 @@ EOF;
 		$resize = false;
 
 		if (@$_d['settings']['product_image_size_small'] !=
-			GetVar('product_image_size_small') ||
+			Server::GetVar('product_image_size_small') ||
 			@$_d['settings']['product_image_size_medium'] !=
-			GetVar('product_image_size_medium'))
+			Server::GetVar('product_image_size_medium'))
 			$resize = true;
 
 		$_d['settings']['product_image_size_small'] =
-			GetVar('product_image_size_small');
+			Server::GetVar('product_image_size_small');
 		$_d['settings']['product_image_size_medium'] =
-			GetVar('product_image_size_medium');
+			Server::GetVar('product_image_size_medium');
 
 		if ($resize)
 			foreach (glob('prodimages/*/l_*') as $f)
@@ -444,7 +444,7 @@ class ModProductList extends Module
 		$pt->prods = ModProduct::QueryProducts(array('match' => $_d['product.ds.match']));
 
 		$t = RunCallbacks(@$_d['product.cb.template']);
-		if (!is_file($t)) $t = l('product/fromCatalog.xml');
+		if (!is_file($t)) $t = Module::L('product/fromCatalog.xml');
 		$ret .= $pt->ParseFile($t);
 
 		if (!empty($_d['products.callbacks.footer']))
@@ -725,7 +725,7 @@ class ModProdsLatest extends Module
 		$pt->prods = QueryProductList($q);
 
 		if (empty($pt->prods)) return;
-		return $pt->ParseFile(l('product/fromCatalog.xml'));
+		return $pt->ParseFile(Module::L('product/fromCatalog.xml'));
 	}
 
 	function tag_product_latest($t, $g)

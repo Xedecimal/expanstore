@@ -108,11 +108,11 @@ EOF;
 
 		if ($ca == 'import')
 		{
-			$_SESSION['osci_host'] = GetVar('host');
-			$_SESSION['osci_user'] = GetVar('user');
-			$_SESSION['osci_pass'] = GetVar('pass');
-			$_SESSION['osci_data'] = GetVar('data');
-			$_SESSION['osci_dir'] = GetVar('oscdir');
+			$_SESSION['osci_host'] = Server::GetVar('host');
+			$_SESSION['osci_user'] = Server::GetVar('user');
+			$_SESSION['osci_pass'] = Server::GetVar('pass');
+			$_SESSION['osci_data'] = Server::GetVar('data');
+			$_SESSION['osci_dir'] = Server::GetVar('oscdir');
 
 			$t = new Template();
 			$out = $t->ParseFile($_d['tempath'].'oscimport/import.xml');

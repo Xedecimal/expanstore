@@ -5,8 +5,8 @@ Module::Register('ModDetail');
 global $prop_types;
 
 $prop_types = array(
-	new SelOption("Text", 0),
-	new SelOption("Number", 1)
+	new FormOption("Text", 0),
+	new FormOption("Number", 1)
 );
 
 /**
@@ -19,14 +19,14 @@ function AddSpecProps($form, $spec_props)
 {
 	foreach ($spec_props as $pid => $prod)
 	{
-		$sels = array(-1 => new SelOption('None'));
+		$sels = array(-1 => new FormOption('None'));
 
 		foreach ($prod as $did => $vals)
 		{
 			if (strlen($vals['value']) < 1) continue;
 			if (isset($vals['sel']) && strlen($vals['sel']) > 0) $sel = true;
 			else $sel = false;
-			$sels[$did] = new SelOption($vals['value'], false, $sel);
+			$sels[$did] = new FormOption($vals['value'], false, $sel);
 		}
 
 		$form->AddInput(new FormInput("{$vals['name']}", 'select',
@@ -115,7 +115,7 @@ function QuerySPP()
 		'sprod_value'
 	);
 
-	$match = array('cat_id' => GetVar('cc'));
+	$match = array('cat_id' => Server::GetVar('cc'));
 
 	$dp = $_d['specprop.ds'];
 
@@ -276,27 +276,27 @@ EOF;
 
 		if ($action == 'update_spec')
 		{
-			$dsSpecs->Update(array('id' => GetVar('ci')),
+			$dsSpecs->Update(array('id' => Server::GetVar('ci')),
 			array(
-				'name' => GetVar('sname'),
-				'text' => GetVar('text')
+				'name' => Server::GetVar('sname'),
+				'text' => Server::GetVar('text')
 			));
 			$_d['ca'] = 'view_spec';
 		}
 
 		else if ($action == 'update_spec_prop')
 		{
-			$dsSpecProp->Update(array('id' => GetVar('ci')),
+			$dsSpecProp->Update(array('id' => Server::GetVar('ci')),
 			array(
-				'type' => GetVar('type'),
-				'name' => GetVar('name')
+				'type' => Server::GetVar('type'),
+				'name' => Server::GetVar('name')
 			));
 			$_d['ca'] = 'view_spec';
 		}
 
 		else if ($action == 'del_spec_prop')
 		{
-			$dsSpecProp->Remove(array('id' => GetVar('ci')));
+			$dsSpecProp->Remove(array('id' => Server::GetVar('ci')));
 			$_d['ca'] = 'view_spec';
 		}
 
@@ -305,7 +305,7 @@ EOF;
 			$_d['spec.ds']->Add(array(
 				'spec_date' => SqlUnquote('NOW()'),
 				'spec_company' => $_d['cl']['c2u_company'],
-				'spec_name' => GetVar('name')
+				'spec_name' => Server::GetVar('name')
 			));
 			$ca = 'view_specs';
 		}
@@ -314,22 +314,22 @@ EOF;
 		{
 			$dsSpecProp->Add(array(
 				'date' => SqlUnquote('NOW()'),
-				'spec' => GetVar('ci'),
-				'type' => GetVar('type'),
-				'name' => GetVar('name')
+				'spec' => Server::GetVar('ci'),
+				'type' => Server::GetVar('type'),
+				'name' => Server::GetVar('name')
 			));
 			$_d['ca'] = 'view_spec';
 		}
 
 		else if ($action == "del_spec")
 		{
-			$dsSpecs->Remove(array('id' => GetVar('ci')));
+			$dsSpecs->Remove(array('id' => Server::GetVar('ci')));
 			$ca = 'view_specs';
 		}
 
 		else if ($action == 'del_sprod')
 		{
-			$_d['specprod.ds']->Remove(array('id' => GetVar('ci')));
+			$_d['specprod.ds']->Remove(array('id' => Server::GetVar('ci')));
 			$_d['ca'] = 'view_spec';
 		}
 	}
@@ -342,13 +342,13 @@ EOF;
 
 		if (@$_d['q'][1] == "view_spec")
 		{
-			$spec = QuerySpec($_d, GetVar('ci'));
+			$spec = QuerySpec($_d, Server::GetVar('ci'));
 
 			$_d['page_title'] .= ' - View Specification';
 			$formProps = new Form('formProps');
-			$formProps->AddHidden('cs', GetVar('cs'));
+			$formProps->AddHidden('cs', Server::GetVar('cs'));
 			$formProps->AddHidden('ca', 'update_spec');
-			$formProps->AddHidden('ci', GetVar('ci'));
+			$formProps->AddHidden('ci', Server::GetVar('ci'));
 			$formProps->AddInput(new FormInput('Name', 'text', 'sname',
 				$spec['spec_name']));
 			$formProps->AddInput(new FormInput(null, 'submit', 'butSubmit',
@@ -356,7 +356,7 @@ EOF;
 			$body = GetBox('box_props', 'View Specification',
 				$formProps->Get('action="{{me}}" method="post"'));
 
-			$props = QueryProps($_d, GetVar('ci'));
+			$props = QueryProps($_d, Server::GetVar('ci'));
 
 			global $prop_types;
 
@@ -367,15 +367,15 @@ EOF;
 				foreach ($props as $prop)
 				{
 					$urlEdit = URL('{{me}}', array(
-						'cs' => GetVar('cs'),
+						'cs' => Server::GetVar('cs'),
 						'ci' => $prop['id'],
-						'spec' => GetVar('ci'),
+						'spec' => Server::GetVar('ci'),
 						'ca' => 'view_spec_prop'));
 
 					$urlDel = URL('{{me}}', array(
-						'cs' => GetVar('cs'),
+						'cs' => Server::GetVar('cs'),
 						'ci' => $prop['id'],
-						'spec' => GetVar('ci'),
+						'spec' => Server::GetVar('ci'),
 						'ca' => "del_spec_prop"));
 
 					$tblProps->AddRow(array(
@@ -389,9 +389,9 @@ EOF;
 			}
 
 			$formCreateProp = new Form('formCreateProp');
-			$formCreateProp->AddHidden('cs', GetVar('cs'));
+			$formCreateProp->AddHidden('cs', Server::GetVar('cs'));
 			$formCreateProp->AddHidden('ca', 'create_spec_prop');
-			$formCreateProp->AddHidden('ci', GetVar('ci'));
+			$formCreateProp->AddHidden('ci', Server::GetVar('ci'));
 			$formCreateProp->AddInput(new FormInput('Type', 'select', 'type',
 				$prop_types, array('STYLE' => 'width: 100%')));
 			$formCreateProp->AddInput(new FormInput('Name', 'text', 'name'));
@@ -401,7 +401,7 @@ EOF;
 				'Create Property', $formCreateProp->Get('action="{{me}}"
 				method="post"'));
 
-			$spps = QueryUnusedSPP($_d, GetVar('ci'));
+			$spps = QueryUnusedSPP($_d, Server::GetVar('ci'));
 
 			if (!empty($spps))
 			{
@@ -412,7 +412,7 @@ EOF;
 				{
 					$but = GetButton(URL('{{me}}', array('cs' => 'detail',
 						'ca' => 'del_sprod', 'ci' => $spp['did'],
-						'spec' => GetVar('ci'))), 'delete.png', 'Delete');
+						'spec' => Server::GetVar('ci'))), 'delete.png', 'Delete');
 					$tblUnused->AddRow(array($spp['name'], $spp['value'], $but));
 				}
 
@@ -424,13 +424,13 @@ EOF;
 		else if (@$_d['q'][1] == "view_spec_prop")
 		{
 			global $prop_types;
-			$prop = QuerySpecProp($_d, GetVar('ci'));
+			$prop = QuerySpecProp($_d, Server::GetVar('ci'));
 			$_d['page_title'] .= ' - View Property';
 			$formProps = new Form('formProps');
-			$formProps->AddHidden('cs', GetVar('cs'));
+			$formProps->AddHidden('cs', Server::GetVar('cs'));
 			$formProps->AddHidden('ca', 'update_spec_prop');
-			$formProps->AddHidden('ci', GetVar('ci'));
-			$formProps->AddHidden('spec', GetVar('spec'));
+			$formProps->AddHidden('ci', Server::GetVar('ci'));
+			$formProps->AddHidden('spec', Server::GetVar('spec'));
 			$formProps->AddInput(new FormInput('Type', 'select', 'type',
 				$prop_types, array('STYLE' => 'width: 100%')));
 			$formProps->AddInput(new FormInput('Name', 'text', 'name',
@@ -456,13 +456,13 @@ EOF;
 				foreach($specs as $spec)
 				{
 					$urlEdit = URL($me, array(
-						'cs' => GetVar('cs'),
+						'cs' => Server::GetVar('cs'),
 						'ci' => $spec[0],
 						'ca' => 'view_spec'
 					));
 
 					$urlDel = URL($me, array(
-						'cs' => GetVar('cs'),
+						'cs' => Server::GetVar('cs'),
 						'ci' => $spec[0],
 						'ca' => 'del_spec'
 					));
@@ -475,7 +475,7 @@ EOF;
 			}
 
 			$t = new Template();
-			$out .= $t->ParseFile(l('detail/spec_create.xml'));
+			$out .= $t->ParseFile(Module::L('detail/spec_create.xml'));
 
 			return $out;
 		}
@@ -514,7 +514,7 @@ EOF;
 	{
 		$sprops = QueryPropsByCat($_d, @$_SESSION['category']);
 
-		$props = GetVar('props');
+		$props = Server::GetVar('props');
 		if (!empty($sprops))
 		{
 			foreach ($sprops as $sprop)
@@ -542,8 +542,8 @@ EOF;
 
 	function ProductAddUpdate($_d, $prod, $newid = null)
 	{
-		$props = GetVar('props');
-		$newprops = GetVar('props_new');
+		$props = Server::GetVar('props');
+		$newprops = Server::GetVar('props_new');
 
 		//Remove old properties (update)
 		if (isset($newid))

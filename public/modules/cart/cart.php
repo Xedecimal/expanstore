@@ -107,7 +107,7 @@ class ModCart extends Module
 
 		$t = new Template();
 		$t->ReWrite('cart', array(&$this, 'TagCart'));
-		return $t->ParseFile(l('cart/index.xml'));
+		return $t->ParseFile(Module::L('cart/index.xml'));
 	}
 
 	function TagCart()
@@ -119,12 +119,12 @@ class ModCart extends Module
 
 		$cart = ModCart::QueryCart();
 
-		$ca = GetVar('ca');
+		$ca = Server::GetVar('ca');
 
 		// TODO: Cart does not handle checkout!
 		if ($ca == 'checkout' || $ca == 'finish')
 		{
-			$paytype = GetVar('paytype');
+			$paytype = Server::GetVar('paytype');
 			require_once("modules/payment/pay_{$paytype}.php");
 			$objname = "Pay{$paytype}";
 			$obj = new $objname();
@@ -165,7 +165,7 @@ class ModCart extends Module
 				$t->Set('totalitems', $totalitems);
 				$t->Set('totalprice', $totalprice);
 				$t->ReWrite('cartknee', array(&$this, 'CartKnee'));
-				$body = $pt->ParseString($t->ParseFile(l('cart/product.xml')));
+				$body = $pt->ParseString($t->ParseFile(Module::L('cart/product.xml')));
 			}
 			else
 			{

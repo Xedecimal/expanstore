@@ -6,7 +6,7 @@ class ModNarrow extends Module
 	{
 		parent::Prepare();
 
-		$narrows = GetVar('narrows');
+		$narrows = Server::GetVar('narrows');
 		if (!empty($narrows))
 		{
 			$_d['product.ds.query']['joins'][] =
@@ -54,7 +54,7 @@ class ModNarrow extends Module
 			$out = '';
 			$pid = -1;
 			$did = -1;
-			$narrows = GetVar('narrows');
+			$narrows = Server::GetVar('narrows');
 
 			$nprops = DataToArray($props, 'did');
 

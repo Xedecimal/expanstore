@@ -12,6 +12,6 @@ $mods['ModUser']->AddDataset($_d['user.ds'], 'usr_pass', 'usr_user');
 $_d['user.login'] = true;
 $_d['cl'] = $mods['ModUser']->Authenticate();
 
-die(Module::Run(l('catalog/index.xml')));
+die(Module::Run(Module::L('catalog/index.xml')));
 
 ?>

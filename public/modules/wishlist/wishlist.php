@@ -85,7 +85,7 @@ class ModWishlist extends Module
 			'match' => array(
 				'wl_user' => $_d['cl']['usr_id'])
 		));
-		$out = $pt->ParseFile(l('product/fromCatalog.xml'));
+		$out = $pt->ParseFile(Module::L('product/fromCatalog.xml'));
 		$out .= 'Incomplete.';
 
 		return GetBox('box_wishlist', 'Wishlist', $out);

@@ -23,7 +23,7 @@ class ModView extends Module
 
 		global $_d;
 
-		$sort = GetVar('sort');
+		$sort = Server::GetVar('sort');
 		switch ($sort)
 		{
 			case 1: $_d['product.ds.order']['price'] = 'ASC';   break;
@@ -47,10 +47,10 @@ class ModView extends Module
 	{
 		global $_d;
 
-		if (GetVar('ca') == "setview")
+		if (Server::GetVar('ca') == "setview")
 		{
-			$sort = Persist('view', GetVar('sort'));
-			$amount = Persist('view', GetVar('amount'));
+			$sort = Persist('view', Server::GetVar('sort'));
+			$amount = Persist('view', Server::GetVar('amount'));
 		}
 		else
 		{
@@ -61,16 +61,16 @@ class ModView extends Module
 		$i = 0;
 		$sltView = array
 		(
-			new SelOption("Name",      false, $sort == $i++),
-			new SelOption("Price",     false, $sort == $i++),
-			new SelOption("Date",      false, $sort == $i++),
-			new SelOption("Rating",    false, $sort == $i++),
-			new SelOption("Purchased", false, $sort == $i++),
-			new SelOption("Company",   false, $sort == $i++)
+			new FormOption("Name",      false, $sort == $i++),
+			new FormOption("Price",     false, $sort == $i++),
+			new FormOption("Date",      false, $sort == $i++),
+			new FormOption("Rating",    false, $sort == $i++),
+			new FormOption("Purchased", false, $sort == $i++),
+			new FormOption("Company",   false, $sort == $i++)
 		);
 
 		$t = new Template();
-		return $t->ParseFile(l('view/view.xml'));
+		return $t->ParseFile(Module::L('view/view.xml'));
 
 		$formView = new Form("formView");
 		$formView->AddHidden("ca", "setview");

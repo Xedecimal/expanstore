@@ -53,22 +53,22 @@ class ModCPanel extends Module
 		if ($ca == 'update')
 		{
 			$id = $_d['cl']['usr_id'];
-			$pass1 = GetVar("pass1");
-			$pass2 = GetVar("pass2");
+			$pass1 = Server::GetVar("pass1");
+			$pass2 = Server::GetVar("pass2");
 
 			$columns = array(
-				'usr_user'    => GetVar('user'),
-				'usr_email'   => GetVar("email"),
-				'usr_name'    => GetVar("name"),
-				'usr_address' => GetVar("address"),
-				'usr_city'    => GetVar("city"),
-				'usr_state'   => GetVar("state"),
-				'usr_zip'     => GetVar("zip"),
-				'usr_phone'   => GetVar("phone")
+				'usr_user'    => Server::GetVar('user'),
+				'usr_email'   => Server::GetVar("email"),
+				'usr_name'    => Server::GetVar("name"),
+				'usr_address' => Server::GetVar("address"),
+				'usr_city'    => Server::GetVar("city"),
+				'usr_state'   => Server::GetVar("state"),
+				'usr_zip'     => Server::GetVar("zip"),
+				'usr_phone'   => Server::GetVar("phone")
 			);
 
-			$pass1 = GetVar("pass1");
-			$pass2 = GetVar("pass2");
+			$pass1 = Server::GetVar("pass1");
+			$pass2 = Server::GetVar("pass2");
 
 			if (strlen($pass1) > 0)
 			{
@@ -87,7 +87,7 @@ class ModCPanel extends Module
 		}
 		else if ($ca == "comp_update")
 		{
-			$fields = GetVar("company");
+			$fields = Server::GetVar("company");
 			$dsCompanies->Update(array('id' => $cl['company']), array(
 				"name" => $fields[0],
 				"email" => $fields[1],
@@ -102,7 +102,7 @@ class ModCPanel extends Module
 		}
 		else if ($ca == "comp_desc_update")
 		{
-			$dsCompanies->Update(array('id' => $cl['company']), array("about" => GetVar("body")));
+			$dsCompanies->Update(array('id' => $cl['company']), array("about" => Server::GetVar("body")));
 			xslog($_d, "Updated company description.");
 			//Redirect("$me?cs=cpanel&ca=view_company");
 		}
@@ -110,7 +110,7 @@ class ModCPanel extends Module
 		{
 			$comp = $dsCompanies->GetOne('id', $cl['company']);
 
-			$file = GetVar("logo");
+			$file = Server::GetVar("logo");
 			if (!file_exists("compimages/{$comp->id}")) mkdir("compimages/{$comp->id}");
 
 			$tempfile = $file["tmp_name"];
@@ -161,7 +161,7 @@ class ModCPanel extends Module
 
 		if (@$_d['cpanel.disable']) return;
 
-		$ca = GetVar('ca');
+		$ca = Server::GetVar('ca');
 
 		if ($ca == "financial")
 		{
