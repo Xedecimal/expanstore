@@ -88,7 +88,7 @@ class ModWishlist extends Module
 		$out = $pt->ParseFile(Module::L('product/fromCatalog.xml'));
 		$out .= 'Incomplete.';
 
-		return GetBox('box_wishlist', 'Wishlist', $out);
+		return Box::GetBox('box_wishlist', 'Wishlist', $out);
 	}
 }
 

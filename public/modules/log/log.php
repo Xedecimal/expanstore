@@ -78,14 +78,14 @@ EOF;
 
 			foreach ($logs as $log)
 			{
-				$urlUser = URL($me, array(
+				$urlUser = HM::URL($me, array(
 					'cs' => 'user',
 					'class' => 'userdisplay',
 					'ca' => 'ype_user_edit',
 					'ci' => $log['uid']
 				));
 
-				$urlComp = URL($me, array(
+				$urlComp = HM::URL($me, array(
 					'cs' => 'admin',
 					'ca' => 'view_company',
 					'ci' => $log['cid']
@@ -102,14 +102,14 @@ EOF;
 			$body = $tblLogs->Get('cellpadding="3"');
 		}
 		else $body = "No log entries.<br />\n";
-		return GetBox("box_logs", "Logs", $body);
+		return Box::GetBox("box_logs", "Logs", $body);
 	}
 
 	static function Log($msg, $level = 0)
 	{
 		global $_d;
 
-		$ins['log_date'] = SqlUnquote('NOW()');
+		$ins['log_date'] = Database::SqlUnquote('NOW()');
 		$ins['log_level'] = $level;
 		$ins['log_message'] = $msg;
 

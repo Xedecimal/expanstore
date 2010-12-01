@@ -32,7 +32,7 @@ class ModOrder extends Module
 			$t->use_getvar = true;
 			$t->Behavior->Bleed = false;
 			$t->ReWrite('each', 'TagEach');
-			//die(varinfo($t->ParseFile('content/t_order_email.xml')));
+			//die(U::VarInfo($t->ParseFile('content/t_order_email.xml')));
 			die(json_encode(array('success' => 1)));
 		}
 	}

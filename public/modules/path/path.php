@@ -40,7 +40,7 @@ class ModPath extends Module
 
 		//Do this when a product is viewed.
 		//			$dsPath->Add(array(
-//				'date' => SqlUnquote('NOW()'),
+//				'date' => Database::SqlUnquote('NOW()'),
 //				'user' => $cl['id'],
 //				'type' => PATH_VIEWED,
 //				'target' => $prod['id']
@@ -59,7 +59,7 @@ class ModPath extends Module
 			{
 				$boxpath .= GetLinkProductView($item).'<br/>';
 			}
-			$ret .= GetBox('box_path',
+			$ret .= Box::GetBox('box_path',
 				'Customers that viewed this item, also viewed',
 				$boxpath)."<br />";
 		}

@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__.'/../../h_main.php');
+
 class ModAttribute extends Module
 {
 	function __construct($installed)
@@ -156,7 +158,7 @@ class ModAttribute extends Module
 			}
 			if ($type == 'attribute')
 			{
-				$insert['atr_date'] = SqlUnquote('NOW()');
+				$insert['atr_date'] = Database::SqlUnquote('NOW()');
 				$insert['atr_name'] = Server::GetVar('name');
 				$insert['atr_type'] = Server::GetVar('type');
 				$res['name'] = $insert['atr_name'];
@@ -197,7 +199,7 @@ class ModAttribute extends Module
 		if ($ca == "atrg_create")
 		{
 			$dsAtrgs->Add(array(
-				'date' => SqlUnquote("NOW()"),
+				'date' => Database::SqlUnquote("NOW()"),
 				'company' => $_d['cl']['company'],
 				'name' => Server::GetVar("name")
 			));
@@ -210,7 +212,7 @@ class ModAttribute extends Module
 			if ($sel[0] == "atrg")
 			{
 				$dsAttribs->Add(array(
-					'date' => SqlUnquote('NOW()'),
+					'date' => Database::SqlUnquote('NOW()'),
 					'atrg' => $sel[1],
 					'name' => Server::GetVar("name")));
 				xslog($_d, "Added attribute " . Server::GetVar("name") . " to {$sel[1]}");
@@ -219,7 +221,7 @@ class ModAttribute extends Module
 			else if ($sel[0] == "attrib")
 			{
 				$dsOptions->Add(array(
-					'date' => SqlUnquote('NOW()'),
+					'date' => Database::SqlUnquote('NOW()'),
 					'attrib' => $sel[1],
 					'name' => Server::GetVar("name"),
 					'formula' => Server::GetVar("formula")));
@@ -228,7 +230,8 @@ class ModAttribute extends Module
 			else
 			{
 				$name = Server::GetVar("name");
-				$dsAtrgs->Add(array(SqlUnquote("NULL"), $name, $cl->company->id));
+				$dsAtrgs->Add(array(Database::SqlUnquote("NULL"), $name,
+					$cl->company->id));
 				xslog($_d, "Added attribute group $name");
 			}
 			$_d['ca'] = 'view_atrgs';
@@ -315,7 +318,7 @@ class ModAttribute extends Module
 		if (@$_d['q'][1] == 'prepare')
 		{
 			$frm = ModAttribute::GetFormAttribute(null, 'Create');
-			return GetBox('box_create_attrib', 'Create Attribute',
+			return Box::GetBox('box_create_attrib', 'Create Attribute',
 				$frm->Get('action="{{app_abs}}/attribute/create"'));
 		}
 		else
@@ -726,7 +729,7 @@ class EdAtrHandler extends EditorHandler
 		{
 			$_d['option.ds']->Remove(array('opt_attrib' => $id));
 			$_d['option.ds']->Add(array(
-				'opt_date' => SqlUnquote('NOW()'),
+				'opt_date' => Database::SqlUnquote('NOW()'),
 				'opt_attrib' => $id,
 				'opt_formula' => Server::GetVar('formula')
 			), true);

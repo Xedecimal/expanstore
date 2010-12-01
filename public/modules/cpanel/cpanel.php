@@ -207,7 +207,7 @@ class ModCPanel extends Module
 			$frmProfile->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Update'));
 
-			return GetBox("box_profile", "Your Profile",
+			return Box::GetBox("box_profile", "Your Profile",
 				$frmProfile->Get('action="{{app_abs}}/cpanel/update" method="post"'));
 		}
 	}

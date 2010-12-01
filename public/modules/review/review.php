@@ -59,7 +59,7 @@ class ModReview extends Module
 			}
 
 			$_d['review.ds']->Add(array(
-				'rev_date' => SqlUnquote("NOW()"),
+				'rev_date' => Database::SqlUnquote("NOW()"),
 				'rev_prod' => $_d['ci'],
 				'rev_user' => $_d['cl']['usr_id'],
 				'rev_rating' => $rating,
@@ -102,13 +102,13 @@ class ModReview extends Module
 			$title = $rev['rev_subject'];
 			if (ModUser::RequireAccess(500))
 			{
-				$title .= " <a href=\"".URL($_d['me'],
+				$title .= " <a href=\"".HM::URL($_d['me'],
 					array('ca' => 'delete_review', 'ci' => $rev['rev_id'],
 					'prod' => $prod['prod_id'])).'" title="Delete">
 					<img src="template/new/catalog/delete.png"
 					alt="Delete" title="Delete" /></a>';
 			}
-			$ret .= GetBox('box_rev', $title, $tblReviews->Get());
+			$ret .= Box::GetBox('box_rev', $title, $tblReviews->Get());
 			$ret .= '<br/>';
 		}
 
@@ -133,7 +133,7 @@ class ModReview extends Module
 				null, array('ROWS' => 5, 'COLS' => 50)));
 			$formReview->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Post it'));
-			$ret .= GetBox('box_review', 'Write a Review',
+			$ret .= Box::GetBox('box_review', 'Write a Review',
 				$formReview->Get('action="{{me}}" method="post"',
 				array('WIDTH' => '100%')));
 		}

@@ -133,7 +133,7 @@ class ModCategory extends Module
 	{
 		global $_d;
 
-		$m = array('cat_parent' => $parent);
+		if (isset($parent)) $m['cat_parent'] = $parent;
 		if (!$include_hidden) $m['cat_hidden'] = 0;
 
 		return $_d['category.ds']->Get(array(
@@ -176,8 +176,9 @@ class ModCategory extends Module
 	{
 		global $_d;
 
-		/*$sel = MakeSelect('name="category"', DataToSel($_d['category.all'],
-			'cat_name', 'cat_id', $_d['category.current']['cat_id'], 'None'));*/
+		/*$sel = FormOption::GetSelect('name="category"',
+		 * DataToSel($_d['category.all'], 'cat_name', 'cat_id',
+		 * $_d['category.current']['cat_id'], 'None'));*/
 		$sel = '';
 		return "<li><label>Category</label>$sel</li>";
 	}
@@ -223,6 +224,7 @@ class ModCategory extends Module
 			$tt->Set($this->cat);
 			$ret .= $tt->GetString($g);
 		}
+
 		return $ret;
 	}
 
@@ -244,7 +246,7 @@ class ModCategory extends Module
 	{
 		global $_d;
 
-		return MakeSelect($a, DataToSel(
+		return FormInput::GetSelect($a, FormOption::FromData(
 			ModCategory::QueryAll(),
 			'cat_name',
 			'cat_id', 0, 'Catalog'));
@@ -270,7 +272,7 @@ class ModCategoryAdmin extends Module
 		{
 			$dsCats = $_d['category.ds'];
 			$ci = $dsCats->Add(array(
-				'cat_date' => SqlUnquote('NOW()'),
+				'cat_date' => Database::SqlUnquote('NOW()'),
 				'cat_parent' => Server::GetVar('parent'),
 				'cat_name' => Server::GetVar('name'),
 				'cat_desc' => Server::GetVar('desc'),
@@ -356,15 +358,14 @@ class ModCategoryAdmin extends Module
 		{
 			$ret = null;
 
-			#$items = ModCategory::QueryAll();
-			#$tree = DataToTree($items, array('cat_parent' => 'cat_id'), 0);
 			$tree = $_d['category.all'];
 
-			$ret = GetTree($tree,
+			$ret = TreeNode::GetTree($tree,
 				'<a href="{{app_abs}}/category/{{cat_id}}">{{cat_name}}</a>
 				| <a href="{{app_abs}}/category/edit/{{cat_id}}">Edit</a>
 				| <a href="{{app_abs}}/category/delete/{{cat_id}}"
 				class="aCatDelete">Delete</a>');
+
 			return $ret;
 		}
 	}
@@ -406,7 +407,7 @@ class ModCategoryLocation extends Module
 
 		do
 		{
-			if (!is_object($c)) varinfo($cat);
+			if (!is_object($c)) U::VarInfo($cat);
 			$ret = '<a href="{{app_abs}}/category/'.$c->data['cat_id'].'">'
 				.$c->data['cat_name'].'</a>'.$ret;
 			if ($c->id) $ret = ' &raquo; '.$ret;

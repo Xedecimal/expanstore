@@ -71,7 +71,7 @@ class ModSale extends Module
 		$dsUsers = $_d['user.ds'];
 
 		$q['columns'] = array('pkg_id', 'pkg_date', 'price' =>
-			SqlUnquote('SUM(pp_price)'), 'pkg_state', 'usr_name', 'usr_id');
+			Database::SqlUnquote('SUM(pp_price)'), 'pkg_state', 'usr_name', 'usr_id');
 
 		$q['joins'] = array(
 			new Join($dsPackageProd, 'pp_package = pkg_id', 'LEFT JOIN'),
@@ -121,7 +121,7 @@ class ModSale extends Module
 			$t->Set($rows[0]);
 			$body .= $t->ParseFile(Module::L('sale/main.xml'));
 		}
-		return GetBox('box_details', 'Sales', $body);
+		return Box::GetBox('box_details', 'Sales', $body);
 	}
 
 	function TagPackage($t, $g)

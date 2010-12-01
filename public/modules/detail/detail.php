@@ -303,7 +303,7 @@ EOF;
 		else if ($action == 'create-spec')
 		{
 			$_d['spec.ds']->Add(array(
-				'spec_date' => SqlUnquote('NOW()'),
+				'spec_date' => Database::SqlUnquote('NOW()'),
 				'spec_company' => $_d['cl']['c2u_company'],
 				'spec_name' => Server::GetVar('name')
 			));
@@ -313,7 +313,7 @@ EOF;
 		else if ($action == 'create_spec_prop')
 		{
 			$dsSpecProp->Add(array(
-				'date' => SqlUnquote('NOW()'),
+				'date' => Database::SqlUnquote('NOW()'),
 				'spec' => Server::GetVar('ci'),
 				'type' => Server::GetVar('type'),
 				'name' => Server::GetVar('name')
@@ -353,7 +353,7 @@ EOF;
 				$spec['spec_name']));
 			$formProps->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Update'));
-			$body = GetBox('box_props', 'View Specification',
+			$body = Box::GetBox('box_props', 'View Specification',
 				$formProps->Get('action="{{me}}" method="post"'));
 
 			$props = QueryProps($_d, Server::GetVar('ci'));
@@ -366,13 +366,13 @@ EOF;
 					'<b>Name</b>'));
 				foreach ($props as $prop)
 				{
-					$urlEdit = URL('{{me}}', array(
+					$urlEdit = HM::URL('{{me}}', array(
 						'cs' => Server::GetVar('cs'),
 						'ci' => $prop['id'],
 						'spec' => Server::GetVar('ci'),
 						'ca' => 'view_spec_prop'));
 
-					$urlDel = URL('{{me}}', array(
+					$urlDel = HM::URL('{{me}}', array(
 						'cs' => Server::GetVar('cs'),
 						'ci' => $prop['id'],
 						'spec' => Server::GetVar('ci'),
@@ -385,7 +385,7 @@ EOF;
 						GetButton($urlDel, 'delete.png', 'Delete')
 					));
 				}
-				$body .= GetBox("box_proplist", "Properties", $tblProps->Get());
+				$body .= Box::GetBox("box_proplist", "Properties", $tblProps->Get());
 			}
 
 			$formCreateProp = new Form('formCreateProp');
@@ -397,9 +397,8 @@ EOF;
 			$formCreateProp->AddInput(new FormInput('Name', 'text', 'name'));
 			$formCreateProp->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Create'));
-			$body .= GetBox('box_createProp',
-				'Create Property', $formCreateProp->Get('action="{{me}}"
-				method="post"'));
+			$body .= Box::GetBox('box_createProp', 'Create Property',
+				$formCreateProp->Get('action="{{me}}" method="post"'));
 
 			$spps = QueryUnusedSPP($_d, Server::GetVar('ci'));
 
@@ -410,13 +409,13 @@ EOF;
 
 				foreach ($spps as $spp)
 				{
-					$but = GetButton(URL('{{me}}', array('cs' => 'detail',
+					$but = GetButton(HM::URL('{{me}}', array('cs' => 'detail',
 						'ca' => 'del_sprod', 'ci' => $spp['did'],
 						'spec' => Server::GetVar('ci'))), 'delete.png', 'Delete');
 					$tblUnused->AddRow(array($spp['name'], $spp['value'], $but));
 				}
 
-				$body .= GetBox('box_unused', 'Unused Values',
+				$body .= Box::GetBox('box_unused', 'Unused Values',
 					$tblUnused->Get());
 			}
 			return $body;
@@ -437,7 +436,7 @@ EOF;
 				$prop['name']));
 			$formProps->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Update'));
-			return GetBox('box_props', 'View Property',
+			return Box::GetBox('box_props', 'View Property',
 				$formProps->Get('action="{{me}}" method="post"'));
 		}
 		else
@@ -455,13 +454,13 @@ EOF;
 				$tblSpecs = new Table('tblSpecs', array('<b>Name</b>'));
 				foreach($specs as $spec)
 				{
-					$urlEdit = URL($me, array(
+					$urlEdit = HM::URL($me, array(
 						'cs' => Server::GetVar('cs'),
 						'ci' => $spec[0],
 						'ca' => 'view_spec'
 					));
 
-					$urlDel = URL($me, array(
+					$urlDel = HM::URL($me, array(
 						'cs' => Server::GetVar('cs'),
 						'ci' => $spec[0],
 						'ca' => 'del_spec'
@@ -470,7 +469,7 @@ EOF;
 						GetButton($urlEdit, 'edit.png', 'Edit'),
 						GetButton($urlDel, 'delete.png', 'Delete')));
 				}
-				$out .= GetBox('box_groups', "Your Company's Details",
+				$out .= Box::GetBox('box_groups', "Your Company's Details",
 					$tblSpecs->Get());
 			}
 
@@ -485,8 +484,9 @@ EOF;
 	{
 		$specs = $this->dsSpec->Get();
 		$default = isset($cat['spec']) ? $cat['spec'] : 0;
-		$sel = MakeSelect('name="spec_name"',
-			DataToSel($specs, 'spec_name', 'spec_id', $default, "None"));
+		$sel = FormInput::GetSelect('name="spec_name"',
+			FormOption::FromData($specs, 'spec_name', 'spec_id', $default,
+				'None'));
 		return '<li><label>Detail</label>'.$sel.'</li>';
 	}
 

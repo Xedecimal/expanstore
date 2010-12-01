@@ -124,7 +124,7 @@ EOF;
 			$out = $t->ParseFile($_d['tempath'].'oscimport/index.xml');
 		}
 
-		return GetBox('box_oscimport', 'osCommerce Import', $out);
+		return Box::GetBox('box_oscimport', 'osCommerce Import', $out);
 	}
 
 	function ImportCategory($parent, $item)

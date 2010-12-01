@@ -68,7 +68,7 @@ class PayManual
 		{
 			if (empty($items)) return;
 
-			$add_pack['pkg_date'] = SqlUnquote('NOW()');
+			$add_pack['pkg_date'] = Database::SqlUnquote('NOW()');
 			$add_pack['pkg_user'] = $_d['cl']['usr_id'];
 			$id = $_d['package.ds']->Add($add_pack);
 
@@ -127,7 +127,7 @@ EOF;
 			$t->ReWrite('empty', 'TagEmpty');
 			$t->ReWrite('nempty', 'TagNEmpty');
 			$body = $t->ParseFile(Module::L('pay_manual/checkout.xml'));
-			return GetBox('box_shipping', 'Shipping', $body);
+			return Box::GetBox('box_shipping', 'Shipping', $body);
 		}
 		return true;
 	}

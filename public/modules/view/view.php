@@ -78,7 +78,7 @@ class ModView extends Module
 		$formView->AddInput(new FormInput('Show', 'text', 'amount', $amount, 'size="10"'));
 		$formView->AddInput(new FormInput(null, 'submit', 'butSubmit', 'Refresh'));
 		$out = $formView->Get('action="{{me}}" method="post"', 'class="form"');
-		return GetBox('box_view', 'View', $out);
+		return Box::GetBox('box_view', 'View', $out);
 	}
 }
 
