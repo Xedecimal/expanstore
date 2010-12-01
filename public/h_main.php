@@ -6,6 +6,7 @@ require_once('xedlib/classes/Server.php');
 Server::HandleErrors();
 require_once('xedlib/classes/data/Database.php');
 require_once('xedlib/classes/data/DataSet.php');
+require_once('xedlib/classes/present/EditorData.php');
 
 require_once('h_tools.php');
 

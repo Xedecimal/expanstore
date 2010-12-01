@@ -76,7 +76,7 @@ class ModNarrow extends Module
 				$did = $prop['did'];
 			}
 			if ($pid != -1) $out .= '</p>';
-			return '<div style="width: 200px">'.GetBox('box_narrow',
+			return '<div style="width: 200px">'.Box::GetBox('box_narrow',
 				'Narrow Results', $out).'</div>';
 		}
 	}

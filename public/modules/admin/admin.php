@@ -45,7 +45,7 @@ class ModAdmin extends Module
 			$_d['settings']['data_location'] = Server::GetVar('data');
 			$_d['settings']['site_name'] = Server::GetVar('name');
 
-			RunCallbacks(@$_d['admin.callbacks.setup']);
+			U::RunCallbacks(@$_d['admin.callbacks.setup']);
 
 			ModAdmin::SaveSettings();
 			ModLog::Log('Updated settings');
@@ -59,7 +59,7 @@ class ModAdmin extends Module
 		if ($_d['q'][0] != 'admin') return;
 
 		$GLOBALS["page_section"] = "General Settings";
-		$ret = GetBox("box_motd",
+		$ret = Box::GetBox("box_motd",
 			"Welcome", "Welcome to the administration, FAQ and such can go here.");
 
 		//General Settings
@@ -70,13 +70,13 @@ class ModAdmin extends Module
 		$frmGeneral->AddInput(new FormInput('Store Name', 'text', 'name',
 			$_d['settings']['site_name'], 'size="50"'));
 
-		RunCallbacks(@$_d['admin.callbacks.settings'], $frmGeneral);
+		U::RunCallbacks(@$_d['admin.callbacks.settings'], $frmGeneral);
 
 		$frmGeneral->AddInput(new FormInput(null, 'submit', 'butSubmit', 'Update'));
-		$ret .= GetBox("box_general", "General Settings",
+		$ret .= Box::GetBox("box_general", "General Settings",
 			$frmGeneral->Get('action="{{app_abs}}/admin/save" method="post"'));
 
-		$ret .= RunCallbacks($_d['admin.callbacks.foot']);
+		$ret .= U::RunCallbacks($_d['admin.callbacks.foot']);
 
 		return $ret;
 	}
@@ -125,8 +125,8 @@ EOF;
 		global $_d;
 
 		$val = trim($a[2], '"');
-		if ($_d['settings'][$a[1]] != $val) varinfo("Changed '{$a[1]}' from '{$val}' to '{$_d['settings'][$a[1]]}'");
-		else varinfo("Unchanged: {$a[1]}");
+		if ($_d['settings'][$a[1]] != $val) U::VarInfo("Changed '{$a[1]}' from '{$val}' to '{$_d['settings'][$a[1]]}'");
+		else U::VarInfo("Unchanged: {$a[1]}");
 	}
 }
 

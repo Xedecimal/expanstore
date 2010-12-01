@@ -55,7 +55,7 @@ if ($ca == 'search')
 	}
 }
 
-echo GetBox('box_search_comps', 'Search', $form.$results);
+echo Box::GetBox('box_search_comps', 'Search', $form.$results);
 ?>
 </body>
 </html>

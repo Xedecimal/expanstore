@@ -37,7 +37,7 @@ class ModSignup extends Module
 				for ($x = 0; $x < 15; $x++) $newpass .= rand(0, 1)
 					? sprintf("%c", rand(65, 90))
 					: sprintf("%c", rand(97, 122));
-				$this->user['usr_date'] = SqlUnquote('NOW()');
+				$this->user['usr_date'] = Database::SqlUnquote('NOW()');
 				$this->user['usr_pass'] = md5($newpass);
 				$this->user['usr_access'] = 1;
 				$this->user['usr_id'] = $_d['user.ds']->Add($this->user);
@@ -70,7 +70,7 @@ class ModSignup extends Module
 		{
 			$ret = "Registration was complete, your password has been mailed to you.<br />\n";
 			$ret .= "<a href=\"{{app_abs}}\"> Return to Catalog </a>\n";
-			$ret = GetBox('box_complete', 'Registration Complete!', $ret);
+			$ret = Box::GetBox('box_complete', 'Registration Complete!', $ret);
 			ModLog::Log("New user: {$this->user['usr_user']} "
 				."({$this->user['usr_id']})");
 			return $ret;

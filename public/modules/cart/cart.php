@@ -66,7 +66,7 @@ class ModCart extends Module
 			if (empty($_d['cl']['cart_id']))
 			{
 				$_d['cl']['cart_id'] = $_d['cart.ds']->Add(array(
-					'cart_date' => SqlUnquote('NOW()'),
+					'cart_date' => Database::SqlUnquote('NOW()'),
 					'cart_user' => $_d['cl']['usr_id']
 				), true);
 			}
@@ -74,24 +74,24 @@ class ModCart extends Module
 			$ci = $_d['q'][2];
 
 			$id = $_d['cartitem.ds']->Add(array(
-				'ci_date' => SqlUnquote('NOW()'),
+				'ci_date' => Database::SqlUnquote('NOW()'),
 				'ci_cart' => $_d['cl']['cart_id'],
 				'ci_product' => $ci
 			), true);
 
-			RunCallbacks($_d['cart.callbacks.add'], $_d['cl']['cart_id'], $id);
+			U::RunCallbacks($_d['cart.callbacks.add'], $_d['cl']['cart_id'], $id);
 
 			die(json_encode(array('res' => 1)));
 		}
 		if ($ca == 'update')
 		{
-			RunCallbacks($_d['cart.callbacks.update'], $_d['cl']['cart_id'], $_d['q'][2]);
+			U::RunCallbacks($_d['cart.callbacks.update'], $_d['cl']['cart_id'], $_d['q'][2]);
 			die();
 		}
 		if ($ca == 'remove')
 		{
 			$ci = $_d['q'][2];
-			RunCallbacks($_d['cart.callbacks.remove'], $ci);
+			U::RunCallbacks($_d['cart.callbacks.remove'], $ci);
 			$_d['cartitem.ds']->Remove(array('ci_id' => $ci));
 			die(json_encode(array('res' => 1)));
 		}
@@ -152,7 +152,7 @@ class ModCart extends Module
 						$totalitems++;
 						if (!empty($_d['cart.callbacks.price']))
 							$citem['prod_price'] =
-								RunCallbacks($_d['cart.callbacks.price'],
+								U::RunCallbacks($_d['cart.callbacks.price'],
 									$citem);
 						$totalprice += $citem['prod_price'];
 						$pt->prods[] = $citem;
@@ -173,7 +173,7 @@ class ModCart extends Module
 			}
 		}
 
-		if (!empty($body)) return GetBox('box_cart', 'Your Cart', $body);
+		if (!empty($body)) return Box::GetBox('box_cart', 'Your Cart', $body);
 	}
 
 	function CartKnee()
@@ -182,7 +182,7 @@ class ModCart extends Module
 
 		$knee = null;
 		if (!empty($_d['cart.callbacks.knee']))
-			$knee .= RunCallbacks($_d['cart.callbacks.knee']);
+			$knee .= U::RunCallbacks($_d['cart.callbacks.knee']);
 		return $knee;
 	}
 

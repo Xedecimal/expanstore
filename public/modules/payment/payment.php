@@ -44,7 +44,7 @@ class ModPayment extends Module
 			$items = ModCart::QueryCart();
 
 			$id = $_d['pack.ds']->Add(array(
-				'pkg_date' => SqlUnquote('NOW()'),
+				'pkg_date' => Database::SqlUnquote('NOW()'),
 				'pkg_user' => $_d['cl']['usr_id']
 			));
 
@@ -57,12 +57,12 @@ class ModPayment extends Module
 					'pp_price' => $i['prod_price']
 				));
 
-				RunCallbacks($_d['payment.cb.checkout.item'], $pid, $i);
+				U::RunCallbacks($_d['payment.cb.checkout.item'], $pid, $i);
 			}
 
 			$ret = $mod->Checkout($items);
 
-			RunCallbacks(@$_d['payment.cb.checkout'], $items);
+			U::RunCallbacks(@$_d['payment.cb.checkout'], $items);
 			return $ret;
 		}
 
@@ -73,7 +73,7 @@ class ModPayment extends Module
 			$cname = "Pay{$pt}";
 			$mod = new $cname;
 
-			return GetBox("box_check", "Checking payment module: ".
+			return Box::GetBox("box_check", "Checking payment module: ".
 				$mod->GetName(), $mod->GetCheck());
 		}
 
@@ -85,7 +85,7 @@ class ModPayment extends Module
 			$cname = "Pay{$pt}";
 			$mod = new $cname;
 
-			return GetBox('box_repair', "Repairing payment module: ".
+			return Box::GetBox('box_repair', "Repairing payment module: ".
 				$mod->GetName(), $mod->GetRepair($_d));
 		}
 	}
@@ -147,7 +147,7 @@ class ModPayment extends Module
 			".value == 'pay_repair') return confirm('You will lose any related".
 			" data with this module, are you sure?')\""));
 
-		return GetBox("box_paymods", "Payment Modules",
+		return Box::GetBox("box_paymods", "Payment Modules",
 			$formPayMods->Get('action="{{me}}" method="post"'));
 	}
 

@@ -104,7 +104,9 @@ class ModCompany extends Module
 		if (ModUser::RequireAccess(500))
 		{
 			$_d['user.ds.handlers']['company'] = new CompanyUserHandler();
-			$sels = DataToSel(QueryCompanies(), 'comp_name', 'comp_id', 0, 'None');
+			DataSet::ToArray(QueryCompanies(), 'comp_id');
+			$sels = FormOption::FromData(QueryCompanies(), 'comp_name',
+				'comp_id', 0, 'None');
 			$_d['user.ds']->FieldInputs['c2u_company'] =
 				new FormInput('Company', 'select', null, $sels);
 		}
@@ -155,11 +157,11 @@ class ModCompany extends Module
 			$tblcomp->AddRow(array("Zip:", $comp['zip']));
 			$tblcomp->AddRow(array("Phone:", $comp['phone']));
 
-			$ret .= GetBox("box_comp", "Company Details - {$comp['name']}", $tblcomp->Get());
+			$ret .= Box::GetBox("box_comp", "Company Details - {$comp['name']}", $tblcomp->Get());
 
 			if (strlen($comp['about']) > 0)
 			{
-				$ret .= GetBox("box_sum", "Company Summary", $comp['about']);
+				$ret .= Box::GetBox("box_sum", "Company Summary", $comp['about']);
 			}
 
 			$frmContact = new Form('formContact');
@@ -173,7 +175,7 @@ class ModCompany extends Module
 				'rows="5" cols="40"'));
 			$frmContact->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Send'));
-			$ret .= GetBox("box_contact",
+			$ret .= Box::GetBox("box_contact",
 				"Contact {$comp['name']}",
 				$frmContact->Get("action=\"{{me}}\" method=\"post\""));
 
@@ -256,14 +258,14 @@ class ModCompanyDisplay extends Module
 				$comp['phone'], 'size="50"'));
 			$frmCompany->AddInput(new FormInput('', 'submit', 'butSubmit',
 				"Update"));
-			$body = GetBox("box_comp",
+			$body = Box::GetBox("box_comp",
 				"Your Company",
 				$frmCompany->Get('action="{{me}}" method="post"'));
 
 			//Display Summary
 			if (isset($comp->summary) && strlen($comp->summary) > 0)
 			{
-				$body .= GetBox("box_summary", "Company Summary",
+				$body .= Box::GetBox("box_summary", "Company Summary",
 					$comp->summary);
 			}
 
@@ -275,7 +277,7 @@ class ModCompanyDisplay extends Module
 				array('ROWS' => '5', 'STYLE' => 'width: 100%')));
 			$frmUpdate->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Update'));
-			$body .= GetBox('box_update_sum', 'Update Company Summary',
+			$body .= Box::GetBox('box_update_sum', 'Update Company Summary',
 			$frmUpdate->Get('action="{{me}}" method="post"', 'width="100%"'));
 
 			//Company Logo
@@ -295,7 +297,7 @@ class ModCompanyDisplay extends Module
 				'size="50"'));
 			$frmLogo->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Upload'));
-			$body .= GetBox("box_logo",
+			$body .= Box::GetBox("box_logo",
 			"Company Logo",
 			$frmLogo->Get('action="{{me}}" method="post" enctype="multipart/form-data"'));
 
@@ -317,10 +319,10 @@ class ModCompanyDisplay extends Module
 					$tblNews->AddRow(array($nws['body']));
 					$tblNews->AddRow(array("<a href=\"{{me}}?cs=cpanel&amp;ca=delete_news&amp;ci={$nws['id']}\" OnClick=\"return confirm('Are you sure?')\"> Remove </a><br /><br />"));
 				}
-				$body .= GetBox("box_news", "Your Latest News", $tblNews->Get());
+				$body .= Box::GetBox("box_news", "Your Latest News", $tblNews->Get());
 			}
 
-			$body .= RunCallbacks($_d['cpanel.callbacks.company'], $_d);
+			$body .= U::RunCallbacks($_d['cpanel.callbacks.company'], $_d);
 
 			return $body;
 		}

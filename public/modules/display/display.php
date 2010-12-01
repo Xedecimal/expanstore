@@ -54,7 +54,7 @@ class ModTemplate extends Module
 		{
 			file_put_contents('config/blocks.dat', serialize(Server::GetVar('blocks')));
 			file_put_contents('config/order.dat', serialize(Server::GetVar('order')));
-			RunCallbacks($_d['display.callbacks.update']);
+			U::RunCallbacks($_d['display.callbacks.update']);
 			$this->Load();
 			ModAdmin::SaveSettings();
 		}
@@ -91,7 +91,7 @@ class ModTemplate extends Module
 			if (isset($_d['settings']['blocks'][$name]))
 				$sel = $_d['settings']['blocks'][$name];
 			else $sel = 'default';
-			$t->Set('location', $sel = MakeSelect(array(
+			$t->Set('location', $sel = FormInput::GetSelect(array(
 				'NAME' => "blocks[{$name}]"), $bnames, $sel));
 			$t->Set('priority', @$_d['module.order'][$name]);
 

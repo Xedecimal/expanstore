@@ -51,7 +51,7 @@ class ModNews extends Module
 		{
 			$_d['news.ds']->Add(array(
 				'news_company' => $_d['cl']['company'],
-				'news_date' => SqlUnquote('NOW()'),
+				'news_date' => Database::SqlUnquote('NOW()'),
 				'news_subject' => Server::GetVar("subject"),
 				'news_message' => Server::GetVar("body")
 			));
@@ -85,7 +85,7 @@ class ModNews extends Module
 		$frmPost->AddInput(new FormInput("Subject:", "text", "subject", null, 'style="width: 100%"'));
 		$frmPost->AddInput(new FormInput("Body:", "area", "body", null, 'rows="5" style="width: 100%"'));
 		$frmPost->AddInput(new FormInput("", "submit", "butSubmit", "Post"));
-		return GetBox("box_post", "Post News",
+		return Box::GetBox("box_post", "Post News",
 			$frmPost->Get('action="{{me}}" method="post"', 'width="100%"'));
 	}
 }

@@ -44,7 +44,7 @@ class ModPage extends Module
 			$out = file_get_contents('content/index.xml');
 		}
 
-		if (!empty($out)) return GetBox('box_page',
+		if (!empty($out)) return Box::GetBox('box_page',
 			$this->GetTitle($name), $out);
 	}
 

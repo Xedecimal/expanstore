@@ -8,7 +8,7 @@ function QueryProductList($query)
 
 	$items = $_d['product.ds']->Get($q);
 	if (empty($items[0]['prod_id'])) return null;
-	$items = RunCallbacks($_d['product.cb.result'], $items);
+	$items = U::RunCallbacks($_d['product.cb.result'], $items);
 	return $items;
 }
 
@@ -154,11 +154,11 @@ EOF;
 			}
 			else
 			{
-				$prod['prod_date'] = SqlUnquote('NOW()');
+				$prod['prod_date'] = Database::SqlUnquote('NOW()');
 				$prod['prod_id'] = $_d['product.ds']->Add($prod);
 
 				if (!empty($_d['product.callbacks.add']))
-					RunCallbacks($_d['product.callbacks.add'], $_d, $prod,
+					U::RunCallbacks($_d['product.callbacks.add'], $_d, $prod,
 						$prod['prod_id']);
 
 				ModLog::Log("Added product {$prod['prod_name']} ({$prod['prod_id']})");
@@ -172,7 +172,7 @@ EOF;
 
 			$prod = Server::GetVar('prod');
 
-			RunCallbacks($_d['product.callbacks.update'], $_d, $prod,
+			U::RunCallbacks($_d['product.callbacks.update'], $_d, $prod,
 				$pid);
 
 			$_d['product.ds']->Update(array('prod_id' => $pid), $prod);
@@ -195,7 +195,7 @@ EOF;
 			}
 
 			if (!empty($_d['product.callbacks.delete']))
-				RunCallbacks($_d['product.callbacks.delete'], $_d);
+				U::RunCallbacks($_d['product.callbacks.delete'], $_d);
 
 			//Product
 			$_d['product.ds']->Remove(array('prod_id' => $ci));
@@ -226,7 +226,7 @@ EOF;
 			$pt->prods = ModProduct::QueryProducts(array('match' => array('prod_id' => $ci)));
 
 			if (!empty($_d['product.callbacks.details']))
-			$ret .= RunCallbacks($_d['product.callbacks.details'], $_d,
+			$ret .= U::RunCallbacks($_d['product.callbacks.details'], $_d,
 				$pt->prods[0]);
 
 			$ret .= $pt->ParseFile(Module::L('product/details.xml'));
@@ -266,13 +266,13 @@ EOF;
 				isset($this->errors['price']) ? $this->errors['price'] : null));
 
 			if ($ca == 'prepare')
-				RunCallbacks($_d['product.callbacks.addfields'], $frmAdd);
+				U::RunCallbacks($_d['product.callbacks.addfields'], $frmAdd);
 			if ($ca == 'edit')
-				RunCallbacks($_d['product.callbacks.editfields'], $frmAdd, $data);
+				U::RunCallbacks($_d['product.callbacks.editfields'], $frmAdd, $data);
 
 			$frmAdd->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Save'));
-			$ret = GetBox('box_create', $title,
+			$ret = Box::GetBox('box_create', $title,
 				$frmAdd->Get('action="{{app_abs}}/product/'.$act.'" method="post" id="formProduct"',
 				array('WIDTH' => '100%')));
 
@@ -297,7 +297,7 @@ EOF;
 					}
 					$str .= "</tr></table>\n";
 
-					$ret .= GetBox('box_images', 'Product Images', $str);
+					$ret .= Box::GetBox('box_images', 'Product Images', $str);
 				}
 
 				if (count($images) < 5)
@@ -308,7 +308,7 @@ EOF;
 						null, 'size="50"'));
 					$frmImages->AddInput(new FormInput(null, 'submit', 'butSubmit',
 						'Upload'));
-					$ret .= GetBox('box_upload', 'Upload Product Image',
+					$ret .= Box::GetBox('box_upload', 'Upload Product Image',
 						$frmImages->Get('action="{{app_abs}}/product/image/add/'.
 							$_d['q'][2].'" method="post"'));
 				}
@@ -339,7 +339,7 @@ EOF;
 			$frmViewProd->AddInput(new FormInput(null, 'submit', 'butSubmit',
 				'Save'));
 
-			$body = GetBox('box_props', 'Product Properties for '.
+			$body = Box::GetBox('box_props', 'Product Properties for '.
 				$prod['prod_name'],
 				$frmViewProd->Get('action="{{app_abs}}/product/update/'.$pid
 					.'" method="post"', array('WIDTH' => '100%')));
@@ -375,7 +375,7 @@ EOF;
 		$q = array_merge_recursive($_d['product.ds.query'], $query);
 		$items = $_d['product.ds']->Get($q);
 
-		return RunCallbacks($_d['product.cb.result'], $items);
+		return U::RunCallbacks($_d['product.cb.result'], $items);
 	}
 
 	# Display
@@ -443,12 +443,12 @@ class ModProductList extends Module
 
 		$pt->prods = ModProduct::QueryProducts(array('match' => $_d['product.ds.match']));
 
-		$t = RunCallbacks(@$_d['product.cb.template']);
+		$t = U::RunCallbacks(@$_d['product.cb.template']);
 		if (!is_file($t)) $t = Module::L('product/fromCatalog.xml');
 		$ret .= $pt->ParseFile($t);
 
 		if (!empty($_d['products.callbacks.footer']))
-			$ret .= RunCallbacks($_d['products.callbacks.footer'], $_d);
+			$ret .= U::RunCallbacks($_d['products.callbacks.footer'], $_d);
 
 		return $ret;
 	}
@@ -495,7 +495,7 @@ class ProductTemplate
 		global $_d;
 
 		if (!empty($_d['product.callbacks.head']))
-			return RunCallbacks($_d['product.callbacks.head'], $_d, $this->prod);
+			return U::RunCallbacks($_d['product.callbacks.head'], $_d, $this->prod);
 	}
 
 	function TagNeck($t, $guts)
@@ -503,7 +503,7 @@ class ProductTemplate
 		global $_d;
 
 		if (!empty($_d['product.callbacks.neck']))
-			return RunCallbacks($_d['product.callbacks.neck'], $_d, $prod);
+			return U::RunCallbacks($_d['product.callbacks.neck'], $_d, $prod);
 	}
 
 	function TagProps($t, $g, $a)
@@ -577,7 +577,7 @@ class ProductTemplate
 		global $_d;
 
 		if (!empty($_d['product.callbacks.foot']))
-			return RunCallbacks($_d['product.callbacks.foot'], $_d, $this->prod);
+			return U::RunCallbacks($_d['product.callbacks.foot'], $_d, $this->prod);
 	}
 
 	function TagAdminProduct($t, $g)
@@ -587,7 +587,7 @@ class ProductTemplate
 		if (!$this->admin) return;
 
 		if (!empty($_d['product.callbacks.admin']))
-			if (!RunCallbacks($_d['product.callbacks.admin'], $this->prod))
+			if (!U::RunCallbacks($_d['product.callbacks.admin'], $this->prod))
 				return;
 
 		return $g;
