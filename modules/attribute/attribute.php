@@ -28,7 +28,7 @@ class ModAttribute extends Module
 				ArrayToSelOptions(ModAttribute::GetTypes(), @$a['atr_type'])),
 			'atr_text' => new FormInput('Text'),
 			'atr_order' => new FormInput('Priority', 'select', 'order',
-				ArrayToSelOptions(ModAttribute::GetScopes(), @$a['atr_order']))
+				ArrayToSelOptions(ModAttribute::GetPriorities(), @$a['atr_order']))
 		);
 		$_d['attribute.ds'] = $dsAttrib;
 

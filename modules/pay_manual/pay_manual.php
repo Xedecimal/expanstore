@@ -115,7 +115,7 @@ class PayManual
 
 		# Empty the user's cart.
 
-		#$_d['cart.ds']->Remove(array('cart_user' => $_d['cl']['usr_id']));
+		$_d['cart.ds']->Remove(array('cart_user' => $_d['cl']['usr_id']));
 
 		# Mail the owner if wanted
 
@@ -127,8 +127,8 @@ class PayManual
 
 $add
 EOF;
-			#mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order',
-			#	$body);
+			mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order',
+				$body);
 		}
 	}
 }
