@@ -1,1 +1,3 @@
 glob:prodimages/*
+glob:settings.ini
+glob:config/*
