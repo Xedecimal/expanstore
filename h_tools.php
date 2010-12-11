@@ -34,7 +34,7 @@ class CFormulaParser
 	*/
 	function FormulaReplaceCallback($match)
 	{
-		if ($match[1] == "price") return $this->prod->price;
+		if ($match[1] == 'price') return $this->prod['prod_price'];
 		if (isset($this->prod[$match[1]])) return $this->prod[$match[1]];
 		return null;
 	}
