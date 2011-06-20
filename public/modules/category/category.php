@@ -17,7 +17,8 @@ class ModCategory extends Module
 		if ($_d['q'][0] == 'category' && is_numeric(@$_d['q'][1]))
 			$_SESSION['cc'] = $_d['q'][1];
 
-		$_d['category.all'] = $_d['category.ds']->Get();
+		$items = $_d['category.ds']->Get();
+		$_d['category.all'] = DataSet::BuildTree($items, 'cat_id', 'cat_parent');
 	}
 
 	function Link()
@@ -114,13 +115,12 @@ class ModCategory extends Module
 		$_d['product.title'] = "Products in " . $breadcrumb;
 
 		$this->data = $_d;
-		$cc = Server::GetVar('cc');
+		$cc = Server::GetVar('cc', 0);
 
 		$t = new Template();
 		$t->Set('cats', $this->cats = ModCategory::QueryCats($cc, false));
 		$t->ReWrite('notempty', array('Template', 'TagNEmpty'));
 		$t->ReWrite('category', array(&$this, 'TagCategory'));
-
 		return $t->ParseFile(Module::L('category/fromCatalog.xml'));
 	}
 
@@ -186,7 +186,7 @@ class ModCategory extends Module
 	function cb_product_add($_d, $prod, $id)
 	{
 		$_d['cat_prod.ds']->Add(array(
-			'catprod_cat' => Server::GetVar('category'),
+			'catprod_cat' => Server::GetVar('category', 0),
 			'catprod_prod' => $id
 		));
 	}

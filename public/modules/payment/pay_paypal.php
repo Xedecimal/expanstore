@@ -1,7 +1,5 @@
 <?php
 
-require_once("h_main.php");
-
 class PayPaypal
 {
 	function GetName() { return "PayPal"; }

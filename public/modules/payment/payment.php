@@ -169,6 +169,6 @@ class ModPayment extends Module
 	}
 }
 
-Module::Register('ModPayment', array('ModCart', 'ModSale'));
+Module::Register('ModPayment');
 
 ?>

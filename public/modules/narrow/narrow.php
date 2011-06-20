@@ -97,6 +97,6 @@ class ModNarrow extends Module
 	}
 }
 
-Module::Register('ModNarrow', array('ModDetail'));
+Module::Register('ModNarrow');
 
 ?>

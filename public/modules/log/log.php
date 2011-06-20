@@ -1,5 +1,7 @@
 <?php
 
+require_once(Module::L('classes/present/table_sort.php'));
+
 $GLOBALS['log_types'] = array('Information');
 
 class ModLog extends Module
@@ -69,7 +71,7 @@ EOF;
 
 		if (count($logs) > 0)
 		{
-			$tblLogs = new SortTable("tblLogs", array(
+			$tblLogs = new TableSort("tblLogs", array(
 				"date" => "Date",
 				"type" => "Type",
 				"company" => "Company",
@@ -82,21 +84,21 @@ EOF;
 					'cs' => 'user',
 					'class' => 'userdisplay',
 					'ca' => 'ype_user_edit',
-					'ci' => $log['uid']
+					'ci' => $log['log_user']
 				));
 
 				$urlComp = HM::URL($me, array(
 					'cs' => 'admin',
 					'ca' => 'view_company',
-					'ci' => $log['cid']
+					'ci' => $log['log_company']
 				));
 
 				$tblLogs->AddRow(array(
-					$log['date'],
-					$log_types[$log['level']],
+					$log['log_date'],
+					$log_types[$log['log_level']],
 					!empty($log['cname']) ? "<a href=\"{$urlComp}\">{$log['cname']}</a>" : null,
 					!empty($log['user']) ? "<a href=\"{$urlUser}\">{$log['user']}</a>" : null,
-					$log['message']
+					$log['log_message']
 				));
 			}
 			$body = $tblLogs->Get('cellpadding="3"');

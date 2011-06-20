@@ -1,7 +1,5 @@
 <?php
 
-Module::Register('ModDetail');
-
 global $prop_types;
 
 $prop_types = array(
@@ -525,7 +523,7 @@ EOF;
 		}
 	}
 
-	function ProductEditFields($_d, $prod, $form)
+	function ProductEditFields($form, $prod)
 	{
 		#$sprops = QueryPropsByProd($_d, $prod['prod_id']);
 
@@ -580,5 +578,7 @@ EOF;
 		$_d['specpropprod.ds']->Remove(array('spp_prod' => $_d['q'][2]));
 	}
 }
+
+Module::Register('ModDetail');
 
 ?>

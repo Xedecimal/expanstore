@@ -1,9 +1,5 @@
 <?php
 
-require_once('h_main.php');
-
-Module::Register('ModOrder');
-
 class ModOrder extends Module
 {
 	function Prepare()
@@ -59,5 +55,7 @@ class ModOrder extends Module
 		}
 	}
 }
+
+Module::Register('ModOrder');
 
 ?>

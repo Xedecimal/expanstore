@@ -332,7 +332,7 @@ EOF;
 			$frmViewProd->AddInput(new FormInput('Name', 'text', 'name',
 				$prod['prod_name'], array('STYLE' => 'width: 100%')));
 			$frmViewProd->AddInput(new FormInput('Description', 'area', 'desc',
-				$prod['prod_desc'], array('cols' => '30', 'rows' => '10')));
+				$prod['prod_desc'], array('COLS' => '30', 'ROWS' => '10')));
 			$frmViewProd->AddInput(new FormInput('Price', 'text', 'price',
 				$prod['prod_price'], array('STYLE' => 'width: 100%')));
 
@@ -373,6 +373,7 @@ EOF;
 		global $_d;
 
 		$q = array_merge_recursive($_d['product.ds.query'], $query);
+		$q['group'] = 'prod_id';
 		$items = $_d['product.ds']->Get($q);
 
 		return U::RunCallbacks($_d['product.cb.result'], $items);
