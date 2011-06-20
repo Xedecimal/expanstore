@@ -31,8 +31,6 @@
 </div>
 </product>
 
-<div class="clear"></div>
-
 <callback ds="_d" name="product.cb.listing.foot" />
 
 </null>
