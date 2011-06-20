@@ -192,7 +192,7 @@ class ModCart extends Module
 
 		if (empty($_d['cl'])) return;
 
-		$img = p('cart/cart_add.png');
+		$img = Module::P('cart/cart_add.png');
 		return <<<EOF
 <a class="ancAddCart" rel="{{prod_id}}" href="#divCart">
 <img src="$img" title="Add To Cart" alt="Add To Cart" /></a>
@@ -212,6 +212,6 @@ EOF;
 	}
 }
 
-Module::Register('ModCart', array('ModUser'));
+Module::Register('ModCart');
 
 ?>

@@ -104,7 +104,7 @@ class ModCompany extends Module
 		if (ModUser::RequireAccess(500))
 		{
 			$_d['user.ds.handlers']['company'] = new CompanyUserHandler();
-			DataSet::ToArray(QueryCompanies(), 'comp_id');
+			DataSet::DataToArray(QueryCompanies(), 'comp_id');
 			$sels = FormOption::FromData(QueryCompanies(), 'comp_name',
 				'comp_id', 0, 'None');
 			$_d['user.ds']->FieldInputs['c2u_company'] =

@@ -1,5 +1,4 @@
 <null>
-<notempty var="cats">
 <script type="text/javascript" src="category/js.js"></script>
 
 <ul class="ulCats">
@@ -20,8 +19,6 @@
 </li>
 </category>
 </ul>
-
-</notempty>
 
 <access require="500">
 <a href="{{app_abs}}/category/prepare">Create Category</a>

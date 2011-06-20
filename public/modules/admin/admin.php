@@ -1,13 +1,7 @@
 <?php
 
-require_once(__DIR__.'/../../h_main.php');
-
 class ModAdmin extends Module
 {
-	function __construct()
-	{
-	}
-
 	function Link()
 	{
 		global $_d;
@@ -32,8 +26,6 @@ class ModAdmin extends Module
 		parent::Prepare();
 
 		global $_d;
-
-		$GLOBALS['mods']['ModUser']->Prepare();
 
 		if ($_d['q'][0] != 'admin') return;
 
@@ -95,16 +87,13 @@ class ModAdmin extends Module
 
 		if (!ModUser::RequireAccess(500)) return;
 
-		$eb = 'admin/edit.png';
-		$db = 'admin/delete.png';
-
 		return <<<EOF
 		<a href="{{app_abs}}/product/edit/{{prod_id}}"
 			class="{{name}}_ancEditProduct">
-			<img src="$eb" title="Edit" alt="Edit" />
+			<img src="admin/edit.png" title="Edit" alt="Edit" />
 		</a>
 		<a href="{{app_abs}}/product/delete/{{prod_id}}" class="aProductDelete">
-			<img src="$db" title="Delete" alt="Delete" />
+			<img src="admin/delete.png" title="Delete" alt="Delete" />
 		</a>
 EOF;
 	}

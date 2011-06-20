@@ -1,7 +1,5 @@
 <?php
 
-require_once(__DIR__.'/../../h_main.php');
-
 class ModAttribute extends Module
 {
 	function __construct($installed)
@@ -511,7 +509,7 @@ class ModAttribute extends Module
 	{
 		$form->AddInput('Attribute Related');
 		$atrs = ModAttribute::QueryAttributes($prod['prod_id']);
-		$sels = DataToSel($atrs, 'atr_name', 'atr_id', null, 'None');
+		$sels = FormOption::FromData($atrs, 'atr_name', 'atr_id', null, 'None');
 		foreach ($atrs as $atr)
 			$sels[$atr['atr_id']]->selected = !empty($atr['a2p_product']);
 		$form->AddInput(new FormInput('Attribute Set(s)', 'checks', 'atr[]',
