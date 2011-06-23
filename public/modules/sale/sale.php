@@ -23,6 +23,7 @@ class ModSale extends Module
 
 		$_d['pack.ds'] = new DataSet($_d['db'], 'pack');
 		$_d['pack_prod.ds'] = new DataSet($_d['db'], 'pack_prod');
+		$_d['pack_ship.ds'] = new DataSet($_d['db'], 'pack_ship', 'ps_id');
 	}
 
 	function Link()
@@ -102,6 +103,8 @@ class ModSale extends Module
 		if (@$_d['q'][1] == 'detail')
 		{
 			$qd['joins'] = array(
+				new Join($_d['pack_ship.ds'], 'ps_package = pkg_id',
+					'LEFT JOIN'),
 				new Join($_d['pack_prod.ds'], 'pp_package = pkg_id',
 					'LEFT JOIN'),
 				new Join($_d['pack_prod_option.ds'], 'ppo_pprod = pp_id',

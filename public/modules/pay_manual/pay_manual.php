@@ -64,72 +64,72 @@ class PayManual
 
 		$ca = @$_d['q'][2];
 
-		if ($ca == 'finish')
+		$t = new Template();
+		$t->Set($_d['cl']);
+		$t->Set('no_payment', @$_d['settings']['pay_manual.no_payment']);
+		$t->ReWrite('empty', 'TagEmpty');
+		$t->ReWrite('nempty', 'TagNEmpty');
+		$body = $t->ParseFile(l('pay_manual/checkout.xml'));
+		return GetBox('box_shipping', 'Shipping', $body);
+	}
+
+	function Finish($items, $pack_id)
+	{
+		if (empty($items)) return;
+
+		global $_d;
+
+		$add_pack['pkg_date'] = SqlUnquote('NOW()');
+		$add_pack['pkg_user'] = $_d['cl']['usr_id'];
+
+		if (empty($_d['settings']['pay_manual.no_payment']))
 		{
-			if (empty($items)) return;
+			$adding['card_name'] = GetVar('card_name');
+			$adding['card_num'] = GetVar('card_num');
+			$adding['card_exp'] = GetVar('card_exp');
+			$adding['card_verify'] = GetVar('card_verify');
+		}
 
-			$add_pack['pkg_date'] = Database::SqlUnquote('NOW()');
-			$add_pack['pkg_user'] = $_d['cl']['usr_id'];
-			$id = $_d['package.ds']->Add($add_pack);
+		$add_ship['ps_package'] = $pack_id;
 
-			if (empty($_d['settings']['pay_manual.no_payment']))
-			{
-				$adding['card_name'] = Server::GetVar('card_name');
-				$adding['card_num'] = Server::GetVar('card_num');
-				$adding['card_exp'] = Server::GetVar('card_exp');
-				$adding['card_verify'] = Server::GetVar('card_verify');
-			}
+		if (GetVar('saved') == 'yes')
+		{
+			$name = $_d['cl']['usr_name'];
+			$add_ship['ps_name'] = $name;
+			$add_ship['ps_address'] = $_d['cl']['usr_address'];
+			$add_ship['ps_city'] = $_d['cl']['usr_city'];
+			$add_ship['ps_state'] = $_d['cl']['usr_state'];
+			$add_ship['ps_zip'] = $_d['cl']['usr_zip'];
+		}
+		else
+		{
+			$name = GetVar('ship_name');
+			$add_ship['ps_name'] = $name;
+			$add_ship['ps_address'] = GetVar('ship_address');
+			$add_ship['ps_city'] = GetVar('ship_city');
+			$add_ship['ps_state'] = GetVar('ship_state');
+			$add_ship['ps_zip'] = GetVar('ship_zip');
+		}
 
-			$add_ship['ps_package'] = $id;
+		$_d['pack_ship.ds']->Add($add_ship);
 
-			if (Server::GetVar('saved') == 'yes')
-			{
-				$name = $_d['cl']['usr_name'];
-				$add_ship['ps_name'] = $name;
-				$add_ship['ps_address'] = $_d['cl']['usr_address'];
-				$add_ship['ps_city'] = $_d['cl']['usr_city'];
-				$add_ship['ps_state'] = $_d['cl']['usr_state'];
-				$add_ship['ps_zip'] = $_d['cl']['usr_zip'];
-			}
-			else
-			{
-				$name = Server::GetVar('ship_name');
-				$add_ship['ps_name'] = $name;
-				$add_ship['ps_address'] = Server::GetVar('ship_address');
-				$add_ship['ps_city'] = Server::GetVar('ship_city');
-				$add_ship['ps_state'] = Server::GetVar('ship_state');
-				$add_ship['ps_zip'] = Server::GetVar('ship_zip');
-			}
+		# Empty the user's cart.
 
-			$_d['pack_ship.ds']->Add($add_ship);
+		$_d['cart.ds']->Remove(array('cart_user' => $_d['cl']['usr_id']));
 
-			$_d['cart.ds']->Remove(array('cart_user' => $_d['cl']['usr_id']));
+		# Mail the owner if wanted
 
-			# Mail the owner if wanted
-
-			if (!empty($_d['settings']['pay_manual.email']))
-			{
-				$add = Server::GetVar('additional');
-				$body = <<<EOF
+		if (!empty($_d['settings']['pay_manual.email']))
+		{
+			$add = GetVar('additional');
+			$body = <<<EOF
 {$name} has placed an order. Login to http://{$_SERVER['HTTP_HOST']}{$_d['app_abs']} to manage it.
 
 $add
 EOF;
-				mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order',
-					$body);
-			}
+			mail($_d['settings']['pay_manual.email'], $_d['settings']['site_name'].' - Online Store Order',
+				$body);
 		}
-		else
-		{
-			$t = new Template();
-			$t->Set($_d['cl']);
-			$t->Set('no_payment', @$_d['settings']['pay_manual.no_payment']);
-			$t->ReWrite('empty', 'TagEmpty');
-			$t->ReWrite('nempty', 'TagNEmpty');
-			$body = $t->ParseFile(Module::L('pay_manual/checkout.xml'));
-			return Box::GetBox('box_shipping', 'Shipping', $body);
-		}
-		return true;
 	}
 }
 

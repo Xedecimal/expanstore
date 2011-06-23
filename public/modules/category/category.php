@@ -400,7 +400,7 @@ class ModCategoryLocation extends Module
 	{
 		global $_d;
 
-		if (empty($cat)) return 'Catalog';
+		if (empty($cat)) return 'Store Home';
 
 		$c = $_d['category.all']->Find($cat);
 		$ret = null;
@@ -413,7 +413,7 @@ class ModCategoryLocation extends Module
 			if ($c->id) $ret = ' &raquo; '.$ret;
 		} while ($c = $c->parent);
 
-		$ret = "<a href=\"{{app_abs}}/category/0\">Catalog</a>" . $ret;
+		$ret = "<a href=\"{{app_abs}}/category/0\">Store Home</a>" . $ret;
 		return $ret;
 	}
 }
