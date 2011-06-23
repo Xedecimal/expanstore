@@ -1,0 +1,13 @@
+<div id="payment">
+<form action="{{app_abs}}/payment/checkout" method="post">
+<methods>
+<box id="box_payment" title="How would you like to pay?">
+<method>
+	<input type="radio" name="paytype" id="{{module}}" value="{{module}}" />
+	<label for="{{module}}">{{name}}</label><br/>
+</method>
+</box>
+</methods>
+<input type="submit" value="Checkout" />
+</form>
+</div>

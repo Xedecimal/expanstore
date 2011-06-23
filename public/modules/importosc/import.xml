@@ -1,0 +1,55 @@
+<null>
+<script type="text/javascript" src="xedlib/js/jquery.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+$(document).ready(function() {
+	var done = 0;
+
+	function Start()
+	{
+		setTimeout(CheckProgress, 1000);
+		$.ajax({
+			type: 'GET',
+			url: 'index.php',
+			data: 'cs=oscimport&class=oscimport&ca=start',
+			dataType: 'json',
+			success: function(data) {
+				$('#prog').html('100%');
+			}
+		});
+	}
+
+	function CheckProgress()
+	{
+		$.ajax({
+			type: 'GET',
+			url: 'index.php',
+			data: 'cs=oscimport&class=oscimport&ca=progress',
+			dataType: 'json',
+			success: function(data)
+			{
+				$('#prods').html(data['prods']);
+				for (con in data['console']) $('#console').append(data['console'][con]+'<br/>');
+				if (!data['done']) setTimeout(CheckProgress, 5000);
+			}
+		});
+	}
+
+	$('#clicker').click(Start);
+});
+//]]>
+</script>
+<box title="Checking...">
+<?php
+if (!file_exists(Server::GetVar('oscdir').'\\images')) echo "No images!<br/>";
+else echo "Found the images folder, ready to import those.<br/>\n";
+?>
+</box>
+
+<box title="Progress">
+Progress: <span id="prog">0%</span><br/>
+Products: <span id="prods">0</span><br/>
+<input type="button" id="clicker" value="Start" />
+<div id="console" style="height: 300px; overflow: auto;" />
+</box>
+</null>

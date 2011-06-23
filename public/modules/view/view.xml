@@ -1,0 +1,20 @@
+<form action="{{app_abs}}/view/update" method="post">
+<fieldset>
+<legend>View</legend>
+<ul>
+	<li><label for="view-sort">Sort</label>
+		<select id="view-sort" name="sort">
+			<option value="prod_name">Name</option>
+			<option value="price">Price</option>
+			<option value="date">Date</option>
+			<option value="rating">Rating</option>
+			<option value="orders">Purchased</option>
+			<option value="cname">Company</option>
+		</select></li>
+	<li><label for="view-show">Show</label>
+		<input size="10" type="text" id="view-show" name="amount" value="5"
+			/></li>
+	<li><input  type="submit" name="butSubmit" value="Refresh" /></li>
+</ul>
+</fieldset>
+</form>

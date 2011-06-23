@@ -1,0 +1,60 @@
+a img { border: 0px; }
+
+.box { margin: 1em 0; }
+.box_row_even { background-color: #E0E0E0; font-size: 13px; }
+.box_row_odd { background-color: #D0D0D0; }
+
+.box_title
+{
+	border-bottom: 1px solid #000;
+	font-size: 12pt;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.error { color: #A00000; font-weight: bold; }
+.success { color: #00A000; font-weight: bold; }
+
+.category { padding: 5px; }
+
+.product_details { clear: both; }
+.product
+{
+	width: 175px;
+	padding: 5px;
+	height: 350px;
+	border-top: 1px solid #000;
+	float: left;
+}
+
+.product ul { margin: 0; padding: 0; list-style: none; }
+.product_value { width: 5em; }
+
+#left { float: left; width: 200px; }
+#middle { padding-left: 200px; }
+#right { float: right; }
+#foot { clear: both; }
+
+.clear { clear: both; }
+
+/* Form Related */
+
+.form_separator
+{
+	border-bottom: 1px solid #000;
+	font-weight: bold;
+}
+
+.input_generic { width: 100%; }
+
+form ul { margin: 0; padding: 0; list-style: none; }
+form li { padding: 5px 0; }
+li label { display: block; padding: 0 5px; }
+fieldset {  }
+fieldset li { display: block; }
+fieldset textarea { width: 100%; }
+
+/* Generic */
+
+.debug { background: #FFF; }
+.quiet { color: #888; }

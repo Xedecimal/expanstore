@@ -1,0 +1,57 @@
+<div class="product_details">
+
+<product>
+<div id="divProd_{{prod_id}}">
+<prodhead />
+<span class="product_name"><a href="{{app_abs}}/product/view/{{prod_id}}">{{prod_name}}</a></span>
+<prodneck />
+
+<!-- Properties -->
+<prodprops>
+	<ul>
+		<prodprop><li><b>{{field}}</b> {{value}}</li></prodprop>
+	</ul>
+</prodprops>
+<!-- /Properties -->
+
+<!-- Images -->
+<div class="photos">
+<prodimage>
+	<a href="{{app_abs}}/{{large}}" class="thumb">
+		<img src="{{app_abs}}/{{small}}" alt="thumbnail"
+			title="Click to enlarge" /></a>
+</prodimage>
+</div>
+<!-- /Images -->
+
+<p>{{prod_desc}}</p>
+
+<admin_product>
+<a href="{{me}}?cs=product&amp;ca=edit&amp;ci={{prod_id}}&amp;cc={{cat}}"
+	class="ancEditProduct_{{name}}">
+	<img src="template/new/catalog/edit.png" title="Edit" alt="Edit" /></a>
+<a href="#" id="ancDelete_{{name}}.{{prod_id}}" class="ancDelete_{{name}}">
+	<img src="template/new/catalog/delete.png" title="Delete" alt="Delete" /></a>
+</admin_product>
+
+<callback ds="_d" name="product.callbacks.knee"/>
+<prodfoot/>
+</div>
+</product>
+
+<admin_anyproduct>
+<script type="text/javascript">
+$(function () {
+    $('.ancDelete_{{name}}').click(function () {
+		if (!confirm('Are you sure?')) return false;
+        id = $(this).attr('id').match(/ancDelete_{{name}}\.(\d+)/)[1];
+        $.post('index.php',{cs:'product',ca:'delete',ci:id}, function (res) {
+            if (!res.res) alert('Failure: '+res.msg);
+            else $('.divProd\\.'+id).hide(500)
+        },'json')
+		return false;
+    });
+})
+</script>
+</admin_anyproduct>
+</div>
