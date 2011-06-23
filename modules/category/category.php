@@ -65,7 +65,7 @@ class ModCategory extends Module
 		{
 			$_d['page.links']['Admin']['Categories']['Listing'] =
 				'{{app_abs}}/category/list';
-			$_d['page.links']['Admin']['Categories']['Add'] =
+			$_d['page.links']['Admin']['Categories']['Create'] =
 				'{{app_abs}}/category/prepare';
 		}
  	}
