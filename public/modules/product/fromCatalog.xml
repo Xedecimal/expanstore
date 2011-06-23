@@ -1,4 +1,4 @@
-<null>
+<div class="products">
 <product>
 <div class="product" id="divProd_{{prod_id}}">
 	<prodhead />
@@ -33,4 +33,4 @@
 
 <callback ds="_d" name="product.cb.listing.foot" />
 
-</null>
+</div>
