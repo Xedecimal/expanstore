@@ -1,4 +1,4 @@
-<form action="{{app_abs}}/payment/checkout/finish" method="post">
+<form action="{{app_abs}}/payment/finish" method="post">
 <script type="text/javascript" src="pay_manual/js.js"></script>
 <input type="hidden" name="paytype" value="manual"/>
 

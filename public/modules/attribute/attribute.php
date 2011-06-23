@@ -18,7 +18,9 @@ class ModAttribute extends Module
 		$dsAttrib->Description = 'Attribute';
 		$dsAttrib->DisplayColumns = array(
 			'atr_name' => new DisplayColumn('Name'),
-			'atr_text' => new DisplayColumn('Text')
+			'atr_text' => new DisplayColumn('Text'),
+			'atr_type' => new DisplayColumn('Type', 'SOCallback'),
+			'atr_order' => new DisplayColumn('Priority', 'SOCallback')
 		);
 		$dsAttrib->FieldInputs = array(
 			'atr_name' => new FormInput('Name'),
@@ -31,7 +33,6 @@ class ModAttribute extends Module
 		# option
 
 		$dsOption = new DataSet($_d['db'], 'option', 'opt_id');
-		$dsOption->Shortcut = 'o';
 		$dsOption->Description = 'Option';
 		$dsOption->DisplayColumns = array(
 			'opt_name' => new DisplayColumn('Name'),
@@ -93,6 +94,7 @@ class ModAttribute extends Module
 		$_d['product.ds.query']['columns'][] = 'opt_id';
 		$_d['product.ds.query']['columns'][] = 'opt_name';
 		$_d['product.ds.query']['columns'][] = 'opt_formula';
+		$_d['product.ds.query']['order'][] = 'atr_order';
 
 		$_d['product.callbacks.addfields'][] = array(&$this, 'ProductFields');
 		$_d['product.callbacks.editfields'][] = array(&$this, 'ProductFields');
@@ -116,6 +118,7 @@ class ModAttribute extends Module
 		$_d['cart.callbacks.add'][] = array(&$this, 'cb_cart_add');
 		$_d['cart.callbacks.update'][] = array(&$this, 'cb_cart_update');
 		$_d['cart.callbacks.remove'][] = array(&$this, 'cb_cart_remove');
+		$_d['cart.callbacks.price'][] = array(&$this, 'cb_cart_price');
 
 		$dsCartOption = &$_d['cartoption.ds'];
 		$dsOption = &$_d['option.ds'];
@@ -327,6 +330,7 @@ class ModAttribute extends Module
 
 			$edAtrs = new EditorData('atrs', $_d['attribute.ds']);
 			$edAtrs->AddHandler(new EdAtrHandler);
+			$edAtrs->sort = 'atr_name';
 			$edAtrs->Behavior->Search = false;
 			$edAtrs->Prepare();
 			$ret .= $edAtrs->GetUI();
@@ -370,10 +374,9 @@ class ModAttribute extends Module
 		return $frm;
 	}
 
-	static function GetTypes()
-	{
-		return array(0 => 'Select', 1 => 'Numeric');
-	}
+	static function GetTypes() { return array('Select', 'Numeric'); }
+
+	static function GetPriorities() { return array('Each', 'Group'); }
 
 	# Queries
 
@@ -499,9 +502,6 @@ class ModAttribute extends Module
 				$ret[$i['prod_id']]['atrs'][$i['atr_id']]['opts'][$i['opt_id']] = $i;
 		}
 
-		foreach ($ret as &$v)
-			$v = $this->product_props($v);
-
 		return $ret;
 	}
 
@@ -546,7 +546,8 @@ class ModAttribute extends Module
 				if ($atr['atr_type'] == 0) // Select
 				{
 					$selname = "atrs[{$atr['atr_id']}]";
-					$options = '<select name="'.$selname.'" class="product_value">'."\n";
+					$options = '<select name="'.$selname
+						.'" class="product_value">'."\n";
 
 					foreach ($atr['opts'] as $opt)
 					{
@@ -670,6 +671,33 @@ class ModAttribute extends Module
 		global $_d;
 
 		$_d['cartoption.ds']->Remove(array('carto_item' => $id));
+	}
+
+	function cb_cart_price($citem)
+	{
+		$fp = new CFormulaParser();
+		$ni['prod_price'] = $citem['prod_price'];
+
+		foreach ($citem['atrs'] as $atr_id => $atr)
+		{
+			# Select type
+			if ($atr['atr_type'] == 0)
+			{
+				$forms[] = $atr['opts'][$atr['selected']]['opt_formula'];
+				$ni['prod_price'] += $fp->GetFormula($ni,
+					$atr['opts'][$atr['selected']]['opt_formula']);
+			}
+			# Numeric type
+			else if ($atr['atr_type'] == 1)
+			{
+				$ni['value'] = $atr['selected'];
+				$forms[] = $atr['opt_formula'];
+				$ni['prod_price'] += $fp->GetFormula($ni, $atr['opt_formula']);
+			}
+		}
+		foreach ($forms as $k => $f) if (empty($f)) unset($forms[$k]);
+
+		return $ni['prod_price'];
 	}
 
 	### Payment

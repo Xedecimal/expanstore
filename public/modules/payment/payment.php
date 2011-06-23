@@ -37,21 +37,34 @@ class ModPayment extends Module
 		{
 			global $_d;
 
-			if (count($_d['payment.mods']) > 1) $mod = Server::GetVar('paytype');
-			else list($mod) = array_keys($_d['payment.mods']);
+			$mod = ModPayment::GetMod();
+			$items = ModCart::QueryCart();
+			$ret = $mod->Checkout($items);
 
-			$mod = new $_d['payment.mods'][$mod];
+			RunCallbacks(@$_d['payment.cb.checkout'], $items);
+			return $ret;
+		}
+
+		if ($ca == 'finish')
+		{
+			$mod = ModPayment::GetMod();
 			$items = ModCart::QueryCart();
 
-			$id = $_d['pack.ds']->Add(array(
-				'pkg_date' => Database::SqlUnquote('NOW()'),
+			$items = ModCart::QueryCart();
+
+			$pack_id = $_d['pack.ds']->Add(array(
+				'pkg_date' => SqlUnquote('NOW()'),
 				'pkg_user' => $_d['cl']['usr_id']
 			));
 
 			foreach ($items as $i)
 			{
+				if (!empty($_d['cart.callbacks.price']))
+					$i['prod_price'] =
+						RunCallbacks($_d['cart.callbacks.price'], $i);
+
 				$pid = $_d['pack_prod.ds']->Add(array(
-					'pp_package' => $id,
+					'pp_package' => $pack_id,
 					'pp_name' => $i['prod_name'],
 					'pp_model' => $i['prod_model'],
 					'pp_price' => $i['prod_price']
@@ -60,15 +73,12 @@ class ModPayment extends Module
 				U::RunCallbacks($_d['payment.cb.checkout.item'], $pid, $i);
 			}
 
-			$ret = $mod->Checkout($items);
-
-			U::RunCallbacks(@$_d['payment.cb.checkout'], $items);
-			return $ret;
+			return $mod->Finish($items, $pack_id);
 		}
 
-		if ($ca == "pay_check")
+		if ($ca == 'pay_check')
 		{
-			$pt = Server::GetVar("modules/payment/pay_{$pt}.php");
+			$pt = GetVar("modules/payment/pay_{$pt}.php");
 
 			$cname = "Pay{$pt}";
 			$mod = new $cname;
@@ -88,6 +98,15 @@ class ModPayment extends Module
 			return Box::GetBox('box_repair', "Repairing payment module: ".
 				$mod->GetName(), $mod->GetRepair($_d));
 		}
+	}
+
+	static function GetMod()
+	{
+		global $_d;
+
+		if (count($_d['payment.mods']) > 1) $mod = GetVar('paytype');
+		else list($mod) = array_keys($_d['payment.mods']);
+		return new $_d['payment.mods'][$mod];
 	}
 
 	# Tags
