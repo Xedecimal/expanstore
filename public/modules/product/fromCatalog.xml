@@ -1,6 +1,6 @@
 <null>
 <product>
-<div class="product" id="divProd_{{prod_id}}">
+<div class="product" id="product_{{prod_id}}">
 	<prodhead />
 	<prodneck />
 
